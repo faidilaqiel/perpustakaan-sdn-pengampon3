@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Loan;
-use App\Models\Book;
 
 class ScanController extends Controller
 {
@@ -53,7 +52,45 @@ class ScanController extends Controller
         return view('petugas.scan.hasil', compact('user', 'peminjamanAktif', 'riwayat'));
     }
 
-    // ===== TAMPILKAN QR CODE ANGGOTA =====
+    // ===== HASIL SCAN VIA URL (dari QR Code) =====
+    public function hasilGet(Request $request)
+    {
+        $kode = trim($request->input('kode'));
+
+        if (!$kode) {
+            return redirect()->route('petugas.scan')
+                             ->with('error', 'Kode tidak ditemukan di URL.');
+        }
+
+        // Cari user
+        $user = User::where('nisn', $kode)
+                    ->orWhere('nip', $kode)
+                    ->first();
+
+        if (!$user) {
+            return redirect()->route('petugas.scan')
+                             ->with('error', '❌ Anggota dengan kode "' . $kode . '" tidak ditemukan!');
+        }
+
+        // Ambil peminjaman aktif
+        $peminjamanAktif = Loan::with('book')
+                               ->where('user_id', $user->id)
+                               ->whereIn('status', ['dipinjam', 'menunggu'])
+                               ->orderBy('created_at', 'desc')
+                               ->get();
+
+        // Ambil riwayat
+        $riwayat = Loan::with('book')
+                       ->where('user_id', $user->id)
+                       ->where('status', 'dikembalikan')
+                       ->orderBy('return_date', 'desc')
+                       ->limit(5)
+                       ->get();
+
+        return view('petugas.scan.hasil', compact('user', 'peminjamanAktif', 'riwayat'));
+    }
+
+    // ===== TAMPILKAN HALAMAN QR CODE (GENERATE DI BROWSER) =====
     public function qrCode($id)
     {
         $user = User::findOrFail($id);
@@ -63,19 +100,9 @@ class ScanController extends Controller
                              ->with('error', 'Hanya untuk siswa & guru.');
         }
 
-        // Tentukan konten QR (NISN / NIP)
+        // Tentukan konten QR (NISN untuk siswa, NIP untuk guru)
         $qrContent = $user->role === 'siswa' ? $user->nisn : $user->nip;
 
-        // Generate QR Code sebagai SVG
-        $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
-                    ->size(400)
-                    ->margin(2)
-                    ->errorCorrection('H')
-                    ->generate($qrContent);
-
-        // Convert ke base64
-        $qrCodeBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrCode);
-
-        return view('petugas.scan.qr-code', compact('user', 'qrCodeBase64'));
+        return view('petugas.scan.qr-code', compact('user', 'qrContent'));
     }
 }
