@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -16,7 +17,6 @@ class AuthController extends Controller
     // ===== PROSES LOGIN =====
     public function login(Request $request)
     {
-        // Validasi input
         $request->validate([
             'username' => 'required',
             'password' => 'required',
@@ -25,28 +25,26 @@ class AuthController extends Controller
             'password.required' => 'Password wajib diisi!',
         ]);
 
-        // Cari user berdasarkan NISN atau NIP
+        // Cari user berdasarkan NISN, NIP, atau NIK
         $user = \App\Models\User::where('nisn', $request->username)
                                 ->orWhere('nip', $request->username)
+                                ->orWhere('nik', $request->username)
                                 ->first();
 
-        // Kalau user tidak ditemukan
         if (!$user) {
             return back()->with('error', 'Username tidak terdaftar!');
         }
 
-        // Kalau akun tidak aktif
         if ($user->status !== 'aktif') {
             return back()->with('error', 'Akun Anda tidak aktif. Hubungi petugas.');
         }
 
-        // Cek password
-        if (!\Hash::check($request->password, $user->password)) {
+        if (!Hash::check($request->password, $user->password)) {
             return back()->with('error', 'Password salah!');
         }
 
-        // Login berhasil
-        Auth::login($user);
+        // Login (dengan remember me)
+        Auth::login($user, $request->has('remember'));
         $request->session()->regenerate();
 
         // Redirect sesuai role
