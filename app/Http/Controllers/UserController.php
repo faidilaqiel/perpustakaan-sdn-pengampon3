@@ -14,7 +14,7 @@ class UserController extends Controller
     {
         $keyword = $request->input('q');
         $filterRole = $request->input('role');
-        $filterClass = $request->input('class'); // <-- TAMBAHAN BARU UNTUK FILTER KELAS
+        $filterClass = $request->input('class'); 
 
         $query = User::query();
 
@@ -43,9 +43,8 @@ class UserController extends Controller
         $users = $query->orderBy('role', 'asc')
                        ->orderBy('name', 'asc')
                        ->paginate(10)
-                       ->withQueryString(); // Penting agar filter tidak hilang saat pindah halaman
+                       ->withQueryString(); 
 
-        // Ambil daftar kelas unik (tanpa duplikat) dari database untuk dropdown
         $listKelas = User::where('role', 'siswa')
                          ->whereNotNull('class')
                          ->where('class', '!=', '')
@@ -201,40 +200,5 @@ class UserController extends Controller
 
         return redirect()->route('petugas.kelolaAnggota')
                          ->with('success', '✅ Anggota berhasil dihapus!');
-    }
-
-    // ===== CETAK KARTU ANGGOTA (PDF) =====
-    public function cetakKartu($id)
-    {
-        $user = User::findOrFail($id);
-
-        // Cegah cetak kartu petugas/kepsek (hanya siswa & guru)
-        if (!in_array($user->role, ['siswa', 'guru'])) {
-            return redirect()->route('petugas.kelolaAnggota')
-                             ->with('error', 'Hanya bisa cetak kartu untuk siswa & guru.');
-        }
-
-        // Tentukan konten QR Code (NISN untuk siswa, NIP untuk guru)
-        $qrContent = $user->role === 'siswa' ? $user->nisn : $user->nip;
-
-        // Generate QR Code sebagai SVG (tidak butuh Imagick)
-        $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
-                    ->size(300)
-                    ->margin(1)
-                    ->errorCorrection('H')
-                    ->generate($qrContent);
-
-        $qrCodeBase64 = 'data:image/svg+xml;base64,' . base64_encode($qrCode);
-
-        // Load view khusus kartu
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('petugas.kartu-anggota', compact('user', 'qrCodeBase64'));
-
-        // Atur ukuran kertas custom (85mm x 54mm = ukuran kartu ATM)
-        // 85mm = 240.94 pt, 54mm = 153.07 pt
-        $pdf->setPaper([0, 0, 240.94, 153.07], 'landscape');
-
-        // Stream PDF (buka di tab baru)
-        $namaFile = 'kartu-anggota-' . ($user->nisn ?? $user->nip) . '.pdf';
-        return $pdf->stream($namaFile);
     }
 }

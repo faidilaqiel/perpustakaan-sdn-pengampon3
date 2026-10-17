@@ -7,7 +7,7 @@ use App\Models\Book;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\Loan;
-use App\Models\Kunjungan; // <-- TAMBAHAN: Panggil model Kunjungan
+use App\Models\Kunjungan; 
 use Carbon\Carbon;
 
 class ReportController extends Controller
@@ -63,11 +63,11 @@ class ReportController extends Controller
             ->orderBy('tanggal')
             ->get();
 
-        // Grafik Kunjungan (Buku Tamu)
-        $grafikKunjungan = Kunjungan::selectRaw('tanggal, count(*) as total')
-            ->where('tanggal', '>=', $tujuhHariLalu->toDateString())
-            ->groupBy('tanggal')
-            ->orderBy('tanggal')
+        // Grafik Kunjungan (Buku Tamu) -> SUDAH DIPERBAIKI AGAR AMAN DI MYSQL 8
+        $grafikKunjungan = Kunjungan::selectRaw('DATE(tanggal) as tgl, count(*) as total')
+            ->whereDate('tanggal', '>=', $tujuhHariLalu->toDateString())
+            ->groupBy('tgl')
+            ->orderBy('tgl')
             ->get();
 
         return view('kepsek.laporan', compact(
@@ -80,8 +80,8 @@ class ReportController extends Controller
             'totalDenda',
             'bukuDipinjam',
             'bukuTerpopuler',
-            'grafikPeminjaman', // <-- Tambahan untuk View
-            'grafikKunjungan'   // <-- Tambahan untuk View
+            'grafikPeminjaman', 
+            'grafikKunjungan'   
         ));
     }
 

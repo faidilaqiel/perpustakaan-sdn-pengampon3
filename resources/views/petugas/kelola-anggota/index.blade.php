@@ -192,23 +192,20 @@
                                     </td>
                                     <td class="px-4 py-3 text-sm">
                                         <div class="flex gap-1 flex-wrap">
-                                            {{-- TOMBOL BARU: CETAK KARTU --}}
-                                            <a href="{{ route('petugas.anggota.cetakKartu', $user->id) }}"
-                                               target="_blank"
-                                               class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs">
-                                                🖨️ Cetak
-                                            </a>
-                                            
-                                            {{-- Tombol Lama --}}
+                                            {{-- TOMBOL EDIT --}}
                                             <a href="{{ route('petugas.anggota.edit', $user->id) }}"
                                                class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs">
                                                 ✏️ Edit
                                             </a>
+                                            
+                                            {{-- TOMBOL QR --}}
                                             <a href="{{ route('petugas.scan.qrCode', $user->id) }}"
                                                target="_blank"
                                                class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">
                                                 📱 QR
                                             </a>
+
+                                            {{-- TOMBOL HAPUS --}}
                                             <form method="POST"
                                                   action="{{ route('petugas.anggota.destroy', $user->id) }}"
                                                   onsubmit="return confirm('Yakin hapus anggota {{ $user->name }}?')">

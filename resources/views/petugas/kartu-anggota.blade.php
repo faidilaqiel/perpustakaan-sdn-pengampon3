@@ -307,7 +307,6 @@
             text-align: right;
             line-height: 1.2;
         }
-
     </style>
 </head>
 <body>
@@ -325,7 +324,9 @@
             <table class="header-table">
                 <tr>
                     <td class="logo-kiri">
-                        <img src="{{ public_path('images/logo-tut-wuri.png') }}" alt="Tut Wuri Handayani">
+                        @if(file_exists(public_path('images/logo-tut-wuri.png')))
+                            <img src="{{ public_path('images/logo-tut-wuri.png') }}" alt="Tut Wuri Handayani">
+                        @endif
                     </td>
                     <td class="header-text">
                         <h1>KARTU ANGGOTA PERPUSTAKAAN</h1>
@@ -334,7 +335,9 @@
                         <div class="sub">Telp. (0231) 232048</div>
                     </td>
                     <td class="logo-kanan">
-                        <img src="{{ public_path('images/logo-sdn.png') }}" alt="Logo SDN">
+                        @if(file_exists(public_path('images/logo-sdn.png')))
+                            <img src="{{ public_path('images/logo-sdn.png') }}" alt="Logo SDN">
+                        @endif
                     </td>
                 </tr>
             </table>
@@ -347,7 +350,7 @@
         {{-- FOTO --}}
         <div class="foto-wrapper">
             <div class="foto-box">
-                @if($user->photo)
+                @if($user->photo && file_exists(public_path('photos/' . $user->photo)))
                     <img src="{{ public_path('photos/' . $user->photo) }}" alt="Foto">
                 @else
                     {{ strtoupper(substr($user->name, 0, 1)) }}
@@ -394,9 +397,12 @@
                         <img src="{{ public_path('images/stempel-sekolah.png') }}" alt="Stempel">
                     </div>
                 @endif
-                <div class="ttd-img">
-                    <img src="{{ public_path('images/ttd-kepsek.png') }}" alt="Tanda Tangan">
-                </div>
+                
+                @if(file_exists(public_path('images/ttd-kepsek.png')))
+                    <div class="ttd-img">
+                        <img src="{{ public_path('images/ttd-kepsek.png') }}" alt="Tanda Tangan">
+                    </div>
+                @endif
             </div>
             <div class="ttd-nama">H. NONI RISANTO, M.Pd.I</div>
             <div class="ttd-nip">NIP. 19750814 200801 1 008</div>

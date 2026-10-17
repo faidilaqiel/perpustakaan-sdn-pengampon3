@@ -7,7 +7,7 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ScanController;
-use App\Http\Controllers\KunjunganController; // <-- TAMBAHAN BARU
+use App\Http\Controllers\KunjunganController; 
 
 // ===== HALAMAN LOGIN =====
 Route::get('/', [AuthController::class, 'showLogin']);
@@ -20,7 +20,7 @@ Route::get('/siswa/katalog', [BookController::class, 'katalog'])->name('siswa.ka
 Route::get('/siswa/buku/{id}', [BookController::class, 'detail'])->name('siswa.detail');
 Route::post('/siswa/pinjam/{id}', [BookController::class, 'pinjam'])->name('siswa.pinjam');
 
-// Rute Log Kunjungan (Buku Tamu) -> <-- TAMBAHAN BARU
+// Rute Log Kunjungan (Buku Tamu)
 Route::post('/kunjungan/simpan', [KunjunganController::class, 'simpan'])->name('kunjungan.simpan');
 
 
@@ -55,6 +55,7 @@ Route::delete('/petugas/kelola-anggota/{id}', [UserController::class, 'destroy']
 // Scan QR
 Route::get('/petugas/scan', [ScanController::class, 'index'])->name('petugas.scan');
 Route::post('/petugas/scan', [ScanController::class, 'hasil'])->name('petugas.scan.hasil');
+// --> PERBAIKAN: Nama rute disamakan dengan file view (qrCode) <--
 Route::get('/petugas/scan/qr-code/{id}', [ScanController::class, 'qrCode'])->name('petugas.scan.qrCode');
 
 // ===== HALAMAN KEPSEK =====
