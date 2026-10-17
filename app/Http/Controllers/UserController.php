@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Loan;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\File;
 
 class UserController extends Controller
 {
@@ -18,19 +19,16 @@ class UserController extends Controller
 
         $query = User::query();
 
-        // Filter berdasarkan Role
         if ($filterRole && in_array($filterRole, ['siswa', 'guru'])) {
             $query->where('role', $filterRole);
         } else {
             $query->whereIn('role', ['siswa', 'guru']);
         }
 
-        // Filter berdasarkan Kelas (Hanya untuk siswa)
         if ($filterClass) {
             $query->where('class', $filterClass);
         }
 
-        // Filter berdasarkan Keyword Pencarian
         if ($keyword) {
             $query->where(function ($q) use ($keyword) {
                 $q->where('name', 'LIKE', '%' . $keyword . '%')
@@ -61,7 +59,6 @@ class UserController extends Controller
         ));
     }
 
-    // ===== TAMPILKAN FORM TAMBAH ANGGOTA =====
     public function create()
     {
         return view('petugas.kelola-anggota.form');
@@ -75,24 +72,30 @@ class UserController extends Controller
             'name' => 'required|max:100',
             'gender' => 'required|in:L,P',
             'class' => 'required_if:role,siswa|max:10|nullable',
-            'nisn' => 'required_if:role,siswa|unique:users,nisn|max:10|nullable',
-            'nip' => 'required_if:role,guru|unique:users,nip|max:30|nullable',
+            // Validasi NISN: Hanya angka, maksimal 10 digit
+            'nisn' => 'required_if:role,siswa|numeric|digits_between:5,10|unique:users,nisn|nullable',
+            // Validasi NIP: Hanya angka, maksimal 18 digit (sesuai standar NIP)
+            'nip' => 'required_if:role,guru|numeric|digits_between:5,18|unique:users,nip|nullable',
             'password' => 'required|min:6',
-            'photo' => 'nullable|image|max:2048',
+            // Validasi Foto: Hanya jpg, jpeg, png, maksimal 2MB
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ], [
             'role.required' => 'Role wajib dipilih.',
             'name.required' => 'Nama wajib diisi.',
             'gender.required' => 'Jenis kelamin wajib dipilih.',
             'class.required_if' => 'Kelas wajib diisi untuk siswa.',
             'nisn.required_if' => 'NISN wajib diisi untuk siswa.',
+            'nisn.numeric' => 'NISN harus berupa angka.',
+            'nisn.digits_between' => 'NISN harus 5-10 digit.',
             'nisn.unique' => 'NISN sudah terdaftar.',
-            'nisn.max' => 'NISN maksimal 10 digit.',
             'nip.required_if' => 'NIP wajib diisi untuk guru.',
+            'nip.numeric' => 'NIP harus berupa angka.',
+            'nip.digits_between' => 'NIP harus 5-18 digit.',
             'nip.unique' => 'NIP sudah terdaftar.',
-            'nip.max' => 'NIP maksimal 30 digit.',
             'password.required' => 'Password wajib diisi.',
             'password.min' => 'Password minimal 6 karakter.',
             'photo.image' => 'File harus berupa gambar.',
+            'photo.mimes' => 'Format foto harus JPG, JPEG, atau PNG.',
             'photo.max' => 'Ukuran foto maksimal 2MB.',
         ]);
 
@@ -118,7 +121,6 @@ class UserController extends Controller
                          ->with('success', '✅ Anggota baru berhasil ditambahkan!');
     }
 
-    // ===== TAMPILKAN FORM EDIT ANGGOTA =====
     public function edit($id)
     {
         $user = User::findOrFail($id);
@@ -131,7 +133,6 @@ class UserController extends Controller
         return view('petugas.kelola-anggota.form', compact('user'));
     }
 
-    // ===== SIMPAN PERUBAHAN ANGGOTA =====
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
@@ -141,14 +142,15 @@ class UserController extends Controller
             'name' => 'required|max:100',
             'gender' => 'required|in:L,P',
             'class' => 'required_if:role,siswa|max:10|nullable',
-            'nisn' => 'required_if:role,siswa|unique:users,nisn,' . $id . '|max:10|nullable',
-            'nip' => 'required_if:role,guru|unique:users,nip,' . $id . '|max:30|nullable',
+            'nisn' => 'required_if:role,siswa|numeric|digits_between:5,10|unique:users,nisn,' . $id . '|nullable',
+            'nip' => 'required_if:role,guru|numeric|digits_between:5,18|unique:users,nip,' . $id . '|nullable',
             'password' => 'nullable|min:6',
-            'photo' => 'nullable|image|max:2048',
+            'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
         $photoName = $user->photo;
         if ($request->hasFile('photo')) {
+            // Hapus foto lama jika ada
             if ($user->photo && file_exists(public_path('photos/' . $user->photo))) {
                 unlink(public_path('photos/' . $user->photo));
             }
@@ -176,7 +178,7 @@ class UserController extends Controller
                          ->with('success', '✅ Data anggota berhasil diperbarui!');
     }
 
-    // ===== HAPUS ANGGOTA =====
+    // ===== HAPUS ANGGOTA (ANTI BUG RELASI) =====
     public function destroy($id)
     {
         $user = User::findOrFail($id);
@@ -185,20 +187,27 @@ class UserController extends Controller
             return back()->with('error', 'Tidak bisa hapus petugas/kepsek dari sini.');
         }
 
+        // Cek apakah user masih punya pinjaman
         $peminjamanAktif = Loan::where('user_id', $user->id)
                                ->whereIn('status', ['dipinjam', 'menunggu'])
                                ->count();
+                               
         if ($peminjamanAktif > 0) {
             return back()->with('error', '❌ Tidak bisa hapus! Anggota masih punya peminjaman aktif.');
         }
 
+        // Hapus foto fisik jika ada
         if ($user->photo && file_exists(public_path('photos/' . $user->photo))) {
             unlink(public_path('photos/' . $user->photo));
         }
 
+        // HAPUS SEMUA RIWAYAT PINJAMAN (SELESAI/LUNAS) AGAR TIDAK JADI DATA YATIM
+        Loan::where('user_id', $user->id)->delete();
+
+        // Hapus user
         $user->delete();
 
         return redirect()->route('petugas.kelolaAnggota')
-                         ->with('success', '✅ Anggota berhasil dihapus!');
+                         ->with('success', '✅ Anggota dan riwayat pinjamannya berhasil dihapus!');
     }
 }

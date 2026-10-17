@@ -4,105 +4,64 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\Loan;
+use App\Models\Kunjungan;
+use Illuminate\Support\Facades\Auth;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use Carbon\Carbon;
 
 class ScanController extends Controller
 {
-    // ===== HALAMAN SCAN QR =====
+    // ===== HALAMAN UTAMA SCAN =====
     public function index()
     {
         return view('petugas.scan.index');
     }
 
-    // ===== PROSES SCAN / HASIL =====
+    // ===== PROSES HASIL SCAN =====
     public function hasil(Request $request)
     {
         $request->validate([
-            'kode' => 'required',
-        ], [
-            'kode.required' => 'Kode QR / NISN / NIP wajib diisi!',
+            'qr_code' => 'required'
         ]);
 
-        $kode = trim($request->kode);
-
-        // Cari user berdasarkan NISN atau NIP
-        $user = User::where('nisn', $kode)
-                    ->orWhere('nip', $kode)
+        // Cari user berdasarkan NISN atau NIP yang ada di dalam QR Code
+        $user = User::where('nisn', $request->qr_code)
+                    ->orWhere('nip', $request->qr_code)
                     ->first();
 
         if (!$user) {
-            return back()->with('error', '❌ Anggota dengan kode "' . $kode . '" tidak ditemukan!');
+            return back()->with('error', '❌ QR Code tidak dikenali! Anggota tidak ditemukan.');
         }
 
-        // Ambil peminjaman aktif
-        $peminjamanAktif = Loan::with('book')
-                               ->where('user_id', $user->id)
-                               ->whereIn('status', ['dipinjam', 'menunggu'])
-                               ->orderBy('created_at', 'desc')
-                               ->get();
+        // Catat kunjungan ke database
+        Kunjungan::create([
+            'user_id' => $user->id,
+            'tanggal' => Carbon::now()->toDateString(),
+            'jam_masuk' => Carbon::now()->toTimeString(),
+            'keterangan' => 'Datang ke Perpustakaan',
+        ]);
 
-        // Ambil riwayat (5 terakhir)
-        $riwayat = Loan::with('book')
-                       ->where('user_id', $user->id)
-                       ->where('status', 'dikembalikan')
-                       ->orderBy('return_date', 'desc')
-                       ->limit(5)
-                       ->get();
-
-        return view('petugas.scan.hasil', compact('user', 'peminjamanAktif', 'riwayat'));
+        return back()->with('success', '✅ Berhasil! Selamat datang, ' . $user->name);
     }
 
-    // ===== HASIL SCAN VIA URL (dari QR Code) =====
-    public function hasilGet(Request $request)
-    {
-        $kode = trim($request->input('kode'));
-
-        if (!$kode) {
-            return redirect()->route('petugas.scan')
-                             ->with('error', 'Kode tidak ditemukan di URL.');
-        }
-
-        // Cari user
-        $user = User::where('nisn', $kode)
-                    ->orWhere('nip', $kode)
-                    ->first();
-
-        if (!$user) {
-            return redirect()->route('petugas.scan')
-                             ->with('error', '❌ Anggota dengan kode "' . $kode . '" tidak ditemukan!');
-        }
-
-        // Ambil peminjaman aktif
-        $peminjamanAktif = Loan::with('book')
-                               ->where('user_id', $user->id)
-                               ->whereIn('status', ['dipinjam', 'menunggu'])
-                               ->orderBy('created_at', 'desc')
-                               ->get();
-
-        // Ambil riwayat
-        $riwayat = Loan::with('book')
-                       ->where('user_id', $user->id)
-                       ->where('status', 'dikembalikan')
-                       ->orderBy('return_date', 'desc')
-                       ->limit(5)
-                       ->get();
-
-        return view('petugas.scan.hasil', compact('user', 'peminjamanAktif', 'riwayat'));
-    }
-
-    // ===== TAMPILKAN HALAMAN QR CODE (GENERATE DI BROWSER) =====
+    // ===== TAMPILKAN QR CODE ANGGOTA =====
     public function qrCode($id)
     {
         $user = User::findOrFail($id);
-
-        if (!in_array($user->role, ['siswa', 'guru'])) {
-            return redirect()->route('petugas.kelolaAnggota')
-                             ->with('error', 'Hanya untuk siswa & guru.');
+        
+        // 🔥 PENGAMAN BUG: Cek jika NISN dan NIP kosong
+        $qrContent = $user->nisn ?? $user->nip;
+        if (empty($qrContent)) {
+            return back()->with('error', 'Gagal membuat QR Code: Siswa/Guru ini belum memiliki NISN atau NIP.');
         }
 
-        // Tentukan konten QR (NISN untuk siswa, NIP untuk guru)
-        $qrContent = $user->role === 'siswa' ? $user->nisn : $user->nip;
+        // Generate QR Code sebagai SVG
+        $qrCode = QrCode::format('svg')
+                    ->size(300)
+                    ->margin(1)
+                    ->errorCorrection('H')
+                    ->generate($qrContent);
 
-        return view('petugas.scan.qr-code', compact('user', 'qrContent'));
+        return view('petugas.scan.qr-code', compact('user', 'qrCode', 'qrContent'));
     }
 }
