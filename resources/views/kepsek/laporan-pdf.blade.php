@@ -131,7 +131,9 @@
 
     {{-- HEADER --}}
     <div class="header">
-        <img src="{{ public_path('images/logo-sdn.png') }}" alt="Logo">
+        @if(file_exists(public_path('images/logo-sdn.png')))
+            <img src="{{ public_path('images/logo-sdn.png') }}" alt="Logo">
+        @endif
         <h1>PERPUSTAKAAN DIGITAL</h1>
         <h2>SD NEGERI PENGAMPON 3</h2>
         <p>Kota Cirebon - Bersenergi</p>

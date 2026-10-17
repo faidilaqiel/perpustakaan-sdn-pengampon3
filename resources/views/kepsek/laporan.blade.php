@@ -173,12 +173,12 @@
                                     <td class="px-4 py-2 text-sm">
                                         <strong>{{ $loan->user->name }}</strong><br>
                                         <span class="text-xs text-gray-500">
-                                            {{ $loan->user->nisn ?? $loan->user->nik }}
+                                            {{ $loan->user->nisn ?? $loan->user->nip ?? '-' }}
                                         </span>
                                     </td>
                                     <td class="px-4 py-2 text-sm">
                                         <strong>{{ $loan->book->title }}</strong><br>
-                                        <span class="text-xs text-gray-500">{{ $loan->book->code }}</span>
+                                        <span class="text-xs text-gray-500">{{ $loan->book->code ?? '-' }}</span>
                                     </td>
                                     <td class="px-4 py-2 text-sm">{{ $loan->loan_date }}</td>
                                     <td class="px-4 py-2 text-sm">
@@ -233,12 +233,12 @@
             }
         });
 
-        // 2. Grafik Kunjungan (Batang)
+        // 2. Grafik Kunjungan (Batang) -> SUDAH DIPERBAIKI JADI 'tgl'
         const ctxKunjungan = document.getElementById('chartKunjungan').getContext('2d');
         new Chart(ctxKunjungan, {
             type: 'bar',
             data: {
-                labels: {!! json_encode($grafikKunjungan->pluck('tanggal')) !!},
+                labels: {!! json_encode($grafikKunjungan->pluck('tgl')) !!},
                 datasets: [{
                     label: 'Pengunjung',
                     data: {!! json_encode($grafikKunjungan->pluck('total')) !!},
