@@ -7,6 +7,7 @@ use App\Http\Controllers\LoanController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ScanController;
+use App\Http\Controllers\KunjunganController; // <-- TAMBAHAN BARU
 
 // ===== HALAMAN LOGIN =====
 Route::get('/', [AuthController::class, 'showLogin']);
@@ -18,6 +19,10 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::get('/siswa/katalog', [BookController::class, 'katalog'])->name('siswa.katalog');
 Route::get('/siswa/buku/{id}', [BookController::class, 'detail'])->name('siswa.detail');
 Route::post('/siswa/pinjam/{id}', [BookController::class, 'pinjam'])->name('siswa.pinjam');
+
+// Rute Log Kunjungan (Buku Tamu) -> <-- TAMBAHAN BARU
+Route::post('/kunjungan/simpan', [KunjunganController::class, 'simpan'])->name('kunjungan.simpan');
+
 
 // ===== HALAMAN PETUGAS =====
 Route::get('/petugas/dashboard', function () {

@@ -8,7 +8,7 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
 
-    {{-- ===== HEADER ===== --}}
+    {{-- HEADER --}}
     <header class="bg-green-600 text-white p-4 shadow-lg">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -21,22 +21,21 @@
                 </div>
             </div>
             <div class="text-right">
-                <p class="font-semibold">{{ Auth::user()->name }}</p>
-                <p class="text-sm">Role: {{ Auth::user()->role }}</p>
+                <p class="font-semibold">Administrator</p>
+                <p class="text-sm">Petugas Perpustakaan</p>
             </div>
         </div>
     </header>
 
-    {{-- ===== KONTEN ===== --}}
+    {{-- KONTEN --}}
     <div class="container mx-auto p-6 max-w-3xl">
 
-        {{-- Tombol Kembali --}}
         <a href="{{ route('petugas.kelolaAnggota') }}"
            class="inline-block mb-4 text-green-600 hover:text-green-800 font-semibold">
             ← Kembali ke Daftar Anggota
         </a>
 
-        {{-- Pesan Error Validasi --}}
+        {{-- Pesan Error --}}
         @if($errors->any())
             <div class="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">
                 <p class="font-bold mb-2">⚠️ Ada kesalahan:</p>
@@ -90,7 +89,7 @@
                     <input type="text" name="name"
                            value="{{ old('name', $user->name ?? '') }}"
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 @error('name') border-red-500 @enderror"
-                           placeholder="Contoh: Ahmad Fauzi"
+                           placeholder="Contoh: Ahmad Fauzi, S.Pd."
                            required>
                     @error('name')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -103,12 +102,12 @@
                         Jenis Kelamin <span class="text-red-500">*</span>
                     </label>
                     <div class="flex gap-4">
-                        <label class="flex items-center gap-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
                             <input type="radio" name="gender" value="L"
                                    {{ old('gender', $user->gender ?? '') == 'L' ? 'checked' : '' }} required>
                             <span>Laki-laki</span>
                         </label>
-                        <label class="flex items-center gap-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
                             <input type="radio" name="gender" value="P"
                                    {{ old('gender', $user->gender ?? '') == 'P' ? 'checked' : '' }} required>
                             <span>Perempuan</span>
@@ -160,7 +159,7 @@
                         <input type="text" name="nip"
                                value="{{ old('nip', $user->nip ?? '') }}"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 @error('nip') border-red-500 @enderror"
-                               placeholder="Contoh: 199001012015011002"
+                               placeholder="Contoh: 198501012010012001"
                                maxlength="30">
                         @error('nip')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
@@ -235,9 +234,34 @@
 
     </div>
 
-    {{-- ===== FOOTER ===== --}}
     <footer class="text-center text-sm text-gray-500 py-4">
         © Copyright <strong>SDN PENGAMPON 3</strong>. All Rights Reserved
     </footer>
 
-    {{-- ===== SCRIPT UNTUK
+    {{-- SCRIPT UNTUK TOGGLE FIELD --}}
+    <script>
+        function toggleFields() {
+            const role = document.getElementById('role').value;
+            const fieldSiswa = document.getElementById('field-siswa');
+            const fieldGuru = document.getElementById('field-guru');
+
+            if (role === 'siswa') {
+                fieldSiswa.classList.remove('hidden');
+                fieldGuru.classList.add('hidden');
+            } else if (role === 'guru') {
+                fieldSiswa.classList.add('hidden');
+                fieldGuru.classList.remove('hidden');
+            } else {
+                fieldSiswa.classList.add('hidden');
+                fieldGuru.classList.add('hidden');
+            }
+        }
+
+        // Jalankan saat halaman dimuat (untuk edit)
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleFields();
+        });
+    </script>
+
+</body>
+</html>

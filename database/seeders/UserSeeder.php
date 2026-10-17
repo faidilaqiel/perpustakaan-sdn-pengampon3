@@ -12,20 +12,22 @@ class UserSeeder extends Seeder
     {
         // ===== 1. ADMIN / PETUGAS =====
         User::create([
-            'nip' => '197703172009022003',
-            'name' => 'Sumirah, S.Pd.',
+            'nip' => 'admin',
+            'name' => 'Administrator',
             'gender' => 'P',
             'role' => 'petugas',
-            'password' => Hash::make('20222312'),
+            'password' => Hash::make('070623'),
+            'status' => 'aktif',
         ]);
 
         // ===== 2. KEPALA SEKOLAH =====
         User::create([
-            'nip' => '19750814 200801 1 008',
+            'nip' => '197508142008011008',
             'name' => 'H. NONI RISANTO, M.Pd.I',
             'gender' => 'L',
             'role' => 'kepsek',
-            'password' => Hash::make('19750814 200801 1 008'),
+            'password' => Hash::make('197508142008011008'),
+            'status' => 'aktif',
         ]);
 
         // ===== 3. SISWA CONTOH =====
@@ -36,6 +38,7 @@ class UserSeeder extends Seeder
             'class' => 'VI-A',
             'role' => 'siswa',
             'password' => Hash::make('0012345678'),
+            'status' => 'aktif',
         ]);
 
         // ===== 4. GURU CONTOH =====
@@ -45,6 +48,7 @@ class UserSeeder extends Seeder
             'gender' => 'P',
             'role' => 'guru',
             'password' => Hash::make('199001012015011002'),
+            'status' => 'aktif',
         ]);
     }
 }

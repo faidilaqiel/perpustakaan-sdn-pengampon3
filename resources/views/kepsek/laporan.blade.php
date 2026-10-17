@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Perpustakaan - SDN Pengampon 3</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- TAMBAHAN BARU: Library Chart.js untuk Grafik -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
@@ -96,6 +98,24 @@
             </div>
         </div>
 
+        {{-- ===== TAMBAHAN BARU: BAGIAN GRAFIK ===== --}}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            
+            <!-- Grafik Garis: Peminjaman -->
+            <div class="bg-white p-4 rounded-lg shadow-lg">
+                <h3 class="font-bold text-gray-700 mb-4">📈 Tren Peminjaman (7 Hari Terakhir)</h3>
+                <canvas id="chartPeminjaman"></canvas>
+            </div>
+
+            <!-- Grafik Batang: Kunjungan -->
+            <div class="bg-white p-4 rounded-lg shadow-lg">
+                <h3 class="font-bold text-gray-700 mb-4">📊 Tren Kunjungan Baca (7 Hari Terakhir)</h3>
+                <canvas id="chartKunjungan"></canvas>
+            </div>
+            
+        </div>
+        {{-- ===== AKHIR BAGIAN GRAFIK ===== --}}
+
         {{-- Buku Terpopuler --}}
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
             <h3 class="text-xl font-bold text-gray-800 mb-4">🏆 Buku Terpopuler</h3>
@@ -186,6 +206,54 @@
     <footer class="text-center text-sm text-gray-500 py-4">
         © Copyright <strong>SDN PENGAMPON 3</strong>. All Rights Reserved
     </footer>
+
+    {{-- ===== SCRIPT GRAFIK ===== --}}
+    <script>
+        // 1. Grafik Peminjaman (Garis)
+        const ctxPeminjaman = document.getElementById('chartPeminjaman').getContext('2d');
+        new Chart(ctxPeminjaman, {
+            type: 'line',
+            data: {
+                labels: {!! json_encode($grafikPeminjaman->pluck('tanggal')) !!},
+                datasets: [{
+                    label: 'Buku Dipinjam',
+                    data: {!! json_encode($grafikPeminjaman->pluck('total')) !!},
+                    borderColor: 'rgba(59, 130, 246, 1)', 
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+
+        // 2. Grafik Kunjungan (Batang)
+        const ctxKunjungan = document.getElementById('chartKunjungan').getContext('2d');
+        new Chart(ctxKunjungan, {
+            type: 'bar',
+            data: {
+                labels: {!! json_encode($grafikKunjungan->pluck('tanggal')) !!},
+                datasets: [{
+                    label: 'Pengunjung',
+                    data: {!! json_encode($grafikKunjungan->pluck('total')) !!},
+                    backgroundColor: 'rgba(16, 185, 129, 0.8)', 
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+    </script>
 
 </body>
 </html>

@@ -14,15 +14,23 @@ class UserController extends Controller
     {
         $keyword = $request->input('q');
         $filterRole = $request->input('role');
+        $filterClass = $request->input('class'); // <-- TAMBAHAN BARU UNTUK FILTER KELAS
 
         $query = User::query();
 
+        // Filter berdasarkan Role
         if ($filterRole && in_array($filterRole, ['siswa', 'guru'])) {
             $query->where('role', $filterRole);
         } else {
             $query->whereIn('role', ['siswa', 'guru']);
         }
 
+        // Filter berdasarkan Kelas (Hanya untuk siswa)
+        if ($filterClass) {
+            $query->where('class', $filterClass);
+        }
+
+        // Filter berdasarkan Keyword Pencarian
         if ($keyword) {
             $query->where(function ($q) use ($keyword) {
                 $q->where('name', 'LIKE', '%' . $keyword . '%')
@@ -34,14 +42,23 @@ class UserController extends Controller
 
         $users = $query->orderBy('role', 'asc')
                        ->orderBy('name', 'asc')
-                       ->paginate(10);
+                       ->paginate(10)
+                       ->withQueryString(); // Penting agar filter tidak hilang saat pindah halaman
+
+        // Ambil daftar kelas unik (tanpa duplikat) dari database untuk dropdown
+        $listKelas = User::where('role', 'siswa')
+                         ->whereNotNull('class')
+                         ->where('class', '!=', '')
+                         ->distinct()
+                         ->pluck('class')
+                         ->sort();
 
         $totalSiswa = User::where('role', 'siswa')->count();
         $totalGuru = User::where('role', 'guru')->count();
         $totalAnggota = $totalSiswa + $totalGuru;
 
         return view('petugas.kelola-anggota.index', compact(
-            'users', 'keyword', 'filterRole', 'totalSiswa', 'totalGuru', 'totalAnggota'
+            'users', 'keyword', 'filterRole', 'filterClass', 'listKelas', 'totalSiswa', 'totalGuru', 'totalAnggota'
         ));
     }
 

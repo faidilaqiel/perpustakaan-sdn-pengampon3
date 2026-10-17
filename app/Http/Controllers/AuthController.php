@@ -25,9 +25,8 @@ class AuthController extends Controller
             'password.required' => 'Password wajib diisi!',
         ]);
 
-        // Cari user berdasarkan NISN, NIP, atau NIK
+        // Cari user berdasarkan NISN atau NIP (tanpa NIK)
         $user = \App\Models\User::where('nisn', $request->username)
-                                ->orWhere('nip', $request->username)
                                 ->orWhere('nip', $request->username)
                                 ->first();
 

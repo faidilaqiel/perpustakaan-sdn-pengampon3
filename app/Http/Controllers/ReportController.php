@@ -7,6 +7,7 @@ use App\Models\Book;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\Loan;
+use App\Models\Kunjungan; // <-- TAMBAHAN: Panggil model Kunjungan
 use Carbon\Carbon;
 
 class ReportController extends Controller
@@ -52,6 +53,23 @@ class ReportController extends Controller
                               ->with('book')
                               ->get();
 
+        // ===== TAMBAHAN BARU: DATA GRAFIK 7 HARI TERAKHIR =====
+        $tujuhHariLalu = Carbon::now()->subDays(7);
+
+        // Grafik Peminjaman (Loan)
+        $grafikPeminjaman = Loan::selectRaw('DATE(created_at) as tanggal, count(*) as total')
+            ->where('created_at', '>=', $tujuhHariLalu)
+            ->groupBy('tanggal')
+            ->orderBy('tanggal')
+            ->get();
+
+        // Grafik Kunjungan (Buku Tamu)
+        $grafikKunjungan = Kunjungan::selectRaw('tanggal, count(*) as total')
+            ->where('tanggal', '>=', $tujuhHariLalu->toDateString())
+            ->groupBy('tanggal')
+            ->orderBy('tanggal')
+            ->get();
+
         return view('kepsek.laporan', compact(
             'periode',
             'totalBuku',
@@ -61,7 +79,9 @@ class ReportController extends Controller
             'totalPeminjaman',
             'totalDenda',
             'bukuDipinjam',
-            'bukuTerpopuler'
+            'bukuTerpopuler',
+            'grafikPeminjaman', // <-- Tambahan untuk View
+            'grafikKunjungan'   // <-- Tambahan untuk View
         ));
     }
 

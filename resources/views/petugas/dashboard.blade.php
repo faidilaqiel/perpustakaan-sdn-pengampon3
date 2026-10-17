@@ -19,8 +19,8 @@
                 </div>
             </div>
             <div class="text-right">
-                <p class="font-semibold">{{ Auth::user()->name }}</p>
-                <p class="text-sm">Role: {{ Auth::user()->role }}</p>
+                <p class="font-semibold">Administrator</p>
+                <p class="text-sm">Petugas Perpustakaan</p>
             </div>
         </div>
     </header>
@@ -31,8 +31,8 @@
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
             <h2 class="text-2xl font-bold text-gray-800 mb-4">🎉 Selamat Datang di Dashboard Petugas!</h2>
             <p class="text-gray-600 mb-6">
-                Halo, <strong>{{ Auth::user()->name }}</strong>! Anda berhasil login sebagai
-                <strong>{{ Auth::user()->role }}</strong>.
+                Halo, <strong>Administrator</strong>! Anda berhasil login sebagai
+                <strong>petugas</strong>.
             </p>
 
             {{-- Statistik --}}
