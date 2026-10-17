@@ -28,7 +28,7 @@ class AuthController extends Controller
         // Cari user berdasarkan NISN, NIP, atau NIK
         $user = \App\Models\User::where('nisn', $request->username)
                                 ->orWhere('nip', $request->username)
-                                ->orWhere('nik', $request->username)
+                                ->orWhere('nip', $request->username)
                                 ->first();
 
         if (!$user) {
