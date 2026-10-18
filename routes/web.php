@@ -8,12 +8,20 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\KunjunganController; 
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
 
 // ===== HALAMAN LOGIN =====
 Route::get('/', [AuthController::class, 'showLogin']);
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// ===== RUTE HAPUS NOTIFIKASI =====
+Route::post('/siswa/hapus-notifikasi', function () {
+    User::where('id', Auth::id())->update(['notifikasi' => null]);
+    return response()->json(['success' => true]);
+})->name('siswa.hapusNotif');
 
 // ===== HALAMAN SISWA & GURU =====
 Route::get('/siswa/katalog', [BookController::class, 'katalog'])->name('siswa.katalog');
@@ -55,7 +63,6 @@ Route::delete('/petugas/kelola-anggota/{id}', [UserController::class, 'destroy']
 // Scan QR
 Route::get('/petugas/scan', [ScanController::class, 'index'])->name('petugas.scan');
 Route::post('/petugas/scan', [ScanController::class, 'hasil'])->name('petugas.scan.hasil');
-// --> PERBAIKAN: Nama rute disamakan dengan file view (qrCode) <--
 Route::get('/petugas/scan/qr-code/{id}', [ScanController::class, 'qrCode'])->name('petugas.scan.qrCode');
 
 // ===== HALAMAN KEPSEK =====

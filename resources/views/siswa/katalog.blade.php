@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Katalog Buku - Perpustakaan Digital SDN Pengampon 3</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Library Notifikasi Pop-up -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-gray-100 min-h-screen">
 
@@ -42,6 +44,11 @@
                 {{ session('success') }}
             </div>
         @endif
+        @if(session('error'))
+            <div class="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">
+                {{ session('error') }}
+            </div>
+        @endif
 
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
             <h2 class="text-2xl font-bold text-gray-800 mb-2">📚 Katalog Buku</h2>
@@ -76,12 +83,10 @@
                                          alt="Cover {{ $book->title }}" 
                                          class="w-full h-full object-cover">
                                 @elseif($book->cover)
-                                    {{-- Jika cover berupa link URL dari internet --}}
                                     <img src="{{ $book->cover }}" 
                                          alt="Cover {{ $book->title }}" 
                                          class="w-full h-full object-cover">
                                 @else
-                                    {{-- Placeholder jika tidak ada gambar --}}
                                     <span class="text-6xl">📖</span>
                                 @endif
                             </div>
@@ -118,6 +123,35 @@
     <footer class="text-center text-sm text-gray-500 py-4">
         © Copyright <strong>SDN PENGAMPON 3</strong>. All Rights Reserved
     </footer>
+
+    {{-- ===== SCRIPT NOTIFIKASI POP-UP ===== --}}
+    <script>
+        @if(Auth::check() && Auth::user()->notifikasi)
+            @php
+                $notif = explode('|', Auth::user()->notifikasi);
+                $tipe = $notif[0]; 
+                $pesan = $notif[1] ?? '';
+            @endphp
+
+            Swal.fire({
+                icon: '{{ $tipe === "disetujui" ? "success" : "error" }}',
+                title: '{{ $tipe === "disetujui" ? "Peminjaman Disetujui!" : "Peminjaman Ditolak" }}',
+                text: "{{ $pesan }}",
+                confirmButtonText: 'Mengerti',
+                confirmButtonColor: '{{ $tipe === "disetujui" ? "#16a34a" : "#dc2626" }}'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch("{{ route('siswa.hapusNotif') }}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                }
+            });
+        @endif
+    </script>
 
 </body>
 </html>

@@ -15,11 +15,10 @@ class LoanController extends Controller
     {
         $loans = Loan::with(['user', 'book'])->orderBy('created_at', 'desc')->get();
         
-        // Hitung statistik
         $menunggu = Loan::where('status', 'menunggu')->count();
         $dipinjam = Loan::where('status', 'dipinjam')->count();
         $dikembalikan = Loan::where('status', 'dikembalikan')->count();
-        $jumlahPengajuan = $menunggu; // Badge notifikasi
+        $jumlahPengajuan = $menunggu;
 
         return view('petugas.sirkulasi', compact('loans', 'menunggu', 'dipinjam', 'dikembalikan', 'jumlahPengajuan'));
     }
@@ -29,12 +28,10 @@ class LoanController extends Controller
     {
         $book = Book::findOrFail($id);
 
-        // Cek stok
         if ($book->stock_available <= 0) {
             return back()->with('error', '❌ Stok buku habis!');
         }
 
-        // Cek apakah siswa ini sudah meminjam buku yang sama
         $cekPinjam = Loan::where('user_id', Auth::id())
                          ->where('book_id', $book->id)
                          ->whereIn('status', ['menunggu', 'dipinjam'])
@@ -44,12 +41,11 @@ class LoanController extends Controller
             return back()->with('error', '❌ Anda masih meminjam buku ini dan belum mengembalikannya.');
         }
 
-        // Simpan pengajuan pinjaman (Mengikuti tanggal server saat ini)
         Loan::create([
             'user_id' => Auth::id(),
             'book_id' => $book->id,
             'loan_date' => Carbon::now()->format('Y-m-d'), 
-            'due_date' => Carbon::now()->addDays(7)->format('Y-m-d'), // Tambah 7 hari
+            'due_date' => Carbon::now()->addDays(7)->format('Y-m-d'),
             'status' => 'menunggu',
         ]);
 
@@ -71,11 +67,16 @@ class LoanController extends Controller
         if ($book->stock_available > 0) {
             $book->decrement('stock_available');
             
-            // Set tanggal pinjam resmi dan jatuh tempo
             $loan->update([
                 'status' => 'dipinjam',
                 'loan_date' => Carbon::now()->format('Y-m-d'), 
                 'due_date' => Carbon::now()->addDays(7)->format('Y-m-d'),
+            ]);
+
+            // SIMPAN NOTIFIKASI UNTUK SISWA
+            $user = $loan->user;
+            $user->update([
+                'notifikasi' => 'disetujui|Buku "' . $book->title . '" berhasil disetujui. Silakan ambil di perpustakaan. Jatuh tempo: ' . Carbon::now()->addDays(7)->translatedFormat('d M Y')
             ]);
 
             return back()->with('success', '✅ Peminjaman disetujui! Stok buku berkurang 1.');
@@ -84,7 +85,7 @@ class LoanController extends Controller
         return back()->with('error', '❌ Gagal menyetujui, stok buku sudah habis.');
     }
 
-    // ===== PETUGAS MENOLAK PINJAMAN (FIX BUG DATABASE) =====
+    // ===== PETUGAS MENOLAK PINJAMAN =====
     public function tolak($id)
     {
         $loan = Loan::findOrFail($id);
@@ -93,8 +94,14 @@ class LoanController extends Controller
             return back()->with('error', 'Status pinjaman ini sudah diproses.');
         }
 
-        // Menggunakan 'batal' agar tidak error karena batasan ENUM/VARCHAR database
         $loan->update(['status' => 'batal']);
+
+        // SIMPAN NOTIFIKASI UNTUK SISWA
+        $user = $loan->user;
+        $book = $loan->book;
+        $user->update([
+            'notifikasi' => 'ditolak|Mohon maaf, pengajuan pinjam buku "' . $book->title . '" ditolak oleh petugas.'
+        ]);
 
         return back()->with('success', '✅ Pengajuan peminjaman telah ditolak.');
     }
@@ -110,19 +117,15 @@ class LoanController extends Controller
 
         $book = Book::findOrFail($loan->book_id);
 
-        // Hitung denda berdasarkan tanggal sistem (sekarang)
         $dueDate = Carbon::parse($loan->due_date);
         $hariIni = Carbon::now();
         
-        // Pastikan tidak ada denda negatif (jika dikembalikan lebih awal, denda = 0)
         $hariTerlambat = $hariIni->greaterThan($dueDate) ? $dueDate->diffInDays($hariIni) : 0;
         $tarifDenda = 1000; 
         $denda = $hariTerlambat * $tarifDenda;
 
-        // Kembalikan stok
         $book->increment('stock_available');
 
-        // Update status pinjaman
         $loan->update([
             'status' => 'dikembalikan',
             'return_date' => Carbon::now()->format('Y-m-d'),
