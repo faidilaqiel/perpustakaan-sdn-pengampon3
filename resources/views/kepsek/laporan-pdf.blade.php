@@ -4,139 +4,195 @@
     <meta charset="UTF-8">
     <title>Laporan Perpustakaan SDN Pengampon 3</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @page {
+            margin: 30px 40px;
+        }
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
             font-size: 12px;
             color: #333;
-            padding: 20px;
+            line-height: 1.5;
         }
+
+        /* HEADER KOP SURAT */
         .header {
             text-align: center;
-            border-bottom: 3px double #333;
-            padding-bottom: 10px;
+            border-bottom: 3px solid #15803d; /* Hijau Tua */
+            padding-bottom: 15px;
             margin-bottom: 20px;
+            position: relative;
         }
         .header img {
-            width: 70px;
-            height: 70px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 75px;
+            height: 75px;
             object-fit: contain;
         }
-        .header h1 { font-size: 18px; margin-top: 5px; }
-        .header h2 { font-size: 16px; margin-top: 3px; }
-        .header p { font-size: 11px; margin-top: 3px; color: #666; }
+        .header-text {
+            margin-left: 80px;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: bold;
+            color: #15803d;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .header h2 {
+            font-size: 15px;
+            font-weight: bold;
+            color: #333;
+            margin: 5px 0 2px 0;
+        }
+        .header p {
+            font-size: 11px;
+            color: #666;
+            margin: 0;
+        }
 
+        /* JUDUL LAPORAN */
         .title {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 25px;
         }
         .title h3 {
             font-size: 16px;
+            font-weight: bold;
             text-decoration: underline;
+            margin: 0 0 5px 0;
         }
         .title p {
             font-size: 11px;
             color: #666;
-            margin-top: 3px;
+            margin: 0;
         }
 
+        /* TABEL STATISTIK */
         .statistik {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        .statistik td {
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            width: 33.33%;
+            text-align: center;
+            background-color: #f9fafb;
+        }
+        .statistik .label {
+            font-size: 10px;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        .statistik .value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #15803d;
+        }
+
+        /* JUDUL SECTION */
+        .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            color: #15803d;
+            margin-top: 25px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #15803d;
+        }
+
+        /* TABEL DATA */
+        .data-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
-        .statistik td {
-            padding: 8px;
-            border: 1px solid #ddd;
-            width: 33.33%;
-        }
-        .statistik .label { font-weight: bold; font-size: 11px; color: #555; }
-        .statistik .value { font-size: 18px; font-weight: bold; color: #222; }
-
-        .section-title {
-            font-size: 14px;
-            font-weight: bold;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            padding: 5px 0;
-            border-bottom: 2px solid #333;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 15px;
-        }
-        .data-table th,
-        .data-table td {
-            border: 1px solid #999;
-            padding: 6px 8px;
-            font-size: 11px;
-            text-align: left;
-        }
         .data-table th {
-            background-color: #f0f0f0;
+            background-color: #15803d;
+            color: #ffffff;
             font-weight: bold;
+            font-size: 11px;
+            padding: 8px 10px;
+            text-align: left;
+            border: 1px solid #15803d;
+        }
+        .data-table td {
+            padding: 8px 10px;
+            font-size: 11px;
+            border: 1px solid #e5e7eb;
+            color: #333;
         }
         .data-table tr:nth-child(even) {
-            background-color: #fafafa;
+            background-color: #f9fafb;
         }
-
-        .empty {
+        .data-table .center {
             text-align: center;
-            color: #888;
+        }
+        .data-table .empty {
+            text-align: center;
+            padding: 20px;
             font-style: italic;
-            padding: 15px;
+            color: #9ca3af;
         }
 
-        .footer {
-            position: fixed;
-            bottom: 20px;
-            left: 0;
-            right: 0;
-            text-align: center;
-            font-size: 10px;
-            color: #666;
-            border-top: 1px solid #ddd;
-            padding-top: 5px;
-        }
-
-        /* ==== TANDA TANGAN ==== */
+        /* TANDA TANGAN */
         .ttd {
-            margin-top: 40px;
+            margin-top: 50px;
             width: 100%;
         }
         .ttd-container {
             float: right;
-            text-align: left;
+            text-align: center;
             width: 250px;
         }
         .ttd p {
-            margin-bottom: 3px;
+            margin-bottom: 5px;
+            font-size: 12px;
             line-height: 1.4;
         }
         .ttd .nama {
             margin-top: 60px;
             font-weight: bold;
             text-decoration: underline;
+            font-size: 13px;
         }
         .clearfix::after {
             content: "";
             display: table;
             clear: both;
         }
+
+        /* FOOTER */
+        .footer {
+            position: fixed;
+            bottom: -15px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 9px;
+            color: #9ca3af;
+        }
     </style>
 </head>
 <body>
 
-    {{-- HEADER --}}
+    {{-- KOP SURAT --}}
     <div class="header">
         @if(file_exists(public_path('images/logo-sdn.png')))
             <img src="{{ public_path('images/logo-sdn.png') }}" alt="Logo">
         @endif
-        <h1>PERPUSTAKAAN DIGITAL</h1>
-        <h2>SD NEGERI PENGAMPON 3</h2>
-        <p>Kota Cirebon - Bersenergi</p>
+        <div class="header-text">
+            <h1>Perpustakaan Digital</h1>
+            <h2>SD NEGERI PENGAMPON 3</h2>
+            <p>Jl. Pengampon No.33, Kota Cirebon - Telp. (0231) 232048</p>
+        </div>
     </div>
 
     {{-- JUDUL --}}
@@ -155,30 +211,30 @@
     <table class="statistik">
         <tr>
             <td>
-                <div class="label">Total Buku</div>
-                <div class="value">{{ $totalBuku }}</div>
+                <span class="label">Total Buku</span>
+                <span class="value">{{ $totalBuku }}</span>
             </td>
             <td>
-                <div class="label">Total Anggota</div>
-                <div class="value">{{ $totalAnggota }}</div>
+                <span class="label">Total Anggota</span>
+                <span class="value">{{ $totalAnggota }}</span>
             </td>
             <td>
-                <div class="label">Total Kategori</div>
-                <div class="value">{{ $totalKategori }}</div>
+                <span class="label">Total Kategori</span>
+                <span class="value">{{ $totalKategori }}</span>
             </td>
         </tr>
         <tr>
             <td>
-                <div class="label">Sedang Dipinjam</div>
-                <div class="value">{{ $sedangDipinjam }}</div>
+                <span class="label">Sedang Dipinjam</span>
+                <span class="value">{{ $sedangDipinjam }}</span>
             </td>
             <td>
-                <div class="label">Total Peminjaman</div>
-                <div class="value">{{ $totalPeminjaman }}</div>
+                <span class="label">Total Peminjaman</span>
+                <span class="value">{{ $totalPeminjaman }}</span>
             </td>
             <td>
-                <div class="label">Total Denda (Lunas)</div>
-                <div class="value">Rp {{ number_format($totalDenda, 0, ',', '.') }}</div>
+                <span class="label">Total Denda (Lunas)</span>
+                <span class="value" style="font-size: 16px;">Rp {{ number_format($totalDenda, 0, ',', '.') }}</span>
             </td>
         </tr>
     </table>
@@ -186,24 +242,26 @@
     {{-- BUKU TERPOPULER --}}
     <div class="section-title">BUKU TERPOPULER</div>
     @if($bukuTerpopuler->isEmpty())
-        <div class="empty">Belum ada data peminjaman.</div>
+        <table class="data-table">
+            <tr><td class="empty">Belum ada data peminjaman.</td></tr>
+        </table>
     @else
         <table class="data-table">
             <thead>
                 <tr>
-                    <th style="width: 30px;">No</th>
+                    <th class="center" style="width: 40px;">No</th>
                     <th>Judul Buku</th>
                     <th>Penulis</th>
-                    <th style="width: 100px; text-align: center;">Dipinjam</th>
+                    <th class="center" style="width: 120px;">Total Dipinjam</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($bukuTerpopuler as $index => $item)
                     <tr>
-                        <td style="text-align: center;">{{ $index + 1 }}</td>
+                        <td class="center">{{ $index + 1 }}</td>
                         <td>{{ $item->book->title ?? 'Buku tidak ditemukan' }}</td>
                         <td>{{ $item->book->author ?? '-' }}</td>
-                        <td style="text-align: center;">{{ $item->total }} kali</td>
+                        <td class="center"><strong>{{ $item->total }} kali</strong></td>
                     </tr>
                 @endforeach
             </tbody>
@@ -211,35 +269,42 @@
     @endif
 
     {{-- BUKU SEDANG DIPINJAM --}}
-    <div class="section-title">BUKU SEDANG DIPINJAM</div>
+    <div class="section-title">DAFTAR BUKU SEDANG DIPINJAM</div>
     @if($bukuDipinjam->isEmpty())
-        <div class="empty">Tidak ada buku yang sedang dipinjam.</div>
+        <table class="data-table">
+            <tr><td class="empty">Tidak ada buku yang sedang dipinjam.</td></tr>
+        </table>
     @else
         <table class="data-table">
             <thead>
                 <tr>
-                    <th style="width: 30px;">No</th>
-                    <th>Peminjam</th>
-                    <th>Buku</th>
-                    <th>Tgl Pinjam</th>
-                    <th>Jatuh Tempo</th>
+                    <th class="center" style="width: 40px;">No</th>
+                    <th>Nama Peminjam</th>
+                    <th>Judul Buku</th>
+                    <th class="center">Tgl Pinjam</th>
+                    <th class="center">Jatuh Tempo</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($bukuDipinjam as $index => $loan)
                     <tr>
-                        <td style="text-align: center;">{{ $index + 1 }}</td>
+                        <td class="center">{{ $index + 1 }}</td>
                         <td>{{ $loan->user->name }}</td>
                         <td>{{ $loan->book->title }}</td>
-                        <td>{{ $loan->loan_date }}</td>
-                        <td>{{ $loan->due_date }}</td>
+                        <td class="center">{{ \Carbon\Carbon::parse($loan->loan_date)->translatedFormat('d M Y') }}</td>
+                        <td class="center">
+                            {{ \Carbon\Carbon::parse($loan->due_date)->translatedFormat('d M Y') }}
+                            @if(\Carbon\Carbon::now()->greaterThan(\Carbon\Carbon::parse($loan->due_date)))
+                                <br><span style="color: red; font-size: 9px; font-weight: bold;">(Terlambat)</span>
+                            @endif
+                        </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     @endif
 
-    {{-- TANDA TANGAN (Rata kanan, semua sejajar) --}}
+    {{-- TANDA TANGAN --}}
     <div class="ttd clearfix">
         <div class="ttd-container">
             <p>Cirebon, {{ \Carbon\Carbon::now()->translatedFormat('d F Y') }}</p>
@@ -251,7 +316,7 @@
 
     {{-- FOOTER --}}
     <div class="footer">
-        © Copyright <strong>SDN PENGAMPON 3</strong>. All Rights Reserved
+        Dokumen ini dicetak otomatis oleh Sistem Perpustakaan Digital SDN Pengampon 3
     </div>
 
 </body>
