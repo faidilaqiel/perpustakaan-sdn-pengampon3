@@ -12,7 +12,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen flex overflow-hidden">
 
-    {{-- ================= SIDEBAR (LAPTOP) - WARNA HIJAU ================= --}}
+    {{-- ================= SIDEBAR (LAPTOP) ================= --}}
     <aside class="hidden md:flex flex-col w-64 bg-green-800 text-white h-screen fixed top-0 left-0 z-50 shadow-xl">
         <div class="h-20 flex items-center gap-3 px-6 bg-green-900 border-b border-green-700">
             <img src="{{ asset('images/logo-sdn.png') }}" alt="Logo" class="w-10 h-10 bg-white rounded-full p-1">
@@ -26,7 +26,7 @@
             <a href="{{ route('siswa.katalog') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('siswa.katalog') ? 'bg-green-600 font-semibold' : 'hover:bg-green-700 transition' }}">
                 <i class="fas fa-book-open w-5 text-center"></i> Katalog Buku
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-700 transition">
+            <a href="{{ route('siswa.riwayat') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('siswa.riwayat') ? 'bg-green-600 font-semibold' : 'hover:bg-green-700 transition' }}">
                 <i class="fas fa-history w-5 text-center"></i> Riwayat Pinjam
             </a>
         </nav>
@@ -70,13 +70,13 @@
             @yield('content')
         </main>
 
-        {{-- ================= BOTTOM NAV (HP) - WARNA HIJAU ================= --}}
+        {{-- ================= BOTTOM NAV (HP) ================= --}}
         <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             <a href="{{ route('siswa.katalog') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('siswa.katalog') ? 'text-green-600' : 'text-gray-400 hover:text-green-500' }}">
                 <i class="fas fa-book-open text-lg mb-1"></i>
                 <span class="text-[10px] font-medium">Katalog</span>
             </a>
-            <a href="#" class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-green-500">
+            <a href="{{ route('siswa.riwayat') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('siswa.riwayat') ? 'text-green-600' : 'text-gray-400 hover:text-green-500' }}">
                 <i class="fas fa-history text-lg mb-1"></i>
                 <span class="text-[10px] font-medium">Riwayat</span>
             </a>

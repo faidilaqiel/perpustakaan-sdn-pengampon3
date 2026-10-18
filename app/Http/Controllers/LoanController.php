@@ -29,7 +29,6 @@ class LoanController extends Controller
         $loans = Loan::with(['user', 'book'])->orderBy('created_at', 'desc')->get();
         $menunggu = Loan::where('status', 'menunggu')->count();
         
-        // Format data untuk dikirim ke JavaScript
         $data = $loans->map(function($loan) {
             return [
                 'id' => $loan->id,
@@ -48,6 +47,17 @@ class LoanController extends Controller
             'loans' => $data,
             'menunggu' => $menunggu,
         ]);
+    }
+
+    // ===== RIWAYAT PINJAM SISWA =====
+    public function riwayat()
+    {
+        $loans = Loan::with('book')
+                    ->where('user_id', Auth::id())
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+                    
+        return view('siswa.riwayat', compact('loans'));
     }
 
     // ===== PROSES SISWA MENGAJUKAN PINJAM =====

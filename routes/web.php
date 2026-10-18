@@ -17,7 +17,7 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// ===== RUTE NOTIFIKASI & AUTO-REFRESH SISWA =====
+// ===== RUTE NOTIFIKASI SISWA =====
 Route::get('/siswa/cek-notifikasi', function () {
     if (Auth::check()) {
         return response()->json(['notifikasi' => Auth::user()->notifikasi]);
@@ -32,9 +32,12 @@ Route::post('/siswa/hapus-notifikasi', function () {
 
 // ===== HALAMAN SISWA & GURU =====
 Route::get('/siswa/katalog', [BookController::class, 'katalog'])->name('siswa.katalog');
-Route::get('/siswa/api/katalog', [BookController::class, 'getLatestKatalog'])->name('siswa.api.katalog'); // API Katalog
+Route::get('/siswa/api/katalog', [BookController::class, 'getLatestKatalog'])->name('siswa.api.katalog'); 
 Route::get('/siswa/buku/{id}', [BookController::class, 'detail'])->name('siswa.detail');
 Route::post('/siswa/pinjam/{id}', [BookController::class, 'pinjam'])->name('siswa.pinjam');
+
+// Rute Riwayat Pinjam Siswa (BARU)
+Route::get('/siswa/riwayat', [LoanController::class, 'riwayat'])->name('siswa.riwayat');
 
 // Rute Log Kunjungan (Buku Tamu)
 Route::post('/kunjungan/simpan', [KunjunganController::class, 'simpan'])->name('kunjungan.simpan');
@@ -47,7 +50,7 @@ Route::get('/petugas/dashboard', function () {
 
 // Sirkulasi (Auto-Refresh)
 Route::get('/petugas/sirkulasi', [LoanController::class, 'index'])->name('petugas.sirkulasi');
-Route::get('/petugas/api/sirkulasi', [LoanController::class, 'getLatestData'])->name('petugas.api.sirkulasi'); // API Sirkulasi
+Route::get('/petugas/api/sirkulasi', [LoanController::class, 'getLatestData'])->name('petugas.api.sirkulasi'); 
 Route::post('/petugas/setujui/{id}', [LoanController::class, 'setujui'])->name('petugas.setujui');
 Route::post('/petugas/tolak/{id}', [LoanController::class, 'tolak'])->name('petugas.tolak');
 Route::post('/petugas/kembalikan/{id}', [LoanController::class, 'kembalikan'])->name('petugas.kembalikan');
