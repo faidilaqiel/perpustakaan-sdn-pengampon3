@@ -24,21 +24,7 @@ class BookController extends Controller
         }
 
         $books = $query->get();
-
-        // Cek apakah ada pinjaman yang berstatus 'batal' (ditolak)
-        $adaPenolakan = \App\Models\Loan::where('user_id', Auth::id())
-                            ->where('status', 'batal')
-                            ->latest()
-                            ->first();
-        
-        $pesanTolak = null;
-        if ($adaPenolakan) {
-            $pesanTolak = 'Mohon maaf, pengajuan pinjam buku "' . $adaPenolakan->book->title . '" ditolak oleh petugas.';
-            // Hapus data agar tidak muncul terus saat di-refresh
-            $adaPenolakan->delete(); 
-        }
-
-        return view('siswa.katalog', compact('books', 'keyword', 'pesanTolak'));
+        return view('siswa.katalog', compact('books', 'keyword'));
     }
 
     // ===== API AUTO-REFRESH KATALOG (AJAX) =====

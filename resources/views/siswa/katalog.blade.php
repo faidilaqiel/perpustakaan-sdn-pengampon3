@@ -68,19 +68,6 @@
         © Copyright <strong>SDN PENGAMPON 3</strong>. All Rights Reserved
     </footer>
 
-    {{-- ===== SCRIPT POP-UP PENOLAKAN SAAT HALAMAN DIBUKA ===== --}}
-    @if(isset($pesanTolak) && $pesanTolak)
-        <script>
-            Swal.fire({
-                icon: 'error',
-                title: 'Peminjaman Ditolak',
-                text: "{{ $pesanTolak }}",
-                confirmButtonText: 'Mengerti',
-                confirmButtonColor: '#dc2626'
-            });
-        </script>
-    @endif
-
     <script>
         // --- RENDER KATALOG ---
         function renderBooks(books) {
@@ -138,7 +125,7 @@
                 .catch(error => console.error('Error:', error));
         }
 
-        // --- NOTIFIKASI AJAX (DISETUJUI) ---
+        // --- NOTIFIKASI AJAX (DISETUJUI / DITOLAK) ---
         let lastNotif = "{{ Auth::user()->notifikasi ?? '' }}"; 
 
         function cekNotifikasiBaru() {
@@ -149,7 +136,9 @@
                         lastNotif = data.notifikasi; 
                         let notif = data.notifikasi.split('|');
                         let tipe = notif[0]; 
-                        let pesan = notif[1];
+                        
+                        // Hapus tanda kutip ganda (&quot;) agar teks rapi
+                        let pesan = notif[1].replace(/&quot;/g, '"');
 
                         Swal.fire({
                             icon: tipe === "disetujui" ? "success" : "error",
@@ -160,6 +149,7 @@
                             allowOutsideClick: false
                         }).then((result) => {
                             if (result.isConfirmed) {
+                                // Hapus notifikasi dari database SETELAH siswa klik "Mengerti"
                                 fetch("{{ route('siswa.hapusNotif') }}", {
                                     method: 'POST',
                                     headers: {
