@@ -58,9 +58,8 @@
             </form>
         </div>
 
-        {{-- Container tempat daftar buku dirender oleh JS --}}
         <div id="book-container" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {{-- Konten awal (opsional, akan langsung ditimpa JS) --}}
+            {{-- Diisi oleh JavaScript --}}
         </div>
 
     </div>
@@ -69,12 +68,24 @@
         © Copyright <strong>SDN PENGAMPON 3</strong>. All Rights Reserved
     </footer>
 
-    {{-- ===== SCRIPT AUTO-REFRESH KATALOG & NOTIFIKASI ===== --}}
+    {{-- ===== SCRIPT POP-UP PENOLAKAN SAAT HALAMAN DIBUKA ===== --}}
+    @if(isset($pesanTolak) && $pesanTolak)
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Peminjaman Ditolak',
+                text: "{{ $pesanTolak }}",
+                confirmButtonText: 'Mengerti',
+                confirmButtonColor: '#dc2626'
+            });
+        </script>
+    @endif
+
     <script>
-        // --- 1. FUNGSI RENDER KATALOG ---
+        // --- RENDER KATALOG ---
         function renderBooks(books) {
             const container = document.getElementById('book-container');
-            container.innerHTML = ''; // Kosongkan kontainer
+            container.innerHTML = ''; 
 
             if (books.length === 0) {
                 container.innerHTML = `<div class="col-span-full bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded">Tidak ada buku yang ditemukan.</div>`;
@@ -84,7 +95,6 @@
             books.forEach(book => {
                 let coverHtml = '';
                 if (book.cover) {
-                    // Cek apakah cover berupa link http atau nama file lokal
                     let src = book.cover.startsWith('http') ? book.cover : `/covers/${book.cover}`;
                     coverHtml = `<img src="${src}" class="w-full h-full object-cover">`;
                 } else {
@@ -117,7 +127,7 @@
             });
         }
 
-        // --- 2. FUNGSI AMBIL DATA KATALOG ---
+        // --- AMBIL DATA KATALOG ---
         function fetchKatalog() {
             const keyword = document.getElementById('search-input').value;
             fetch(`{{ route('siswa.api.katalog') }}?q=${encodeURIComponent(keyword)}`)
@@ -128,7 +138,7 @@
                 .catch(error => console.error('Error:', error));
         }
 
-        // --- 3. FUNGSI NOTIFIKASI ---
+        // --- NOTIFIKASI AJAX (DISETUJUI) ---
         let lastNotif = "{{ Auth::user()->notifikasi ?? '' }}"; 
 
         function cekNotifikasiBaru() {
@@ -166,20 +176,15 @@
                 .catch(error => console.error('Error cek notifikasi:', error));
         }
 
-        // --- 4. INISIALISASI & INTERVAL ---
-        // Jalankan saat halaman pertama dimuat
+        // --- INISIALISASI ---
         document.addEventListener('DOMContentLoaded', () => {
-            fetchKatalog(); // Muat katalog awal
-            cekNotifikasiBaru(); // Cek notif awal
+            fetchKatalog(); 
+            cekNotifikasiBaru(); 
         });
 
-        // Otomatis perbarui katalog setiap 5 detik
         setInterval(fetchKatalog, 5000); 
-        
-        // Otomatis cek notifikasi setiap 5 detik
         setInterval(cekNotifikasiBaru, 5000); 
 
-        // Handle submit form pencarian agar tidak reload halaman
         document.getElementById('search-form').addEventListener('submit', function(e) {
             e.preventDefault();
             fetchKatalog();
