@@ -10,7 +10,6 @@ use Carbon\Carbon;
 
 class LoanController extends Controller
 {
-    // ===== HALAMAN SIRKULASI PETUGAS =====
     public function index()
     {
         $loans = Loan::with(['user', 'book'])->orderBy('created_at', 'desc')->get();
@@ -23,7 +22,6 @@ class LoanController extends Controller
         return view('petugas.sirkulasi', compact('loans', 'menunggu', 'dipinjam', 'dikembalikan', 'jumlahPengajuan'));
     }
 
-    // ===== API UNTUK AUTO-REFRESH TABEL (AJAX) =====
     public function getLatestData()
     {
         $loans = Loan::with(['user', 'book'])->orderBy('created_at', 'desc')->get();
@@ -49,7 +47,6 @@ class LoanController extends Controller
         ]);
     }
 
-    // ===== RIWAYAT PINJAM SISWA =====
     public function riwayat()
     {
         $loans = Loan::with('book')
@@ -60,7 +57,6 @@ class LoanController extends Controller
         return view('siswa.riwayat', compact('loans'));
     }
 
-    // ===== PROSES SISWA MENGAJUKAN PINJAM =====
     public function pinjam($id)
     {
         $book = Book::findOrFail($id);
@@ -78,11 +74,12 @@ class LoanController extends Controller
             return back()->with('error', '❌ Anda masih meminjam buku ini dan belum mengembalikannya.');
         }
 
+        // Saat siswa mengajukan, tanggal & jatuh tempo hanya placeholder (akan diubah petugas)
         Loan::create([
             'user_id' => Auth::id(),
             'book_id' => $book->id,
             'loan_date' => Carbon::now()->format('Y-m-d'), 
-            'due_date' => Carbon::now()->addDays(7)->format('Y-m-d'),
+            'due_date' => Carbon::now()->addDays(7)->format('Y-m-d'), 
             'status' => 'menunggu',
         ]);
 
@@ -90,8 +87,8 @@ class LoanController extends Controller
                          ->with('success', '✅ Pengajuan pinjam berhasil! Silakan tunggu konfirmasi dari Petugas.');
     }
 
-    // ===== PETUGAS MENYETUJUI PINJAMAN =====
-    public function setujui($id)
+    // ===== PETUGAS MENYETUJUI PINJAMAN (INPUT MANUAL TANGGAL) =====
+    public function setujui(Request $request, $id)
     {
         $loan = Loan::findOrFail($id);
 
@@ -99,20 +96,31 @@ class LoanController extends Controller
             return back()->with('error', 'Status pinjaman ini sudah diproses.');
         }
 
+        // Validasi input tanggal manual dari Petugas
+        $request->validate([
+            'loan_date' => 'required|date',
+            'due_date' => 'required|date|after_or_equal:loan_date',
+        ], [
+            'loan_date.required' => 'Tanggal pinjam wajib diisi.',
+            'due_date.required' => 'Tanggal jatuh tempo wajib diisi.',
+            'due_date.after_or_equal' => 'Jatuh tempo tidak boleh sebelum tanggal pinjam.',
+        ]);
+
         $book = Book::findOrFail($loan->book_id);
 
         if ($book->stock_available > 0) {
             $book->decrement('stock_available');
             
+            // Update status dan tanggal sesuai inputan Petugas
             $loan->update([
                 'status' => 'dipinjam',
-                'loan_date' => Carbon::now()->format('Y-m-d'), 
-                'due_date' => Carbon::now()->addDays(7)->format('Y-m-d'),
+                'loan_date' => $request->loan_date, 
+                'due_date' => $request->due_date,
             ]);
 
             $user = $loan->user;
             $user->update([
-                'notifikasi' => 'disetujui|Buku "' . $book->title . '" berhasil disetujui. Silakan ambil di perpustakaan. Jatuh tempo: ' . Carbon::now()->addDays(7)->translatedFormat('d M Y')
+                'notifikasi' => 'disetujui|Buku "' . $book->title . '" berhasil disetujui. Silakan ambil di perpustakaan. Jatuh tempo: ' . Carbon::parse($request->due_date)->translatedFormat('d M Y')
             ]);
 
             return back()->with('success', '✅ Peminjaman disetujui! Stok buku berkurang 1.');
@@ -121,7 +129,6 @@ class LoanController extends Controller
         return back()->with('error', '❌ Gagal menyetujui, stok buku sudah habis.');
     }
 
-    // ===== PETUGAS MENOLAK PINJAMAN =====
     public function tolak($id)
     {
         $loan = Loan::findOrFail($id);
@@ -141,7 +148,6 @@ class LoanController extends Controller
         return back()->with('success', '✅ Pengajuan peminjaman telah ditolak.');
     }
 
-    // ===== PETUGAS MENGEMBALIKAN BUKU =====
     public function kembalikan($id)
     {
         $loan = Loan::findOrFail($id);

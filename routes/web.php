@@ -36,7 +36,7 @@ Route::get('/siswa/api/katalog', [BookController::class, 'getLatestKatalog'])->n
 Route::get('/siswa/buku/{id}', [BookController::class, 'detail'])->name('siswa.detail');
 Route::post('/siswa/pinjam/{id}', [BookController::class, 'pinjam'])->name('siswa.pinjam');
 
-// Rute Riwayat Pinjam Siswa (BARU)
+// Rute Riwayat Pinjam Siswa
 Route::get('/siswa/riwayat', [LoanController::class, 'riwayat'])->name('siswa.riwayat');
 
 // Rute Log Kunjungan (Buku Tamu)

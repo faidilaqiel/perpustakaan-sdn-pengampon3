@@ -71,7 +71,7 @@
         </div>
     </div>
 
-    {{-- Script Auto-Refresh --}}
+    {{-- Script Auto-Refresh & Form Input Tanggal --}}
     <script>
         function renderTable(data) {
             const tbodyDesktop = document.getElementById('table-body-desktop');
@@ -93,17 +93,25 @@
 
                 let aksi = '';
                 if (loan.status === 'menunggu') {
+                    // FORM INPUT TANGGAL MANUAL
                     aksi = `
-                        <div class="flex flex-col md:flex-row gap-1 md:gap-2 w-full justify-center">
-                            <form method="POST" action="/petugas/setujui/${loan.id}" class="w-full md:w-auto">
-                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white px-2 py-1.5 rounded text-xs font-semibold shadow">Setujui</button>
-                            </form>
-                            <form method="POST" action="/petugas/tolak/${loan.id}" class="w-full md:w-auto">
-                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="w-full bg-red-500 hover:bg-red-600 text-white px-2 py-1.5 rounded text-xs font-semibold shadow">Tolak</button>
-                            </form>
-                        </div>`;
+                        <form method="POST" action="/petugas/setujui/${loan.id}" class="flex flex-col gap-1 w-48">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            <div class="flex gap-1">
+                                <div class="flex-1">
+                                    <label class="text-[9px] text-gray-500 block">Tgl Pinjam</label>
+                                    <input type="date" name="loan_date" required value="{{ date('Y-m-d') }}" class="w-full text-xs p-1 border rounded">
+                                </div>
+                                <div class="flex-1">
+                                    <label class="text-[9px] text-gray-500 block">Jatuh Tempo</label>
+                                    <input type="date" name="due_date" required value="{{ date('Y-m-d', strtotime('+7 days')) }}" class="w-full text-xs p-1 border rounded">
+                                </div>
+                            </div>
+                            <div class="flex gap-1 mt-1">
+                                <button type="submit" class="flex-1 bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs font-semibold shadow">Setujui</button>
+                                <button type="button" onclick="tolakPinjam(${loan.id})" class="flex-1 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs font-semibold shadow">Tolak</button>
+                            </div>
+                        </form>`;
                 } else if (loan.status === 'dipinjam') {
                     aksi = `
                         <form method="POST" action="/petugas/kembalikan/${loan.id}" class="w-full md:w-auto text-center">
@@ -155,6 +163,18 @@
             });
         }
 
+        // Fungsi Tolak menggunakan Form sementara agar aman dari CSRF
+        function tolakPinjam(id) {
+            if(confirm('Yakin ingin menolak pinjaman ini?')) {
+                let form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/petugas/tolak/' + id;
+                form.innerHTML = `@csrf`;
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+
         function fetchLatestData() {
             fetch("{{ route('petugas.api.sirkulasi') }}")
                 .then(res => res.json())
@@ -173,7 +193,19 @@
                 .catch(err => console.error(err));
         }
 
-        setInterval(fetchLatestData, 3000);
+        // Matikan auto-refresh sementara jika Petugas sedang mengisi form tanggal
+        let isTyping = false;
+        document.addEventListener('focusin', function(e) {
+            if (e.target.tagName === 'INPUT') isTyping = true;
+        });
+        document.addEventListener('focusout', function(e) {
+            if (e.target.tagName === 'INPUT') isTyping = false;
+        });
+
+        setInterval(() => {
+            if (!isTyping) fetchLatestData();
+        }, 3000);
+        
         document.addEventListener('DOMContentLoaded', fetchLatestData);
     </script>
 @endsection
