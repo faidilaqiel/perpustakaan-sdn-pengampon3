@@ -1,137 +1,116 @@
 @extends('layouts.app')
 
-@section('title', 'Kelola Buku - Perpustakaan Digital')
+@section('title', isset($book) ? 'Edit Buku' : 'Tambah Buku Baru')
 
 @section('content')
-    {{-- Header Halaman --}}
-    <div class="bg-white rounded-xl shadow-sm p-5 mb-6 border border-gray-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-            <h2 class="text-xl font-bold text-gray-800">Kelola Buku</h2>
-            <p class="text-sm text-gray-500 mt-1">Total {{ $books->count() }} buku di perpustakaan.</p>
-        </div>
-        <a href="{{ route('petugas.buku.create') }}" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-md transition">
-            <i class="fas fa-plus"></i> Tambah Buku Baru
-        </a>
-    </div>
-
-    {{-- Notifikasi --}}
-    @if(session('success'))
-        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm text-sm">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    {{-- Konten Tabel --}}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        
-        {{-- Form Pencarian --}}
-        <div class="p-4 border-b border-gray-100 bg-gray-50">
-            <form method="GET" action="{{ route('petugas.kelolaBuku') }}" class="flex gap-2">
-                <input type="text" name="q" value="{{ request('q') }}" 
-                       class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
-                       placeholder="Cari judul, penulis, atau kode buku...">
-                <button type="submit" class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-semibold">
-                    Cari
-                </button>
-            </form>
+    <div class="max-w-4xl mx-auto">
+        {{-- Header Halaman --}}
+        <div class="bg-white rounded-xl shadow-sm p-5 mb-6 border border-gray-100 flex items-center gap-3">
+            <a href="{{ route('petugas.kelolaBuku') }}" class="w-10 h-10 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center hover:bg-gray-200 transition">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="text-xl font-bold text-gray-800">{{ isset($book) ? 'Edit Data Buku' : 'Tambah Buku Baru' }}</h2>
+                <p class="text-sm text-gray-500">Lengkapi formulir di bawah ini dengan benar.</p>
+            </div>
         </div>
 
-        {{-- Tabel Desktop --}}
-        <div class="hidden md:block overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-gray-50 text-gray-600 text-sm border-b border-gray-200">
-                        <th class="p-4 font-semibold">No</th>
-                        <th class="p-4 font-semibold">Cover</th>
-                        <th class="p-4 font-semibold">Kode</th>
-                        <th class="p-4 font-semibold">Judul & Penulis</th>
-                        <th class="p-4 font-semibold">Kategori</th>
-                        <th class="p-4 font-semibold">Stok</th>
-                        <th class="p-4 font-semibold text-center">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($books as $index => $book)
-                        <tr class="border-b border-gray-100 hover:bg-gray-50 transition text-sm">
-                            <td class="p-4 text-gray-500">{{ $index + 1 }}</td>
-                            <td class="p-4">
-                                @if($book->cover)
-                                    <img src="{{ asset('covers/' . $book->cover) }}" alt="Cover" class="w-12 h-16 object-cover rounded shadow-sm">
-                                @else
-                                    <div class="w-12 h-16 bg-gray-200 rounded flex items-center justify-center text-gray-400">
-                                        <i class="fas fa-book"></i>
-                                    </div>
-                                @endif
-                            </td>
-                            <td class="p-4 font-mono text-gray-600">{{ $book->code }}</td>
-                            <td class="p-4">
-                                <strong class="text-gray-800 block">{{ $book->title }}</strong>
-                                <span class="text-xs text-gray-500">{{ $book->author }} ({{ $book->year }})</span>
-                            </td>
-                            <td class="p-4">
-                                <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
-                                    {{ $book->category->name ?? '-' }}
-                                </span>
-                            </td>
-                            <td class="p-4">
-                                @if($book->stock_available > 0)
-                                    <span class="text-green-600 font-bold">✅ {{ $book->stock_available }} / {{ $book->stock_total }}</span>
-                                @else
-                                    <span class="text-red-600 font-bold">❌ Habis / {{ $book->stock_total }}</span>
-                                @endif
-                            </td>
-                            <td class="p-4">
-                                <div class="flex justify-center gap-2">
-                                    <a href="{{ route('petugas.buku.edit', $book->id) }}" class="w-8 h-8 bg-yellow-100 text-yellow-600 rounded flex items-center justify-center hover:bg-yellow-200 transition" title="Edit">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form method="POST" action="{{ route('petugas.buku.destroy', $book->id) }}" onsubmit="return confirm('Hapus buku ini?')">
-                                        @csrf @method('DELETE')
-                                        <button type="submit" class="w-8 h-8 bg-red-100 text-red-600 rounded flex items-center justify-center hover:bg-red-200 transition" title="Hapus">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="p-8 text-center text-gray-500">Belum ada data buku.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+        {{-- Notifikasi Error Validasi --}}
+        @if ($errors->any())
+            <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm text-sm">
+                <ul class="list-disc list-inside">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
 
-        {{-- Tampilan HP (Kartu) --}}
-        <div class="block md:hidden p-4 space-y-4">
-            @forelse($books as $book)
-                <div class="border border-gray-200 rounded-lg p-3 shadow-sm flex gap-3">
-                    @if($book->cover)
-                        <img src="{{ asset('covers/' . $book->cover) }}" class="w-20 h-28 object-cover rounded">
-                    @else
-                        <div class="w-20 h-28 bg-gray-100 rounded flex items-center justify-center text-gray-400"><i class="fas fa-book text-2xl"></i></div>
-                    @endif
-                    <div class="flex-1">
-                        <span class="text-xs font-mono text-gray-500">{{ $book->code }}</span>
-                        <h4 class="font-bold text-gray-800 leading-tight">{{ $book->title }}</h4>
-                        <p class="text-xs text-gray-500 mt-1">{{ $book->author }}</p>
-                        <div class="mt-2 flex flex-wrap gap-1">
-                            <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-[10px]">{{ $book->category->name ?? '-' }}</span>
-                            <span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px]">Stok: {{ $book->stock_available }}</span>
-                        </div>
-                        <div class="mt-3 flex gap-2">
-                            <a href="{{ route('petugas.buku.edit', $book->id) }}" class="flex-1 bg-yellow-500 text-white text-center py-1.5 rounded text-xs font-semibold">Edit</a>
-                            <form method="POST" action="{{ route('petugas.buku.destroy', $book->id) }}" onsubmit="return confirm('Hapus?')" class="flex-1">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="w-full bg-red-500 text-white py-1.5 rounded text-xs font-semibold">Hapus</button>
-                            </form>
-                        </div>
+        <form method="POST" action="{{ isset($book) ? route('petugas.buku.update', $book->id) : route('petugas.buku.store') }}" enctype="multipart/form-data" class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
+            @csrf
+            @if(isset($book))
+                @method('PUT')
+            @endif
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {{-- Kolom Kiri --}}
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Kode Buku <span class="text-red-500">*</span></label>
+                        <input type="text" name="code" value="{{ old('code', $book->code ?? '') }}" required
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none font-mono uppercase">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Judul Buku <span class="text-red-500">*</span></label>
+                        <input type="text" name="title" value="{{ old('title', $book->title ?? '') }}" required
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Penulis <span class="text-red-500">*</span></label>
+                        <input type="text" name="author" value="{{ old('author', $book->author ?? '') }}" required
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Penerbit</label>
+                        <input type="text" name="publisher" value="{{ old('publisher', $book->publisher ?? '') }}"
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
                     </div>
                 </div>
-            @empty
-                <div class="text-center text-gray-500 py-6">Belum ada data buku.</div>
-            @endforelse
-        </div>
+
+                {{-- Kolom Kanan --}}
+                <div class="space-y-5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Tahun Terbit</label>
+                            <input type="number" name="year" value="{{ old('year', $book->year ?? date('Y')) }}"
+                                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-2">Stok Total <span class="text-red-500">*</span></label>
+                            <input type="number" name="stock_total" value="{{ old('stock_total', $book->stock_total ?? 1) }}" required min="0"
+                                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Kategori <span class="text-red-500">*</span></label>
+                        <select name="category_id" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none bg-white">
+                            <option value="">-- Pilih Kategori --</option>
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}" {{ old('category_id', $book->category_id ?? '') == $cat->id ? 'selected' : '' }}>
+                                    {{ $cat->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">Cover Buku (Opsional)</label>
+                        @if(isset($book) && $book->cover && file_exists(public_path('covers/' . $book->cover)))
+                            <div class="mb-2">
+                                <img src="{{ asset('covers/' . $book->cover) }}" alt="Cover Lama" class="h-20 rounded shadow-sm">
+                                <p class="text-xs text-gray-500 mt-1">Biarkan kosong jika tidak ingin mengubah cover.</p>
+                            </div>
+                        @endif
+                        <input type="file" name="cover" accept="image/*"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none text-sm file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
+                        <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, JPEG. Maks: 2MB.</p>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Tombol Aksi --}}
+            <div class="mt-8 pt-6 border-t border-gray-100 flex justify-end gap-3">
+                <a href="{{ route('petugas.kelolaBuku') }}" class="px-6 py-2.5 bg-gray-100 text-gray-600 rounded-lg font-semibold hover:bg-gray-200 transition">
+                    Batal
+                </a>
+                <button type="submit" class="px-6 py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition shadow-md flex items-center gap-2">
+                    <i class="fas fa-save"></i> Simpan Data
+                </button>
+            </div>
+        </form>
     </div>
 @endsection

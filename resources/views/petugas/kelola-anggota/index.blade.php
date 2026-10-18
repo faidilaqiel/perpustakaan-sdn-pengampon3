@@ -14,6 +14,18 @@
         </a>
     </div>
 
+    {{-- Notifikasi Sukses/Error --}}
+    @if(session('success'))
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded shadow-sm text-sm">
+            {{ session('success') }}
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm text-sm">
+            {{ session('error') }}
+        </div>
+    @endif
+
     {{-- Statistik --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl shadow-sm">

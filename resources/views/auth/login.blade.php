@@ -11,7 +11,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
     
-    {{-- Background Dekorasi --}}
+    {{-- Background Dekorasi Hijau --}}
     <div class="absolute top-0 left-0 w-full h-64 bg-green-600 rounded-b-[40px] shadow-lg z-0"></div>
 
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8 z-10 border border-gray-100 relative mt-20">
