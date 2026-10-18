@@ -25,7 +25,7 @@ class AuthController extends Controller
             'password.required' => 'Password wajib diisi!',
         ]);
 
-        // Cari user berdasarkan NISN atau NIP (tanpa NIK)
+        // Cari user berdasarkan NISN atau NIP
         $user = \App\Models\User::where('nisn', $request->username)
                                 ->orWhere('nip', $request->username)
                                 ->first();
@@ -42,7 +42,7 @@ class AuthController extends Controller
             return back()->with('error', 'Password salah!');
         }
 
-        // Login (dengan remember me)
+        // Login
         Auth::login($user, $request->has('remember'));
         $request->session()->regenerate();
 
@@ -50,7 +50,7 @@ class AuthController extends Controller
         return match ($user->role) {
             'siswa', 'guru' => redirect()->route('siswa.katalog'),
             'petugas' => redirect()->route('petugas.dashboard'),
-            'kepsek' => redirect()->route('kepsek.laporan'),
+            'kepsek' => redirect()->route('kepsek.laporan'), // Diarahkan ke Laporan
             default => redirect('/'),
         };
     }
