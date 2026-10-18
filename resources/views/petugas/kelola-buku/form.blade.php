@@ -1,236 +1,116 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ isset($book) ? 'Edit Buku' : 'Tambah Buku' }} - Perpustakaan Digital SDN Pengampon 3</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100 min-h-screen">
+@extends('layouts.app')
 
-    {{-- ===== HEADER ===== --}}
-    <header class="bg-green-600 text-white p-4 shadow-lg">
-        <div class="container mx-auto flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <img src="{{ asset('images/logo-sdn.png') }}"
-                     alt="Logo SDN Pengampon 3"
-                     class="w-12 h-12 object-contain bg-white rounded-full p-1">
-                <div>
-                    <h1 class="text-xl font-bold">Perpustakaan Digital</h1>
-                    <p class="text-sm">SDN Pengampon 3</p>
-                </div>
-            </div>
-            <div class="text-right">
-                <p class="font-semibold">{{ Auth::user()->name }}</p>
-                <p class="text-sm">Role: {{ Auth::user()->role }}</p>
+@section('title', isset($book) ? 'Edit Buku' : 'Tambah Buku Baru')
+
+@section('content')
+    <div class="max-w-4xl mx-auto">
+        {{-- Header Halaman --}}
+        <div class="bg-white rounded-xl shadow-sm p-4 md:p-5 mb-6 border border-gray-100 flex items-center gap-3">
+            <a href="{{ route('petugas.kelolaBuku') }}" class="w-10 h-10 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center hover:bg-gray-200 transition shrink-0">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h2 class="text-lg md:text-xl font-bold text-gray-800">{{ isset($book) ? 'Edit Data Buku' : 'Tambah Buku Baru' }}</h2>
+                <p class="text-xs md:text-sm text-gray-500">Lengkapi formulir di bawah ini dengan benar.</p>
             </div>
         </div>
-    </header>
 
-    {{-- ===== KONTEN ===== --}}
-    <div class="container mx-auto p-6 max-w-3xl">
-
-        {{-- Tombol Kembali --}}
-        <a href="{{ route('petugas.kelolaBuku') }}"
-           class="inline-block mb-4 text-green-600 hover:text-green-800 font-semibold">
-            ← Kembali ke Daftar Buku
-        </a>
-
-        {{-- Pesan Error Validasi --}}
-        @if($errors->any())
-            <div class="bg-red-100 border border-red-400 text-red-800 px-4 py-3 rounded mb-4">
-                <p class="font-bold mb-2">⚠️ Ada kesalahan:</p>
-                <ul class="list-disc list-inside text-sm">
-                    @foreach($errors->all() as $error)
+        {{-- Notifikasi Error Validasi --}}
+        @if ($errors->any())
+            <div class="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded shadow-sm text-sm">
+                <ul class="list-disc list-inside">
+                    @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
             </div>
         @endif
 
-        {{-- Form --}}
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-1">
-                {{ isset($book) ? '✏️ Edit Buku' : '➕ Tambah Buku Baru' }}
-            </h2>
-            <p class="text-gray-600 mb-6">
-                {{ isset($book) ? 'Perbarui data buku di bawah ini.' : 'Isi data buku baru dengan lengkap.' }}
-            </p>
+        <form method="POST" action="{{ isset($book) ? route('petugas.buku.update', $book->id) : route('petugas.buku.store') }}" enctype="multipart/form-data" class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 md:p-8">
+            @csrf
+            @if(isset($book))
+                @method('PUT')
+            @endif
 
-            <form method="POST"
-                  action="{{ isset($book) ? route('petugas.buku.update', $book->id) : route('petugas.buku.store') }}"
-                  enctype="multipart/form-data">
-                @csrf
-                @if(isset($book))
-                    @method('PUT')
-                @endif
-
-                {{-- Kode Buku --}}
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-semibold mb-2">
-                        Kode Buku <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="code"
-                           value="{{ old('code', $book->code ?? '') }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 @error('code') border-red-500 @enderror"
-                           placeholder="Contoh: BK-006"
-                           required>
-                    @error('code')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Judul --}}
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-semibold mb-2">
-                        Judul Buku <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" name="title"
-                           value="{{ old('title', $book->title ?? '') }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 @error('title') border-red-500 @enderror"
-                           placeholder="Contoh: Laskar Pelangi"
-                           required>
-                    @error('title')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Penulis & Penerbit (2 kolom) --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                {{-- Kolom Kiri --}}
+                <div class="space-y-4 md:space-y-5">
                     <div>
-                        <label class="block text-gray-700 font-semibold mb-2">
-                            Penulis <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="author"
-                               value="{{ old('author', $book->author ?? '') }}"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 @error('author') border-red-500 @enderror"
-                               placeholder="Contoh: Andrea Hirata"
-                               required>
-                        @error('author')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                        <label class="block text-sm font-bold text-gray-700 mb-1 md:mb-2">Kode Buku <span class="text-red-500">*</span></label>
+                        <input type="text" name="code" value="{{ old('code', $book->code ?? '') }}" required
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none font-mono uppercase text-sm">
                     </div>
+
                     <div>
-                        <label class="block text-gray-700 font-semibold mb-2">
-                            Penerbit <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" name="publisher"
-                               value="{{ old('publisher', $book->publisher ?? '') }}"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 @error('publisher') border-red-500 @enderror"
-                               placeholder="Contoh: Bentang Pustaka"
-                               required>
-                        @error('publisher')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                        <label class="block text-sm font-bold text-gray-700 mb-1 md:mb-2">Judul Buku <span class="text-red-500">*</span></label>
+                        <input type="text" name="title" value="{{ old('title', $book->title ?? '') }}" required
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1 md:mb-2">Penulis <span class="text-red-500">*</span></label>
+                        <input type="text" name="author" value="{{ old('author', $book->author ?? '') }}" required
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1 md:mb-2">Penerbit</label>
+                        <input type="text" name="publisher" value="{{ old('publisher', $book->publisher ?? '') }}"
+                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
                     </div>
                 </div>
 
-                {{-- Tahun & Kategori (2 kolom) --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-gray-700 font-semibold mb-2">
-                            Tahun Terbit <span class="text-red-500">*</span>
-                        </label>
-                        <input type="number" name="year"
-                               value="{{ old('year', $book->year ?? '') }}"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 @error('year') border-red-500 @enderror"
-                               placeholder="Contoh: 2020"
-                               min="1900" max="{{ date('Y') }}"
-                               required>
-                        @error('year')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                {{-- Kolom Kanan --}}
+                <div class="space-y-4 md:space-y-5">
+                    <div class="grid grid-cols-2 gap-3 md:gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1 md:mb-2">Tahun Terbit</label>
+                            <input type="number" name="year" value="{{ old('year', $book->year ?? date('Y')) }}"
+                                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1 md:mb-2">Stok Total <span class="text-red-500">*</span></label>
+                            <input type="number" name="stock_total" value="{{ old('stock_total', $book->stock_total ?? 1) }}" required min="0"
+                                   class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none text-sm">
+                        </div>
                     </div>
+
                     <div>
-                        <label class="block text-gray-700 font-semibold mb-2">
-                            Kategori <span class="text-red-500">*</span>
-                        </label>
-                        <select name="category_id"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 @error('category_id') border-red-500 @enderror"
-                                required>
+                        <label class="block text-sm font-bold text-gray-700 mb-1 md:mb-2">Kategori <span class="text-red-500">*</span></label>
+                        <select name="category_id" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none bg-white text-sm">
                             <option value="">-- Pilih Kategori --</option>
-                            @foreach($categories as $category)
-                                <option value="{{ $category->id }}"
-                                    {{ old('category_id', $book->category_id ?? '') == $category->id ? 'selected' : '' }}>
-                                    {{ $category->name }}
+                            @foreach($categories as $cat)
+                                <option value="{{ $cat->id }}" {{ old('category_id', $book->category_id ?? '') == $cat->id ? 'selected' : '' }}>
+                                    {{ $cat->name }}
                                 </option>
                             @endforeach
                         </select>
-                        @error('category_id')
-                            <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                        @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1 md:mb-2">Cover Buku (Opsional)</label>
+                        @if(isset($book) && $book->cover && file_exists(public_path('covers/' . $book->cover)))
+                            <div class="mb-2">
+                                <img src="{{ asset('covers/' . $book->cover) }}" alt="Cover Lama" class="h-20 rounded shadow-sm">
+                                <p class="text-xs text-gray-500 mt-1">Biarkan kosong jika tidak ingin mengubah cover.</p>
+                            </div>
+                        @endif
+                        <input type="file" name="cover" accept="image/*"
+                               class="w-full px-2 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none text-xs md:text-sm file:mr-2 md:file:mr-4 file:py-1.5 md:file:py-2 file:px-3 md:file:px-4 file:rounded-full file:border-0 file:text-xs md:file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100">
+                        <p class="text-[10px] md:text-xs text-gray-500 mt-1">Format: JPG, PNG, JPEG. Maks: 2MB.</p>
                     </div>
                 </div>
+            </div>
 
-                {{-- Stok Total --}}
-                <div class="mb-4">
-                    <label class="block text-gray-700 font-semibold mb-2">
-                        Jumlah Stok Total <span class="text-red-500">*</span>
-                    </label>
-                    <input type="number" name="stock_total"
-                           value="{{ old('stock_total', $book->stock_total ?? '') }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 @error('stock_total') border-red-500 @enderror"
-                           placeholder="Contoh: 5"
-                           min="1"
-                           required>
-                    <p class="text-xs text-gray-500 mt-1">
-                        💡 Stok tersedia akan otomatis dihitung (dikurangi yang sedang dipinjam).
-                    </p>
-                    @error('stock_total')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Cover Buku --}}
-                <div class="mb-6">
-                    <label class="block text-gray-700 font-semibold mb-2">
-                        Cover Buku (Opsional)
-                    </label>
-
-                    {{-- Preview cover lama (kalau edit) --}}
-                    @if(isset($book) && $book->cover)
-                        <div class="mb-3">
-                            <p class="text-sm text-gray-500 mb-2">Cover saat ini:</p>
-                            <img src="{{ asset('covers/' . $book->cover) }}"
-                                 alt="Cover Lama"
-                                 class="w-24 h-32 object-cover rounded shadow">
-                        </div>
-                    @endif
-
-                    <input type="file" name="cover" accept="image/*"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 @error('cover') border-red-500 @enderror">
-                    <p class="text-xs text-gray-500 mt-1">
-                        📷 Format: JPG, PNG, JPEG. Maks: 2MB.
-                        @if(isset($book))
-                            (Biarkan kosong kalau tidak mau ganti cover.)
-                        @endif
-                    </p>
-                    @error('cover')
-                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                {{-- Tombol Aksi --}}
-                <div class="flex gap-3">
-                    <button type="submit"
-                            class="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold">
-                        {{ isset($book) ? '💾 Simpan Perubahan' : '➕ Tambah Buku' }}
-                    </button>
-                    <a href="{{ route('petugas.kelolaBuku') }}"
-                       class="bg-gray-400 hover:bg-gray-500 text-white px-6 py-3 rounded-lg font-semibold">
-                        Batal
-                    </a>
-                </div>
-
-            </form>
-        </div>
-
+            {{-- Tombol Aksi (Tumpuk di HP, Sejajar di Laptop) --}}
+            <div class="mt-8 pt-6 border-t border-gray-100 flex flex-col md:flex-row justify-end gap-3">
+                <a href="{{ route('petugas.kelolaBuku') }}" class="w-full md:w-auto text-center px-6 py-3 md:py-2.5 bg-gray-100 text-gray-600 rounded-lg font-semibold hover:bg-gray-200 transition text-sm">
+                    Batal
+                </a>
+                <button type="submit" class="w-full md:w-auto px-6 py-3 md:py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition shadow-md flex items-center justify-center gap-2 text-sm">
+                    <i class="fas fa-save"></i> Simpan Data
+                </button>
+            </div>
+        </form>
     </div>
-
-    {{-- ===== FOOTER ===== --}}
-    <footer class="text-center text-sm text-gray-500 py-4">
-        © Copyright <strong>SDN PENGAMPON 3</strong>. All Rights Reserved
-    </footer>
-
-</body>
-</html>
+@endsection
