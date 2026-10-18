@@ -8,6 +8,8 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ScanController;
 use App\Http\Controllers\KunjunganController; 
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
@@ -16,6 +18,10 @@ Route::get('/', [AuthController::class, 'showLogin']);
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// ===== HALAMAN PROFIL (SEMUA ROLE) =====
+Route::get('/profil', [ProfileController::class, 'edit'])->name('profil.edit');
+Route::put('/profil', [ProfileController::class, 'update'])->name('profil.update');
 
 // ===== RUTE NOTIFIKASI SISWA =====
 Route::get('/siswa/cek-notifikasi', function () {
@@ -35,20 +41,15 @@ Route::get('/siswa/katalog', [BookController::class, 'katalog'])->name('siswa.ka
 Route::get('/siswa/api/katalog', [BookController::class, 'getLatestKatalog'])->name('siswa.api.katalog'); 
 Route::get('/siswa/buku/{id}', [BookController::class, 'detail'])->name('siswa.detail');
 Route::post('/siswa/pinjam/{id}', [BookController::class, 'pinjam'])->name('siswa.pinjam');
-
-// Rute Riwayat Pinjam Siswa
 Route::get('/siswa/riwayat', [LoanController::class, 'riwayat'])->name('siswa.riwayat');
 
-// Rute Log Kunjungan (Buku Tamu)
 Route::post('/kunjungan/simpan', [KunjunganController::class, 'simpan'])->name('kunjungan.simpan');
 
 
 // ===== HALAMAN PETUGAS =====
-Route::get('/petugas/dashboard', function () {
-    return view('petugas.dashboard');
-})->name('petugas.dashboard');
+Route::get('/petugas/dashboard', [App\Http\Controllers\DashboardController::class, 'petugas'])->name('petugas.dashboard');
 
-// Sirkulasi (Auto-Refresh)
+// Sirkulasi
 Route::get('/petugas/sirkulasi', [LoanController::class, 'index'])->name('petugas.sirkulasi');
 Route::get('/petugas/api/sirkulasi', [LoanController::class, 'getLatestData'])->name('petugas.api.sirkulasi'); 
 Route::post('/petugas/setujui/{id}', [LoanController::class, 'setujui'])->name('petugas.setujui');
@@ -71,6 +72,16 @@ Route::post('/petugas/kelola-anggota', [UserController::class, 'store'])->name('
 Route::get('/petugas/kelola-anggota/{id}/edit', [UserController::class, 'edit'])->name('petugas.anggota.edit');
 Route::put('/petugas/kelola-anggota/{id}', [UserController::class, 'update'])->name('petugas.anggota.update');
 Route::delete('/petugas/kelola-anggota/{id}', [UserController::class, 'destroy'])->name('petugas.anggota.destroy');
+
+// Kelola Kategori (CRUD Baru)
+Route::resource('/petugas/kategori', CategoryController::class)->names([
+    'index' => 'petugas.kategori.index',
+    'create' => 'petugas.kategori.create',
+    'store' => 'petugas.kategori.store',
+    'edit' => 'petugas.kategori.edit',
+    'update' => 'petugas.kategori.update',
+    'destroy' => 'petugas.kategori.destroy',
+]);
 
 // Scan QR
 Route::get('/petugas/scan', [ScanController::class, 'index'])->name('petugas.scan');

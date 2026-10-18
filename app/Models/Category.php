@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Category extends Model
 {
     use HasFactory;
-
+    
     protected $fillable = ['name'];
 
-    // Relasi: 1 kategori punya banyak buku
+    // Relasi ke tabel buku
     public function books()
     {
         return $this->hasMany(Book::class);
