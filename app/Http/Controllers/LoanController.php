@@ -84,7 +84,7 @@ class LoanController extends Controller
         return back()->with('error', '❌ Gagal menyetujui, stok buku sudah habis.');
     }
 
-    // ===== PETUGAS MENOLAK PINJAMAN =====
+    // ===== PETUGAS MENOLAK PINJAMAN (FIX BUG DATABASE) =====
     public function tolak($id)
     {
         $loan = Loan::findOrFail($id);
@@ -93,7 +93,8 @@ class LoanController extends Controller
             return back()->with('error', 'Status pinjaman ini sudah diproses.');
         }
 
-        $loan->update(['status' => 'ditolak']);
+        // Menggunakan 'batal' agar tidak error karena batasan ENUM/VARCHAR database
+        $loan->update(['status' => 'batal']);
 
         return back()->with('success', '✅ Pengajuan peminjaman telah ditolak.');
     }

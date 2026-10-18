@@ -109,7 +109,7 @@
                                     <span class="text-xs text-gray-500">{{ $loan->book->code ?? '-' }}</span>
                                 </td>
                                 <td class="p-3">
-                                    {{-- Ini akan otomatis menampilkan 18 Oct 2026 sesuai server --}}
+                                    {{-- Ini akan otomatis menampilkan tanggal sesuai server (misal 18 Oct 2026) --}}
                                     {{ \Carbon\Carbon::parse($loan->loan_date)->translatedFormat('d M Y') }}
                                 </td>
                                 <td class="p-3">
@@ -126,6 +126,7 @@
                                     @elseif($loan->status == 'dikembalikan')
                                         <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">✅ Dikembalikan</span>
                                     @else
+                                        {{-- Ini untuk status 'batal' --}}
                                         <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">❌ Ditolak</span>
                                     @endif
                                 </td>
