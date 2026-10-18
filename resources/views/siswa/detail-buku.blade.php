@@ -62,8 +62,18 @@
 
                 {{-- ===== KIRI: COVER BUKU ===== --}}
                 <div class="md:col-span-1">
-                    <div class="h-80 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-                        <span class="text-9xl">📖</span>
+                    <div class="h-80 bg-gradient-to-br from-blue-100 to-blue-300 rounded-lg flex items-center justify-center overflow-hidden shadow-inner border border-gray-200">
+                        @if($book->cover && file_exists(public_path('covers/' . $book->cover)))
+                            <img src="{{ asset('covers/' . $book->cover) }}" 
+                                 alt="Cover {{ $book->title }}" 
+                                 class="w-full h-full object-cover">
+                        @elseif($book->cover)
+                            <img src="{{ $book->cover }}" 
+                                 alt="Cover {{ $book->title }}" 
+                                 class="w-full h-full object-cover">
+                        @else
+                            <span class="text-9xl">📖</span>
+                        @endif
                     </div>
                 </div>
 

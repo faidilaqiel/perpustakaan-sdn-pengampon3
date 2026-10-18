@@ -67,29 +67,44 @@
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 @foreach($books as $book)
                     <a href="{{ route('siswa.detail', $book->id) }}" class="block">
-                        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer">
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition cursor-pointer flex flex-col h-full">
+                            
                             {{-- Cover Buku --}}
-                            <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                                <span class="text-6xl">📖</span>
+                            <div class="h-48 bg-gradient-to-br from-blue-100 to-blue-300 flex items-center justify-center relative">
+                                @if($book->cover && file_exists(public_path('covers/' . $book->cover)))
+                                    <img src="{{ asset('covers/' . $book->cover) }}" 
+                                         alt="Cover {{ $book->title }}" 
+                                         class="w-full h-full object-cover">
+                                @elseif($book->cover)
+                                    {{-- Jika cover berupa link URL dari internet --}}
+                                    <img src="{{ $book->cover }}" 
+                                         alt="Cover {{ $book->title }}" 
+                                         class="w-full h-full object-cover">
+                                @else
+                                    {{-- Placeholder jika tidak ada gambar --}}
+                                    <span class="text-6xl">📖</span>
+                                @endif
                             </div>
 
                             {{-- Info Buku --}}
-                            <div class="p-4">
+                            <div class="p-4 flex-1 flex flex-col">
                                 <p class="text-xs text-gray-500">{{ $book->code }}</p>
                                 <h3 class="font-bold text-gray-800 mb-1">{{ $book->title }}</h3>
                                 <p class="text-sm text-gray-600 mb-2">{{ $book->author }}</p>
                                 <p class="text-xs text-blue-600 mb-3">{{ $book->category->name ?? '-' }}</p>
 
                                 {{-- Status Stok --}}
-                                @if($book->stock_available > 0)
-                                    <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                                        ✅ Tersedia ({{ $book->stock_available }})
-                                    </span>
-                                @else
-                                    <span class="inline-block bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
-                                        ❌ Dipinjam Semua
-                                    </span>
-                                @endif
+                                <div class="mt-auto">
+                                    @if($book->stock_available > 0)
+                                        <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
+                                            ✅ Tersedia ({{ $book->stock_available }})
+                                        </span>
+                                    @else
+                                        <span class="inline-block bg-red-100 text-red-800 text-xs px-2 py-1 rounded">
+                                            ❌ Dipinjam Semua
+                                        </span>
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </a>
