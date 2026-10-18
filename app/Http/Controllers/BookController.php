@@ -15,28 +15,46 @@ class BookController extends Controller
     public function katalog(Request $request)
     {
         $keyword = $request->input('q');
+        $categoryId = $request->input('category'); // Ambil filter kategori
+        
         $query = Book::query();
 
         if ($keyword) {
-            $query->where('title', 'LIKE', '%' . $keyword . '%')
+            $query->where(function($q) use ($keyword) {
+                $q->where('title', 'LIKE', '%' . $keyword . '%')
                   ->orWhere('author', 'LIKE', '%' . $keyword . '%')
                   ->orWhere('code', 'LIKE', '%' . $keyword . '%');
+            });
+        }
+
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
         }
 
         $books = $query->get();
-        return view('siswa.katalog', compact('books', 'keyword'));
+        $categories = Category::orderBy('name', 'asc')->get(); // Ambil semua kategori untuk dropdown
+
+        return view('siswa.katalog', compact('books', 'keyword', 'categories', 'categoryId'));
     }
 
     // ===== API AUTO-REFRESH KATALOG (AJAX) =====
     public function getLatestKatalog(Request $request)
     {
         $keyword = $request->input('q');
+        $categoryId = $request->input('category');
+        
         $query = Book::with('category');
 
         if ($keyword) {
-            $query->where('title', 'LIKE', '%' . $keyword . '%')
+            $query->where(function($q) use ($keyword) {
+                $q->where('title', 'LIKE', '%' . $keyword . '%')
                   ->orWhere('author', 'LIKE', '%' . $keyword . '%')
                   ->orWhere('code', 'LIKE', '%' . $keyword . '%');
+            });
+        }
+
+        if ($categoryId) {
+            $query->where('category_id', $categoryId);
         }
 
         $books = $query->get()->map(function($book) {
@@ -46,6 +64,7 @@ class BookController extends Controller
                 'title' => $book->title,
                 'author' => $book->author,
                 'category' => $book->category->name ?? '-',
+                'category_id' => $book->category_id,
                 'cover' => $book->cover,
                 'stock_available' => $book->stock_available,
             ];

@@ -3,9 +3,11 @@
 @section('title', 'Katalog Buku - Perpustakaan Digital')
 
 @section('content')
-    <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Katalog Buku</h2>
-        <p class="text-gray-500 text-sm mt-1">Temukan dan pinjam buku favoritmu.</p>
+    <div class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Katalog Buku</h2>
+            <p class="text-gray-500 text-sm mt-1">Temukan dan pinjam buku favoritmu.</p>
+        </div>
     </div>
 
     {{-- Notifikasi --}}
@@ -20,9 +22,9 @@
         </div>
     @endif
 
-    {{-- Form Pencarian --}}
+    {{-- Form Pencarian & Filter --}}
     <div class="bg-white rounded-xl shadow-sm p-4 mb-6 border border-gray-100">
-        <form method="GET" action="{{ route('siswa.katalog') }}" class="flex flex-col md:flex-row gap-2" id="search-form">
+        <form method="GET" action="{{ route('siswa.katalog') }}" class="flex flex-col md:flex-row gap-2 mb-4" id="search-form">
             <div class="relative flex-1">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="fas fa-search text-gray-400"></i>
@@ -35,6 +37,20 @@
                 Cari
             </button>
         </form>
+
+        {{-- Filter Kategori (Tombol Pil) --}}
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            <a href="{{ route('siswa.katalog', ['q' => $keyword]) }}" 
+               class="px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition border {{ !$categoryId ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50' }}">
+                Semua
+            </a>
+            @foreach($categories as $cat)
+                <a href="{{ route('siswa.katalog', ['q' => $keyword, 'category' => $cat->id]) }}" 
+                   class="px-4 py-1.5 rounded-full text-sm font-semibold whitespace-nowrap transition border {{ $categoryId == $cat->id ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50' }}">
+                    {{ $cat->name }}
+                </a>
+            @endforeach
+        </div>
     </div>
 
     {{-- Container Buku --}}
@@ -55,10 +71,8 @@
 
             books.forEach(book => {
                 let coverHtml = '';
-                // Cek apakah cover ada dan bukan string kosong
                 if (book.cover && book.cover !== 'null') {
                     let src = book.cover.startsWith('http') ? book.cover : `/covers/${book.cover}`;
-                    // onerror digunakan agar jika gambar gagal dimuat, otomatis diganti ikon buku
                     coverHtml = `<img src="${src}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-5xl text-green-200 bg-green-50\\'><i class=\\'fas fa-book\\'></i></div>';" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">`;
                 } else {
                     coverHtml = `<div class="w-full h-full flex items-center justify-center text-5xl text-green-200 bg-green-50"><i class="fas fa-book"></i></div>`;
@@ -95,7 +109,11 @@
 
         function fetchKatalog() {
             const keyword = document.getElementById('search-input').value;
-            fetch(`{{ route('siswa.api.katalog') }}?q=${encodeURIComponent(keyword)}`)
+            // Ambil category dari URL saat ini
+            const urlParams = new URLSearchParams(window.location.search);
+            const category = urlParams.get('category') || '';
+
+            fetch(`{{ route('siswa.api.katalog') }}?q=${encodeURIComponent(keyword)}&category=${category}`)
                 .then(response => response.json())
                 .then(data => { renderBooks(data.books); })
                 .catch(error => console.error('Error:', error));
@@ -141,12 +159,22 @@
             cekNotifikasiBaru(); 
         });
 
-        setInterval(fetchKatalog, 5000); 
-        setInterval(cekNotifikasiBaru, 5000); 
-
-        document.getElementById('search-form').addEventListener('submit', function(e) {
-            e.preventDefault();
-            fetchKatalog();
+        // Jika ada perubahan pada URL (klik kategori), reload katalog tanpa refresh
+        document.querySelectorAll('.flex-wrap a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('href');
+                window.history.pushState({}, '', url);
+                fetchKatalog();
+                
+                // Update class active tombol
+                document.querySelectorAll('.flex-wrap a').forEach(l => {
+                    l.classList.remove('bg-green-600', 'text-white', 'border-green-600');
+                    l.classList.add('bg-white', 'text-gray-600', 'border-gray-300', 'hover:bg-gray-50');
+                });
+                this.classList.remove('bg-white', 'text-gray-600', 'border-gray-300', 'hover:bg-gray-50');
+                this.classList.add('bg-green-600', 'text-white', 'border-green-600');
+            });
         });
     </script>
 @endsection
