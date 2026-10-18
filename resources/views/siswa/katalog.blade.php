@@ -28,10 +28,10 @@
                     <i class="fas fa-search text-gray-400"></i>
                 </div>
                 <input type="text" name="q" id="search-input" value="{{ $keyword }}"
-                       class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                       class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
                        placeholder="Cari judul buku, penulis, atau kode...">
             </div>
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold text-sm transition shadow-md">
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-lg font-semibold text-sm transition shadow-md">
                 Cari
             </button>
         </form>
@@ -55,11 +55,13 @@
 
             books.forEach(book => {
                 let coverHtml = '';
-                if (book.cover) {
+                // Cek apakah cover ada dan bukan string kosong
+                if (book.cover && book.cover !== 'null') {
                     let src = book.cover.startsWith('http') ? book.cover : `/covers/${book.cover}`;
-                    coverHtml = `<img src="${src}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">`;
+                    // onerror digunakan agar jika gambar gagal dimuat, otomatis diganti ikon buku
+                    coverHtml = `<img src="${src}" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center text-5xl text-green-200 bg-green-50\\'><i class=\\'fas fa-book\\'></i></div>';" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">`;
                 } else {
-                    coverHtml = `<div class="w-full h-full flex items-center justify-center text-5xl text-blue-200 bg-blue-50"><i class="fas fa-book"></i></div>`;
+                    coverHtml = `<div class="w-full h-full flex items-center justify-center text-5xl text-green-200 bg-green-50"><i class="fas fa-book"></i></div>`;
                 }
 
                 let stockBadge = '';
@@ -80,7 +82,7 @@
                                 <h3 class="font-bold text-gray-800 text-sm md:text-base leading-tight line-clamp-2">${book.title}</h3>
                                 <p class="text-xs text-gray-500 mt-1 mb-2 truncate">${book.author}</p>
                                 <div class="mt-auto">
-                                    <span class="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-100">${book.category}</span>
+                                    <span class="text-[10px] bg-green-50 text-green-600 px-2 py-0.5 rounded border border-green-100">${book.category}</span>
                                     <br>
                                     ${stockBadge}
                                 </div>

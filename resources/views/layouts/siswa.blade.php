@@ -12,32 +12,32 @@
 </head>
 <body class="bg-gray-50 min-h-screen flex overflow-hidden">
 
-    {{-- ================= SIDEBAR (LAPTOP) ================= --}}
-    <aside class="hidden md:flex flex-col w-64 bg-blue-800 text-white h-screen fixed top-0 left-0 z-50 shadow-xl">
-        <div class="h-20 flex items-center gap-3 px-6 bg-blue-900 border-b border-blue-700">
+    {{-- ================= SIDEBAR (LAPTOP) - WARNA HIJAU ================= --}}
+    <aside class="hidden md:flex flex-col w-64 bg-green-800 text-white h-screen fixed top-0 left-0 z-50 shadow-xl">
+        <div class="h-20 flex items-center gap-3 px-6 bg-green-900 border-b border-green-700">
             <img src="{{ asset('images/logo-sdn.png') }}" alt="Logo" class="w-10 h-10 bg-white rounded-full p-1">
             <div>
                 <h1 class="font-bold text-sm leading-tight">Perpustakaan Digital</h1>
-                <p class="text-xs text-blue-300">SDN Pengampon 3</p>
+                <p class="text-xs text-green-300">SDN Pengampon 3</p>
             </div>
         </div>
 
         <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            <a href="{{ route('siswa.katalog') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('siswa.katalog') ? 'bg-blue-600 font-semibold' : 'hover:bg-blue-700 transition' }}">
+            <a href="{{ route('siswa.katalog') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('siswa.katalog') ? 'bg-green-600 font-semibold' : 'hover:bg-green-700 transition' }}">
                 <i class="fas fa-book-open w-5 text-center"></i> Katalog Buku
             </a>
-            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-blue-700 transition">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-green-700 transition">
                 <i class="fas fa-history w-5 text-center"></i> Riwayat Pinjam
             </a>
         </nav>
 
-        <div class="p-4 bg-blue-900 border-t border-blue-700 flex items-center gap-3">
-            <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-lg font-bold">
+        <div class="p-4 bg-green-900 border-t border-green-700 flex items-center gap-3">
+            <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-lg font-bold">
                 {{ substr(Auth::user()->name ?? 'S', 0, 1) }}
             </div>
             <div class="flex-1">
                 <p class="text-sm font-bold truncate">{{ Auth::user()->name }}</p>
-                <p class="text-xs text-blue-300 capitalize">{{ Auth::user()->role }}</p>
+                <p class="text-xs text-green-300 capitalize">{{ Auth::user()->role }}</p>
             </div>
         </div>
     </aside>
@@ -49,11 +49,11 @@
         <header class="bg-white shadow-sm h-16 flex items-center justify-between px-4 md:px-6 z-40">
             <div class="flex md:hidden items-center gap-2">
                 <img src="{{ asset('images/logo-sdn.png') }}" alt="Logo" class="w-8 h-8 bg-white rounded-full p-1">
-                <span class="font-bold text-blue-800 text-sm">Perpustakaan Digital</span>
+                <span class="font-bold text-green-800 text-sm">Perpustakaan Digital</span>
             </div>
 
             <div class="hidden md:flex items-center text-gray-500 font-medium">
-                Selamat datang, <span class="text-blue-600 font-bold ml-1">{{ Auth::user()->name }}</span>
+                Selamat datang, <span class="text-green-600 font-bold ml-1">{{ Auth::user()->name }}</span>
             </div>
 
             <div class="flex items-center gap-3">
@@ -70,13 +70,13 @@
             @yield('content')
         </main>
 
-        {{-- ================= BOTTOM NAV (HP) ================= --}}
+        {{-- ================= BOTTOM NAV (HP) - WARNA HIJAU ================= --}}
         <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-            <a href="{{ route('siswa.katalog') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('siswa.katalog') ? 'text-blue-600' : 'text-gray-400 hover:text-blue-500' }}">
+            <a href="{{ route('siswa.katalog') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('siswa.katalog') ? 'text-green-600' : 'text-gray-400 hover:text-green-500' }}">
                 <i class="fas fa-book-open text-lg mb-1"></i>
                 <span class="text-[10px] font-medium">Katalog</span>
             </a>
-            <a href="#" class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-blue-500">
+            <a href="#" class="flex flex-col items-center justify-center w-full h-full text-gray-400 hover:text-green-500">
                 <i class="fas fa-history text-lg mb-1"></i>
                 <span class="text-[10px] font-medium">Riwayat</span>
             </a>
