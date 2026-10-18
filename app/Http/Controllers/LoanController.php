@@ -23,6 +23,33 @@ class LoanController extends Controller
         return view('petugas.sirkulasi', compact('loans', 'menunggu', 'dipinjam', 'dikembalikan', 'jumlahPengajuan'));
     }
 
+    // ===== API UNTUK AUTO-REFRESH TABEL (AJAX) =====
+    public function getLatestData()
+    {
+        $loans = Loan::with(['user', 'book'])->orderBy('created_at', 'desc')->get();
+        $menunggu = Loan::where('status', 'menunggu')->count();
+        
+        // Format data untuk dikirim ke JavaScript
+        $data = $loans->map(function($loan) {
+            return [
+                'id' => $loan->id,
+                'user_name' => $loan->user->name ?? 'User Terhapus',
+                'user_id' => $loan->user->nisn ?? $loan->user->nip ?? '-',
+                'book_title' => $loan->book->title ?? 'Buku Terhapus',
+                'book_code' => $loan->book->code ?? '-',
+                'loan_date' => Carbon::parse($loan->loan_date)->translatedFormat('d M Y'),
+                'due_date' => Carbon::parse($loan->due_date)->translatedFormat('d M Y'),
+                'status' => $loan->status,
+                'is_late' => ($loan->status == 'dipinjam' && Carbon::now()->greaterThan(Carbon::parse($loan->due_date))) ? true : false,
+            ];
+        });
+
+        return response()->json([
+            'loans' => $data,
+            'menunggu' => $menunggu,
+        ]);
+    }
+
     // ===== PROSES SISWA MENGAJUKAN PINJAM =====
     public function pinjam($id)
     {
@@ -73,7 +100,6 @@ class LoanController extends Controller
                 'due_date' => Carbon::now()->addDays(7)->format('Y-m-d'),
             ]);
 
-            // SIMPAN NOTIFIKASI UNTUK SISWA
             $user = $loan->user;
             $user->update([
                 'notifikasi' => 'disetujui|Buku "' . $book->title . '" berhasil disetujui. Silakan ambil di perpustakaan. Jatuh tempo: ' . Carbon::now()->addDays(7)->translatedFormat('d M Y')
@@ -96,7 +122,6 @@ class LoanController extends Controller
 
         $loan->update(['status' => 'batal']);
 
-        // SIMPAN NOTIFIKASI UNTUK SISWA
         $user = $loan->user;
         $book = $loan->book;
         $user->update([

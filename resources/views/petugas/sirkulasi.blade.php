@@ -8,7 +8,6 @@
 </head>
 <body class="bg-gray-100 min-h-screen">
 
-    {{-- HEADER --}}
     <header class="bg-green-600 text-white p-4 shadow-lg">
         <div class="container mx-auto flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -31,14 +30,12 @@
         </div>
     </header>
 
-    {{-- KONTEN --}}
     <div class="container mx-auto p-6">
 
         <a href="{{ route('petugas.dashboard') }}" class="inline-block mb-4 text-green-600 hover:text-green-800 font-semibold">
             ← Kembali ke Dashboard
         </a>
 
-        {{-- Notifikasi Sukses/Error --}}
         @if(session('success'))
             <div class="bg-green-100 border border-green-400 text-green-800 px-4 py-3 rounded mb-4">
                 {{ session('success') }}
@@ -53,20 +50,17 @@
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
             <h2 class="text-2xl font-bold text-gray-800 mb-2 flex items-center gap-2">
                 📋 Sirkulasi Peminjaman
-                @if($jumlahPengajuan > 0)
-                    <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
-                        {{ $jumlahPengajuan }} Baru
-                    </span>
-                @endif
+                <span id="badge-notif" class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse {{ $jumlahPengajuan > 0 ? '' : 'hidden' }}">
+                    {{ $jumlahPengajuan }} Baru
+                </span>
             </h2>
             <p class="text-gray-600">Kelola peminjaman dan pengembalian buku.</p>
         </div>
 
-        {{-- Kotak Statistik --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div class="bg-yellow-100 p-4 rounded-lg">
                 <p class="text-yellow-800 font-semibold">⏳ Menunggu Konfirmasi</p>
-                <p class="text-3xl font-bold text-yellow-900">{{ $menunggu }}</p>
+                <p class="text-3xl font-bold text-yellow-900" id="stat-menunggu">{{ $menunggu }}</p>
             </div>
             <div class="bg-blue-100 p-4 rounded-lg">
                 <p class="text-blue-800 font-semibold">📖 Sedang Dipinjam</p>
@@ -78,7 +72,6 @@
             </div>
         </div>
 
-        {{-- Tabel Peminjaman --}}
         <div class="bg-white rounded-lg shadow-lg overflow-hidden">
             <div class="p-4 border-b bg-gray-50">
                 <h3 class="font-bold text-gray-800">Daftar Peminjaman</h3>
@@ -96,67 +89,8 @@
                             <th class="p-3 border-b">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @forelse($loans as $index => $loan)
-                            <tr class="border-b hover:bg-gray-50 text-sm">
-                                <td class="p-3">{{ $index + 1 }}</td>
-                                <td class="p-3">
-                                    <strong>{{ $loan->user->name ?? 'User Terhapus' }}</strong><br>
-                                    <span class="text-xs text-gray-500">{{ $loan->user->nisn ?? $loan->user->nip ?? '-' }}</span>
-                                </td>
-                                <td class="p-3">
-                                    <strong>{{ $loan->book->title ?? 'Buku Terhapus' }}</strong><br>
-                                    <span class="text-xs text-gray-500">{{ $loan->book->code ?? '-' }}</span>
-                                </td>
-                                <td class="p-3">
-                                    {{-- Ini akan otomatis menampilkan tanggal sesuai server (misal 18 Oct 2026) --}}
-                                    {{ \Carbon\Carbon::parse($loan->loan_date)->translatedFormat('d M Y') }}
-                                </td>
-                                <td class="p-3">
-                                    {{ \Carbon\Carbon::parse($loan->due_date)->translatedFormat('d M Y') }}
-                                    @if($loan->status == 'dipinjam' && \Carbon\Carbon::now()->greaterThan(\Carbon\Carbon::parse($loan->due_date)))
-                                        <br><span class="text-xs text-red-600 font-bold">⚠️ TERLAMBAT!</span>
-                                    @endif
-                                </td>
-                                <td class="p-3">
-                                    @if($loan->status == 'menunggu')
-                                        <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">⏳ Menunggu</span>
-                                    @elseif($loan->status == 'dipinjam')
-                                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">📖 Dipinjam</span>
-                                    @elseif($loan->status == 'dikembalikan')
-                                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">✅ Dikembalikan</span>
-                                    @else
-                                        {{-- Ini untuk status 'batal' --}}
-                                        <span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">❌ Ditolak</span>
-                                    @endif
-                                </td>
-                                <td class="p-3">
-                                    @if($loan->status == 'menunggu')
-                                        <div class="flex gap-1">
-                                            <form method="POST" action="{{ route('petugas.setujui', $loan->id) }}">
-                                                @csrf
-                                                <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs">Setujui</button>
-                                            </form>
-                                            <form method="POST" action="{{ route('petugas.tolak', $loan->id) }}">
-                                                @csrf
-                                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">Tolak</button>
-                                            </form>
-                                        </div>
-                                    @elseif($loan->status == 'dipinjam')
-                                        <form method="POST" action="{{ route('petugas.kembalikan', $loan->id) }}">
-                                            @csrf
-                                            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">Kembalikan</button>
-                                        </form>
-                                    @else
-                                        -
-                                    @endif
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="7" class="p-6 text-center text-gray-500">Belum ada data peminjaman.</td>
-                            </tr>
-                        @endforelse
+                    <tbody id="table-body">
+                        {{-- Data akan diisi oleh JavaScript --}}
                     </tbody>
                 </table>
             </div>
@@ -167,6 +101,103 @@
     <footer class="text-center text-sm text-gray-500 py-4">
         © Copyright <strong>SDN PENGAMPON 3</strong>. All Rights Reserved
     </footer>
+
+    {{-- ===== SCRIPT AUTO-REFRESH TABEL ===== --}}
+    <script>
+        function renderTable(data) {
+            const tbody = document.getElementById('table-body');
+            tbody.innerHTML = ''; // Kosongkan tabel
+
+            if (data.loans.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">Belum ada data peminjaman.</td></tr>`;
+                return;
+            }
+
+            data.loans.forEach((loan, index) => {
+                let statusBadge = '';
+                if (loan.status === 'menunggu') {
+                    statusBadge = `<span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded text-xs">⏳ Menunggu</span>`;
+                } else if (loan.status === 'dipinjam') {
+                    statusBadge = `<span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">📖 Dipinjam</span>`;
+                } else if (loan.status === 'dikembalikan') {
+                    statusBadge = `<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">✅ Dikembalikan</span>`;
+                } else {
+                    statusBadge = `<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">❌ Ditolak</span>`;
+                }
+
+                let aksi = '';
+                if (loan.status === 'menunggu') {
+                    aksi = `
+                        <div class="flex gap-1">
+                            <form method="POST" action="/petugas/setujui/${loan.id}">
+                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs">Setujui</button>
+                            </form>
+                            <form method="POST" action="/petugas/tolak/${loan.id}">
+                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs">Tolak</button>
+                            </form>
+                        </div>`;
+                } else if (loan.status === 'dipinjam') {
+                    aksi = `
+                        <form method="POST" action="/petugas/kembalikan/${loan.id}">
+                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs">Kembalikan</button>
+                        </form>`;
+                } else {
+                    aksi = '-';
+                }
+
+                let lateLabel = loan.is_late ? `<br><span class="text-xs text-red-600 font-bold">⚠️ TERLAMBAT!</span>` : '';
+
+                tbody.innerHTML += `
+                    <tr class="border-b hover:bg-gray-50 text-sm">
+                        <td class="p-3">${index + 1}</td>
+                        <td class="p-3">
+                            <strong>${loan.user_name}</strong><br>
+                            <span class="text-xs text-gray-500">${loan.user_id}</span>
+                        </td>
+                        <td class="p-3">
+                            <strong>${loan.book_title}</strong><br>
+                            <span class="text-xs text-gray-500">${loan.book_code}</span>
+                        </td>
+                        <td class="p-3">${loan.loan_date}</td>
+                        <td class="p-3">${loan.due_date} ${lateLabel}</td>
+                        <td class="p-3">${statusBadge}</td>
+                        <td class="p-3">${aksi}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Fungsi untuk mengambil data terbaru
+        function fetchLatestData() {
+            fetch("{{ route('petugas.api.sirkulasi') }}")
+                .then(response => response.json())
+                .then(data => {
+                    renderTable(data);
+
+                    // Update badge & statistik
+                    const badge = document.getElementById('badge-notif');
+                    const stat = document.getElementById('stat-menunggu');
+                    
+                    stat.innerText = data.menunggu;
+                    if (data.menunggu > 0) {
+                        badge.innerText = data.menunggu + ' Baru';
+                        badge.classList.remove('hidden');
+                    } else {
+                        badge.classList.add('hidden');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        // Panggil setiap 3 detik
+        setInterval(fetchLatestData, 3000);
+        
+        // Panggil saat pertama kali dimuat
+        document.addEventListener('DOMContentLoaded', fetchLatestData);
+    </script>
 
 </body>
 </html>

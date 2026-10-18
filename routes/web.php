@@ -17,7 +17,14 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// ===== RUTE HAPUS NOTIFIKASI =====
+// ===== RUTE NOTIFIKASI & AUTO-REFRESH SISWA =====
+Route::get('/siswa/cek-notifikasi', function () {
+    if (Auth::check()) {
+        return response()->json(['notifikasi' => Auth::user()->notifikasi]);
+    }
+    return response()->json(['notifikasi' => null]);
+})->name('siswa.cekNotif');
+
 Route::post('/siswa/hapus-notifikasi', function () {
     User::where('id', Auth::id())->update(['notifikasi' => null]);
     return response()->json(['success' => true]);
@@ -25,6 +32,7 @@ Route::post('/siswa/hapus-notifikasi', function () {
 
 // ===== HALAMAN SISWA & GURU =====
 Route::get('/siswa/katalog', [BookController::class, 'katalog'])->name('siswa.katalog');
+Route::get('/siswa/api/katalog', [BookController::class, 'getLatestKatalog'])->name('siswa.api.katalog'); // API Katalog
 Route::get('/siswa/buku/{id}', [BookController::class, 'detail'])->name('siswa.detail');
 Route::post('/siswa/pinjam/{id}', [BookController::class, 'pinjam'])->name('siswa.pinjam');
 
@@ -37,8 +45,9 @@ Route::get('/petugas/dashboard', function () {
     return view('petugas.dashboard');
 })->name('petugas.dashboard');
 
-// Sirkulasi
+// Sirkulasi (Auto-Refresh)
 Route::get('/petugas/sirkulasi', [LoanController::class, 'index'])->name('petugas.sirkulasi');
+Route::get('/petugas/api/sirkulasi', [LoanController::class, 'getLatestData'])->name('petugas.api.sirkulasi'); // API Sirkulasi
 Route::post('/petugas/setujui/{id}', [LoanController::class, 'setujui'])->name('petugas.setujui');
 Route::post('/petugas/tolak/{id}', [LoanController::class, 'tolak'])->name('petugas.tolak');
 Route::post('/petugas/kembalikan/{id}', [LoanController::class, 'kembalikan'])->name('petugas.kembalikan');
