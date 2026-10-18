@@ -5,11 +5,8 @@
 @section('content')
     <div class="max-w-3xl mx-auto">
         <div class="bg-white rounded-xl shadow-sm p-6 md:p-10 border border-gray-100 text-center">
-            <div class="w-20 h-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
-                <i class="fas fa-qrcode"></i>
-            </div>
-            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-2">Scan QR Code Anggota</h2>
-            <p class="text-sm md:text-base text-gray-500 mb-8">Scan QR Code pada kartu anggota, ATAU ketik NISN/NIP secara manual.</p>
+            <h2 class="text-xl md:text-2xl font-bold text-gray-800 mb-2">Scan Kartu Anggota</h2>
+            <p class="text-sm text-gray-500 mb-6">Gunakan kamera untuk memindai QR Code pada kartu, atau ketik manual.</p>
 
             @if(session('success'))
                 <div class="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 text-sm">
@@ -22,29 +19,76 @@
                 </div>
             @endif
 
+            {{-- AREA KAMERA --}}
+            <div id="reader" class="w-full max-w-sm mx-auto mb-6 bg-gray-100 rounded-xl overflow-hidden border-2 border-dashed border-gray-300" style="display: none;"></div>
+
+            <button id="btn-start-camera" class="w-full max-w-sm mx-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 mb-6">
+                <i class="fas fa-camera"></i> BUKA KAMERA
+            </button>
+
+            <div class="relative flex py-4 items-center">
+                <div class="flex-grow border-t border-gray-300"></div>
+                <span class="flex-shrink-0 mx-4 text-gray-400 text-sm">ATAU KETIK MANUAL</span>
+                <div class="flex-grow border-t border-gray-300"></div>
+            </div>
+
+            {{-- FORM INPUT MANUAL --}}
             <form method="POST" action="{{ route('petugas.scan.hasil') }}" class="max-w-md mx-auto">
                 @csrf
-                <div class="mb-6">
-                    <input type="text" name="qr_code" required autofocus
-                           class="w-full px-4 py-4 text-center text-lg md:text-xl border-2 border-green-500 rounded-xl focus:outline-none focus:ring-4 focus:ring-green-200 transition font-mono tracking-widest"
+                <div class="mb-4">
+                    <input type="text" name="qr_code" id="qr_code_input" required
+                           class="w-full px-4 py-4 text-center text-lg border-2 border-green-500 rounded-xl focus:outline-none focus:ring-4 focus:ring-green-200 transition font-mono tracking-widest"
                            placeholder="Ketik NISN / NIP...">
-                    <p class="text-[10px] md:text-xs text-gray-400 mt-2">💡 Kalau pakai scanner QR: cursor harus di kolom ini.</p>
                 </div>
 
-                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-base md:text-lg py-4 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold text-lg py-3.5 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
                     <i class="fas fa-search"></i> CARI ANGGOTA
                 </button>
             </form>
         </div>
-
-        {{-- Panduan --}}
-        <div class="bg-blue-50 border border-blue-100 rounded-xl p-4 md:p-6 mt-6 text-xs md:text-sm text-blue-800 shadow-sm">
-            <h3 class="font-bold mb-2 md:mb-3 flex items-center gap-2"><i class="fas fa-info-circle"></i> Cara Pakai:</h3>
-            <ol class="list-decimal list-inside space-y-1.5 opacity-90">
-                <li><strong>Manual:</strong> Ketik NISN/NIP siswa di kolom, lalu klik "Cari Anggota".</li>
-                <li><strong>Scanner QR:</strong> Colok scanner USB, klik kolom input, lalu scan QR pada kartu.</li>
-                <li><strong>Hasil:</strong> Aplikasi akan menampilkan data siswa + peminjaman aktifnya.</li>
-            </ol>
-        </div>
     </div>
+
+    {{-- LIBRARY HTML5 QR CODE SCANNER --}}
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnStart = document.getElementById('btn-start-camera');
+            const readerDiv = document.getElementById('reader');
+            const inputField = document.getElementById('qr_code_input');
+            let html5QrCode;
+
+            btnStart.addEventListener('click', function() {
+                readerDiv.style.display = 'block';
+                btnStart.style.display = 'none';
+
+                // Inisialisasi kamera
+                html5QrCode = new Html5Qrcode("reader");
+                
+                html5QrCode.start(
+                    { facingMode: "environment" }, // Gunakan kamera belakang
+                    {
+                        fps: 10,
+                        qrbox: { width: 250, height: 250 }
+                    },
+                    (decodedText, decodedResult) => {
+                        // Saat QR terdeteksi:
+                        inputField.value = decodedText; // Masukkan hasil scan ke input
+                        html5QrCode.stop().then(() => {
+                            readerDiv.style.display = 'none';
+                            btnStart.style.display = 'block';
+                            // Otomatis submit form
+                            inputField.form.submit();
+                        });
+                    },
+                    (errorMessage) => {
+                        // Abaikan error pembacaan frame per frame
+                    }
+                ).catch((err) => {
+                    alert("Gagal membuka kamera: " + err);
+                    readerDiv.style.display = 'none';
+                    btnStart.style.display = 'block';
+                });
+            });
+        });
+    </script>
 @endsection

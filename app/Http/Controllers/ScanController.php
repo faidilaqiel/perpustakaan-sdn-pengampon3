@@ -11,20 +11,19 @@ use Carbon\Carbon;
 
 class ScanController extends Controller
 {
-    // ===== HALAMAN UTAMA SCAN =====
     public function index()
     {
         return view('petugas.scan.index');
     }
 
-    // ===== PROSES HASIL SCAN =====
+    // Proses setelah QR discan atau NISN diketik
     public function hasil(Request $request)
     {
         $request->validate([
             'qr_code' => 'required'
         ]);
 
-        // Cari user berdasarkan NISN atau NIP yang ada di dalam QR Code
+        // Cari user berdasarkan NISN atau NIP yang di-scan
         $user = User::where('nisn', $request->qr_code)
                     ->orWhere('nip', $request->qr_code)
                     ->first();
@@ -44,12 +43,12 @@ class ScanController extends Controller
         return back()->with('success', '✅ Berhasil! Selamat datang, ' . $user->name);
     }
 
-    // ===== TAMPILKAN QR CODE ANGGOTA =====
+    // Tampilkan QR Code Anggota (untuk dicetak)
     public function qrCode($id)
     {
         $user = User::findOrFail($id);
         
-        // 🔥 PENGAMAN BUG: Cek jika NISN dan NIP kosong
+        // Pengaman jika NISN/NIP kosong
         $qrContent = $user->nisn ?? $user->nip;
         if (empty($qrContent)) {
             return back()->with('error', 'Gagal membuat QR Code: Siswa/Guru ini belum memiliki NISN atau NIP.');
