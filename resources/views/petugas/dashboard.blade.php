@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - Perpustakaan Digital')
+@section('title', 'Dashboard Petugas - Perpustakaan Digital')
 
 @section('content')
     {{-- Salam Pembuka --}}
@@ -47,13 +47,16 @@
             </div>
         </div>
 
+        {{-- KOTAK TERLAMBAT (SUDAH DIPERBAIKI) --}}
         <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
             <div class="w-12 h-12 bg-red-100 text-red-600 rounded-lg flex items-center justify-center text-xl">
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
             <div>
                 <p class="text-xs text-gray-500 font-medium">Terlambat</p>
-                <p class="text-xl md:text-2xl font-bold text-gray-800">0</p>
+                <p class="text-xl md:text-2xl font-bold text-red-600">
+                    {{ \App\Models\Loan::where('status', 'dipinjam')->where('due_date', '<', \Carbon\Carbon::now()->format('Y-m-d'))->count() }}
+                </p>
             </div>
         </div>
     </div>
