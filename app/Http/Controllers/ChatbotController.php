@@ -29,12 +29,32 @@ class ChatbotController extends Controller
             ]);
 
             $data = $response->json();
-            $reply = $data['candidates'][0]['content']['parts'][0]['text'] ?? 'Maaf, saya tidak mengerti.';
+            
+            // --- INI BAGIAN YANG DIPERBAIKI ---
+            // Kita baca jawabannya dengan lebih teliti
+            $reply = 'Maaf, saya sedang tidak bisa memproses jawaban.';
+            
+            if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
+                $reply = $data['candidates'][0]['content']['parts'][0]['text'];
+            } elseif (isset($data['candidates'][0]['content']['parts'])) {
+                // Jika formatnya agak beda, kita gabungkan semua teksnya
+                $parts = $data['candidates'][0]['content']['parts'];
+                $texts = [];
+                foreach ($parts as $part) {
+                    if (isset($part['text'])) {
+                        $texts[] = $part['text'];
+                    }
+                }
+                if (!empty($texts)) {
+                    $reply = implode(' ', $texts);
+                }
+            }
+            // ----------------------------------
 
             return response()->json(['reply' => $reply]);
 
         } catch (\Exception $e) {
-            return response()->json(['reply' => 'Terjadi kesalahan pada server AI.'], 500);
+            return response()->json(['reply' => 'Terjadi kesalahan pada server AI: ' . $e->getMessage()], 500);
         }
     }
 }
