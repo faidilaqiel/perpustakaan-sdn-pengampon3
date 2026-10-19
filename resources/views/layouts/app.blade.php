@@ -12,7 +12,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen flex overflow-hidden">
 
-    {{-- ================= SIDEBAR (TAMPILAN LAPTOP) ================= --}}
+    {{-- SIDEBAR (LAPTOP) --}}
     <aside class="hidden md:flex flex-col w-64 bg-green-800 text-white h-screen fixed top-0 left-0 z-50 shadow-xl">
         <div class="h-20 flex items-center gap-3 px-6 bg-green-900 border-b border-green-700">
             <img src="{{ asset('images/logo-sdn.png') }}" alt="Logo" class="w-10 h-10 bg-white rounded-full p-1">
@@ -49,7 +49,7 @@
         </div>
     </aside>
 
-    {{-- ================= KONTEN UTAMA ================= --}}
+    {{-- KONTEN UTAMA --}}
     <div class="flex-1 flex flex-col h-screen md:ml-64 overflow-hidden relative">
         <header class="bg-white shadow-sm h-16 flex items-center justify-between px-4 md:px-6 z-40">
             <div class="hidden md:flex items-center bg-gray-100 rounded-lg px-4 py-2 w-96">
@@ -98,7 +98,7 @@
         </nav>
     </div>
 
-    {{-- ================= FLOATING CHATBOT ================= --}}
+    {{-- FLOATING CHATBOT --}}
     <button id="chat-toggle-btn" class="fixed bottom-20 md:bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center z-[9999] transition transform hover:scale-110">
         <i class="fas fa-comments text-2xl"></i>
     </button>
@@ -128,7 +128,7 @@
     </div>
 
     <script>
-        // URL Chatbot dari Railway
+        // URL Chatbot dari Railway (pastikan URL ini benar)
         const CHATBOT_API_URL = 'https://secure-fascination-production-3402.up.railway.app/api/chat'; 
 
         const chatToggleBtn = document.getElementById('chat-toggle-btn');
