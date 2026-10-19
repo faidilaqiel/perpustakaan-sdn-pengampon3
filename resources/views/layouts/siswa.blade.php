@@ -131,8 +131,8 @@
     </div>
 
     <script>
-        // Menggunakan Private Networking Railway
-        const CHATBOT_API_URL = 'http://chatbot-backend.railway.internal:3000/api/chat'; 
+        // Kembali ke URL Publik Railway
+        const CHATBOT_API_URL = 'https://chatbot-backend-production-8ff9.up.railway.app/api/chat'; 
 
         const chatToggleBtn = document.getElementById('chat-toggle-btn');
         const chatWindow = document.getElementById('chat-window');
