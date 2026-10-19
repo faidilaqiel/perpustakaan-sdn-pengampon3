@@ -131,8 +131,8 @@
     </div>
 
     <script>
-        // URL Chatbot dari Railway (pastikan URL ini benar)
-        const CHATBOT_API_URL = 'https://secure-fascination-production-3402.up.railway.app/api/chat'; 
+        // URL Chatbot dari Railway
+        const CHATBOT_API_URL = 'https://chatbot-backend-production-8ff9.up.railway.app/api/chat'; 
 
         const chatToggleBtn = document.getElementById('chat-toggle-btn');
         const chatWindow = document.getElementById('chat-window');
