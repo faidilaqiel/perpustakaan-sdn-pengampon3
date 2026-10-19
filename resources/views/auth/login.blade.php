@@ -80,7 +80,7 @@
         </form>
         
         <div class="mt-8 text-center text-xs text-gray-400">
-            &copy; 2025 Perpustakaan Digital SDN Pengampon 3
+            &copy; Copyright <strong>SDN PENGAMPON 3</strong> All Rights Reserved
         </div>
     </div>
 
