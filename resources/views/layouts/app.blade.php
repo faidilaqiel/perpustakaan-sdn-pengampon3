@@ -98,7 +98,7 @@
         </nav>
     </div>
 
-    {{-- FLOATING CHATBOT --}}
+    {{-- ================= FLOATING CHATBOT ================= --}}
     <button id="chat-toggle-btn" class="fixed bottom-20 md:bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center z-[9999] transition transform hover:scale-110">
         <i class="fas fa-comments text-2xl"></i>
     </button>
@@ -128,7 +128,9 @@
     </div>
 
     <script>
-        const CHATBOT_API_URL = 'http://localhost:3000/api/chat'; 
+        // URL Chatbot dari Railway
+        const CHATBOT_API_URL = 'https://secure-fascination-production-3402.up.railway.app/api/chat'; 
+
         const chatToggleBtn = document.getElementById('chat-toggle-btn');
         const chatWindow = document.getElementById('chat-window');
         const chatCloseBtn = document.getElementById('chat-close-btn');
