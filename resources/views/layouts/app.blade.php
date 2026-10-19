@@ -128,6 +128,7 @@
     </div>
 
     <script>
+        // Kembali ke URL Publik Railway
         const CHATBOT_API_URL = 'https://chatbot-backend-production-8ff9.up.railway.app/api/chat'; 
 
         const chatToggleBtn = document.getElementById('chat-toggle-btn');
@@ -161,14 +162,7 @@
                 });
                 const data = await response.json();
                 document.getElementById(loadingId).remove();
-                
-                if (data && data.reply) {
-                    appendMessage(data.reply, 'bot');
-                } else if (data && data.error) {
-                    appendMessage(data.error, 'bot');
-                } else {
-                    appendMessage('Maaf, AI sedang tidak dapat merespons saat ini.', 'bot');
-                }
+                appendMessage(data.reply || 'Maaf, saya tidak mengerti.', 'bot');
             } catch (error) {
                 document.getElementById(loadingId).remove();
                 appendMessage('Maaf, koneksi ke server AI gagal.', 'bot');
