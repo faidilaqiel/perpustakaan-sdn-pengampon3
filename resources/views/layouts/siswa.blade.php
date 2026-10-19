@@ -12,7 +12,7 @@
 </head>
 <body class="bg-gray-50 min-h-screen flex overflow-hidden">
 
-    {{-- ================= SIDEBAR (LAPTOP) ================= --}}
+    {{-- SIDEBAR (LAPTOP) --}}
     <aside class="hidden md:flex flex-col w-64 bg-green-800 text-white h-screen fixed top-0 left-0 z-50 shadow-xl">
         <div class="h-20 flex items-center gap-3 px-6 bg-green-900 border-b border-green-700">
             <img src="{{ asset('images/logo-sdn.png') }}" alt="Logo" class="w-10 h-10 bg-white rounded-full p-1">
@@ -29,7 +29,6 @@
             <a href="{{ route('siswa.riwayat') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('siswa.riwayat') ? 'bg-green-600 font-semibold' : 'hover:bg-green-700 transition' }}">
                 <i class="fas fa-history w-5 text-center"></i> Riwayat Pinjam
             </a>
-            {{-- MENU PROFIL BARU --}}
             <a href="{{ route('profil.edit') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('profil.*') ? 'bg-green-600 font-semibold' : 'hover:bg-green-700 transition' }}">
                 <i class="fas fa-user w-5 text-center"></i> Profil Saya
             </a>
@@ -50,18 +49,13 @@
         </div>
     </aside>
 
-    {{-- ================= KONTEN UTAMA ================= --}}
+    {{-- KONTEN UTAMA --}}
     <div class="flex-1 flex flex-col h-screen md:ml-64 overflow-hidden relative">
-        
-        {{-- NAVBAR ATAS --}}
         <header class="bg-white shadow-sm h-16 flex items-center justify-between px-4 md:px-6 z-40">
-            
-            {{-- Tampilan Laptop: Sapaan --}}
             <div class="hidden md:flex items-center text-gray-500 font-medium">
                 Selamat datang, <span class="text-green-600 font-bold ml-1">{{ Auth::user()->name }}</span>
             </div>
 
-            {{-- Tampilan HP: Foto & Nama --}}
             <div class="flex md:hidden items-center gap-3 w-full justify-between">
                 <div class="flex items-center gap-3">
                     @if(Auth::user()->photo && file_exists(public_path('photos/' . Auth::user()->photo)))
@@ -76,7 +70,6 @@
                 </div>
             </div>
 
-            {{-- Tombol Kanan --}}
             <div class="flex items-center gap-3">
                 <a href="{{ route('profil.edit') }}" class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center hover:bg-green-200 transition" title="Profil">
                     <i class="fas fa-user"></i>
@@ -102,12 +95,98 @@
             <a href="{{ route('siswa.riwayat') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('siswa.riwayat') ? 'text-green-600' : 'text-gray-400 hover:text-green-500' }}">
                 <i class="fas fa-history text-lg mb-1"></i><span class="text-[10px] font-medium">Riwayat</span>
             </a>
-            {{-- MENU AKUN BARU DI HP --}}
             <a href="{{ route('profil.edit') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('profil.*') ? 'text-green-600' : 'text-gray-400 hover:text-green-500' }}">
                 <i class="fas fa-user text-lg mb-1"></i><span class="text-[10px] font-medium">Akun</span>
             </a>
         </nav>
     </div>
 
+    {{-- FLOATING CHATBOT --}}
+    <button id="chat-toggle-btn" class="fixed bottom-20 md:bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center z-[9999] transition transform hover:scale-110">
+        <i class="fas fa-comments text-2xl"></i>
+    </button>
+
+    <div id="chat-window" class="fixed bottom-36 md:bottom-24 right-6 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-[9999] hidden flex-col overflow-hidden" style="height: 450px;">
+        <div class="bg-green-600 text-white p-4 flex justify-between items-center shrink-0">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-robot text-xl"></i>
+                <div>
+                    <p class="font-bold text-sm">Asisten Perpustakaan</p>
+                    <p class="text-[10px] opacity-80">Online</p>
+                </div>
+            </div>
+            <button id="chat-close-btn" class="text-white hover:text-gray-200"><i class="fas fa-times text-lg"></i></button>
+        </div>
+        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3">
+            <div class="bg-white border border-gray-200 p-3 rounded-lg rounded-tl-none text-sm text-gray-700 shadow-sm self-start max-w-[80%]">
+                Halo! Saya asisten perpustakaan digital. Ada yang bisa saya bantu?
+            </div>
+        </div>
+        <div class="p-3 bg-white border-t border-gray-200 shrink-0">
+            <div class="flex gap-2">
+                <input type="text" id="chat-input" placeholder="Ketik pesan..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
+                <button id="chat-send-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CHATBOT_API_URL = 'http://localhost:3000/api/chat'; 
+        const chatToggleBtn = document.getElementById('chat-toggle-btn');
+        const chatWindow = document.getElementById('chat-window');
+        const chatCloseBtn = document.getElementById('chat-close-btn');
+        const chatInput = document.getElementById('chat-input');
+        const chatSendBtn = document.getElementById('chat-send-btn');
+        const chatMessages = document.getElementById('chat-messages');
+
+        chatToggleBtn.addEventListener('click', () => {
+            chatWindow.classList.toggle('hidden');
+            chatWindow.classList.toggle('flex');
+            if (!chatWindow.classList.contains('hidden')) chatInput.focus();
+        });
+        chatCloseBtn.addEventListener('click', () => {
+            chatWindow.classList.add('hidden');
+            chatWindow.classList.remove('flex');
+        });
+
+        async function sendMessage() {
+            const message = chatInput.value.trim();
+            if (!message) return;
+            appendMessage(message, 'user');
+            chatInput.value = '';
+            const loadingId = appendMessage('Sedang mengetik...', 'bot', true);
+            try {
+                const response = await fetch(CHATBOT_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+                document.getElementById(loadingId).remove();
+                appendMessage(data.reply || 'Maaf, saya tidak mengerti.', 'bot');
+            } catch (error) {
+                document.getElementById(loadingId).remove();
+                appendMessage('Maaf, koneksi ke server AI gagal.', 'bot');
+            }
+        }
+
+        function appendMessage(text, sender, isLoading = false) {
+            const id = 'msg-' + Date.now();
+            const div = document.createElement('div');
+            div.id = id;
+            if (sender === 'user') {
+                div.className = 'bg-green-600 text-white p-3 rounded-lg rounded-tr-none text-sm shadow-sm self-end max-w-[80%] ml-auto';
+            } else {
+                div.className = 'bg-white border border-gray-200 p-3 rounded-lg rounded-tl-none text-sm text-gray-700 shadow-sm self-start max-w-[80%]';
+            }
+            if (isLoading) div.innerHTML = `<span class="animate-pulse">${text}</span>`;
+            else div.textContent = text;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return id;
+        }
+        chatSendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    </script>
 </body>
 </html>
