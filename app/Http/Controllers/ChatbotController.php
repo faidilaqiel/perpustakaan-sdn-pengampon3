@@ -13,13 +13,19 @@ class ChatbotController extends Controller
         $apiKey = env('GEMINI_API_KEY');
 
         if (!$message || !$apiKey) {
-            return response()->json(['reply' => 'Konfigurasi Chatbot belum lengkap.'], 500);
+            return response()->json(['reply' => 'Konfigurasi Chatbot belum lengkap. Pastikan API Key sudah diisi.'], 500);
         }
 
+        // Model yang valid untuk API v1beta
+        $model = 'gemini-3.8-flash'; 
+
         try {
+            // Mengirim API Key lewat URL (?key=...), bukan lewat header
+            $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+
             $response = Http::withHeaders([
                 'Content-Type' => 'application/json',
-            ])->post("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key={$apiKey}", [
+            ])->post($url, [
                 'contents' => [
                     ['parts' => [['text' => $message]]]
                 ],
@@ -29,15 +35,18 @@ class ChatbotController extends Controller
             ]);
 
             $data = $response->json();
-            
-            // --- INI BAGIAN YANG DIPERBAIKI ---
-            // Kita baca jawabannya dengan lebih teliti
-            $reply = 'Maaf, saya sedang tidak bisa memproses jawaban.';
+
+            // Jika Google mengirim error (misal key salah, model tidak ada), tampilkan pesannya
+            if (isset($data['error'])) {
+                return response()->json(['reply' => 'Error dari Google: ' . $data['error']['message']], 500);
+            }
+
+            // Membaca jawaban AI
+            $reply = 'Maaf, format jawaban tidak dikenali.';
             
             if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
                 $reply = $data['candidates'][0]['content']['parts'][0]['text'];
             } elseif (isset($data['candidates'][0]['content']['parts'])) {
-                // Jika formatnya agak beda, kita gabungkan semua teksnya
                 $parts = $data['candidates'][0]['content']['parts'];
                 $texts = [];
                 foreach ($parts as $part) {
@@ -49,12 +58,11 @@ class ChatbotController extends Controller
                     $reply = implode(' ', $texts);
                 }
             }
-            // ----------------------------------
 
             return response()->json(['reply' => $reply]);
 
         } catch (\Exception $e) {
-            return response()->json(['reply' => 'Terjadi kesalahan pada server AI: ' . $e->getMessage()], 500);
+            return response()->json(['reply' => 'Kesalahan sistem: ' . $e->getMessage()], 500);
         }
     }
 }
