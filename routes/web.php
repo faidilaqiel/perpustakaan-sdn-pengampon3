@@ -91,3 +91,4 @@ Route::get('/petugas/scan/qr-code/{id}', [ScanController::class, 'qrCode'])->nam
 // ===== HALAMAN KEPSEK =====
 Route::get('/kepsek/laporan', [ReportController::class, 'laporan'])->name('kepsek.laporan');
 Route::get('/kepsek/laporan/cetak-pdf', [ReportController::class, 'cetakPdf'])->name('kepsek.cetakPdf');
+Route::post('/api/chatbot', [App\Http\Controllers\ChatbotController::class, 'chat'])->name('api.chatbot');
