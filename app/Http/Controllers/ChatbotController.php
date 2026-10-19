@@ -16,53 +16,66 @@ class ChatbotController extends Controller
             return response()->json(['reply' => 'Konfigurasi Chatbot belum lengkap. Pastikan API Key sudah diisi.'], 500);
         }
 
-        // Model yang valid untuk API v1beta
-        $model = 'gemini-3.8-flash'; 
+        // Daftar model yang akan dicoba (dari yang paling stabil)
+        $models = [
+            'gemini-1.5-flash',
+            'gemini-1.5-pro',
+            'gemini-pro'
+        ];
 
-        try {
-            // Mengirim API Key lewat URL (?key=...), bukan lewat header
-            $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
+        $lastError = 'Tidak ada model yang tersedia.';
 
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/json',
-            ])->post($url, [
-                'contents' => [
-                    ['parts' => [['text' => $message]]]
-                ],
-                'systemInstruction' => [
-                    'parts' => [['text' => 'Anda adalah asisten perpustakaan digital SDN Pengampon 3. Jawablah dengan ramah dan singkat.']]
-                ]
-            ]);
+        foreach ($models as $model) {
+            try {
+                $url = "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}";
 
-            $data = $response->json();
+                $response = Http::withHeaders([
+                    'Content-Type' => 'application/json',
+                ])->post($url, [
+                    'contents' => [
+                        ['parts' => [['text' => $message]]]
+                    ],
+                    'systemInstruction' => [
+                        'parts' => [['text' => 'Anda adalah asisten perpustakaan digital SDN Pengampon 3. Jawablah dengan ramah dan singkat.']]
+                    ]
+                ]);
 
-            // Jika Google mengirim error (misal key salah, model tidak ada), tampilkan pesannya
-            if (isset($data['error'])) {
-                return response()->json(['reply' => 'Error dari Google: ' . $data['error']['message']], 500);
-            }
+                $data = $response->json();
 
-            // Membaca jawaban AI
-            $reply = 'Maaf, format jawaban tidak dikenali.';
-            
-            if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
-                $reply = $data['candidates'][0]['content']['parts'][0]['text'];
-            } elseif (isset($data['candidates'][0]['content']['parts'])) {
-                $parts = $data['candidates'][0]['content']['parts'];
-                $texts = [];
-                foreach ($parts as $part) {
-                    if (isset($part['text'])) {
-                        $texts[] = $part['text'];
+                // Jika Google mengirim error (misal model sibuk), simpan pesannya dan coba model berikutnya
+                if (isset($data['error'])) {
+                    $lastError = $data['error']['message'];
+                    continue; // Lanjut ke model berikutnya
+                }
+
+                // Membaca jawaban AI
+                $reply = null;
+                if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
+                    $reply = $data['candidates'][0]['content']['parts'][0]['text'];
+                } elseif (isset($data['candidates'][0]['content']['parts'])) {
+                    $parts = $data['candidates'][0]['content']['parts'];
+                    $texts = [];
+                    foreach ($parts as $part) {
+                        if (isset($part['text'])) {
+                            $texts[] = $part['text'];
+                        }
+                    }
+                    if (!empty($texts)) {
+                        $reply = implode(' ', $texts);
                     }
                 }
-                if (!empty($texts)) {
-                    $reply = implode(' ', $texts);
+
+                // Jika berhasil dapat jawaban, kembalikan ke pengguna
+                if ($reply) {
+                    return response()->json(['reply' => $reply]);
                 }
+
+            } catch (\Exception $e) {
+                $lastError = $e->getMessage();
             }
-
-            return response()->json(['reply' => $reply]);
-
-        } catch (\Exception $e) {
-            return response()->json(['reply' => 'Kesalahan sistem: ' . $e->getMessage()], 500);
         }
+
+        // Jika semua model gagal, tampilkan error terakhir
+        return response()->json(['reply' => 'Error dari Google: ' . $lastError], 500);
     }
 }
