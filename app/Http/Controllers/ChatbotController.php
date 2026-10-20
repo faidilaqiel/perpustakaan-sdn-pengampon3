@@ -13,14 +13,14 @@ class ChatbotController extends Controller
         $apiKey = env('GEMINI_API_KEY');
 
         if (!$message || !$apiKey) {
-            return response()->json(['reply' => 'Konfigurasi Chatbot belum lengkap. Pastikan API Key sudah diisi.'], 500);
+            return response()->json(['reply' => 'Konfigurasi Chatbot belum lengkap.'], 500);
         }
 
-        // Daftar model yang akan dicoba (dari yang paling stabil)
+        // Daftar model yang VALID dan tersedia di API v1beta
         $models = [
-            'gemini-1.5-flash',
-            'gemini-1.5-pro',
-            'gemini-pro'
+            'gemini-3.8-flash',
+            'gemini-2.5-flash',
+            'gemini-3-flash-preview'
         ];
 
         $lastError = 'Tidak ada model yang tersedia.';
@@ -42,30 +42,16 @@ class ChatbotController extends Controller
 
                 $data = $response->json();
 
-                // Jika Google mengirim error (misal model sibuk), simpan pesannya dan coba model berikutnya
                 if (isset($data['error'])) {
                     $lastError = $data['error']['message'];
-                    continue; // Lanjut ke model berikutnya
+                    continue; // Coba model berikutnya
                 }
 
-                // Membaca jawaban AI
                 $reply = null;
                 if (isset($data['candidates'][0]['content']['parts'][0]['text'])) {
                     $reply = $data['candidates'][0]['content']['parts'][0]['text'];
-                } elseif (isset($data['candidates'][0]['content']['parts'])) {
-                    $parts = $data['candidates'][0]['content']['parts'];
-                    $texts = [];
-                    foreach ($parts as $part) {
-                        if (isset($part['text'])) {
-                            $texts[] = $part['text'];
-                        }
-                    }
-                    if (!empty($texts)) {
-                        $reply = implode(' ', $texts);
-                    }
                 }
 
-                // Jika berhasil dapat jawaban, kembalikan ke pengguna
                 if ($reply) {
                     return response()->json(['reply' => $reply]);
                 }
@@ -75,7 +61,6 @@ class ChatbotController extends Controller
             }
         }
 
-        // Jika semua model gagal, tampilkan error terakhir
         return response()->json(['reply' => 'Error dari Google: ' . $lastError], 500);
     }
 }
