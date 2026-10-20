@@ -101,31 +101,43 @@
         </nav>
     </div>
 
-    {{-- FLOATING CHATBOT --}}
-    <button id="chat-toggle-btn" class="fixed bottom-20 md:bottom-6 right-6 bg-green-600 hover:bg-green-700 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center z-[9999] transition transform hover:scale-110">
+    {{-- ================= FLOATING CHATBOT (SOFT & RESPONSIF) ================= --}}
+    <button id="chat-toggle-btn" class="fixed bottom-20 md:bottom-6 right-4 md:right-6 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white w-14 h-14 rounded-full shadow-2xl flex items-center justify-center z-[9999] transition transform hover:scale-110">
         <i class="fas fa-comments text-2xl"></i>
     </button>
 
-    <div id="chat-window" class="fixed bottom-36 md:bottom-24 right-6 w-80 md:w-96 bg-white rounded-2xl shadow-2xl border border-gray-200 z-[9999] hidden flex-col overflow-hidden" style="height: 450px;">
-        <div class="bg-green-600 text-white p-4 flex justify-between items-center shrink-0">
+    <div id="chat-window" class="fixed bottom-36 md:bottom-24 right-4 md:right-6 w-[calc(100vw-2rem)] md:w-96 bg-white rounded-3xl shadow-2xl border border-gray-100 z-[9999] hidden flex-col overflow-hidden transition-all duration-300" style="height: 500px; max-height: 80vh;">
+        {{-- Header Soft --}}
+        <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 flex justify-between items-center shrink-0">
             <div class="flex items-center gap-3">
-                <i class="fas fa-robot text-xl"></i>
+                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-robot text-xl"></i>
+                </div>
                 <div>
                     <p class="font-bold text-sm">Asisten Perpustakaan</p>
-                    <p class="text-[10px] opacity-80">Online</p>
+                    <p class="text-[10px] opacity-90 flex items-center gap-1">
+                        <span class="w-2 h-2 bg-green-300 rounded-full animate-pulse"></span> Online
+                    </p>
                 </div>
             </div>
-            <button id="chat-close-btn" class="text-white hover:text-gray-200"><i class="fas fa-times text-lg"></i></button>
+            <button id="chat-close-btn" class="w-8 h-8 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition"><i class="fas fa-times text-sm"></i></button>
         </div>
-        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto bg-gray-50 flex flex-col gap-3">
-            <div class="bg-white border border-gray-200 p-3 rounded-lg rounded-tl-none text-sm text-gray-700 shadow-sm self-start max-w-[80%]">
-                Halo! Saya asisten perpustakaan digital. Ada yang bisa saya bantu?
+
+        {{-- Area Pesan --}}
+        <div id="chat-messages" class="flex-1 p-4 overflow-y-auto bg-[#f8f9fa] flex flex-col gap-4">
+            {{-- Pesan Sambutan --}}
+            <div class="bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-sm text-sm text-gray-700 shadow-sm self-start max-w-[85%] leading-relaxed">
+                Halo! 👋 Saya asisten perpustakaan digital. Ada yang bisa saya bantu hari ini?
             </div>
         </div>
-        <div class="p-3 bg-white border-t border-gray-200 shrink-0">
-            <div class="flex gap-2">
-                <input type="text" id="chat-input" placeholder="Ketik pesan..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500">
-                <button id="chat-send-btn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold"><i class="fas fa-paper-plane"></i></button>
+
+        {{-- Input Soft --}}
+        <div class="p-3 bg-white border-t border-gray-100 shrink-0">
+            <div class="flex items-center gap-2 bg-gray-50 rounded-full px-2 py-1 border border-gray-200 focus-within:border-green-500 focus-within:ring-2 focus-within:ring-green-100 transition">
+                <input type="text" id="chat-input" placeholder="Tulis pesan..." class="flex-1 bg-transparent border-none px-3 py-2 text-sm focus:outline-none">
+                <button id="chat-send-btn" class="bg-green-500 hover:bg-green-600 text-white w-9 h-9 rounded-full flex items-center justify-center transition shadow-md">
+                    <i class="fas fa-paper-plane text-sm"></i>
+                </button>
             </div>
         </div>
     </div>
@@ -174,6 +186,7 @@
                 const loadingElement = document.getElementById(loadingId);
                 if (loadingElement) loadingElement.remove();
 
+                // Bersihkan tanda bintang (**) dari jawaban AI
                 let cleanReply = '';
                 if (data.reply) {
                     cleanReply = data.reply.replace(/\*\*/g, '').replace(/\*/g, '');
@@ -194,9 +207,9 @@
             div.id = id;
             
             if (sender === 'user') {
-                div.className = 'bg-green-600 text-white p-3 rounded-lg rounded-tr-none text-sm shadow-sm self-end max-w-[80%] ml-auto';
+                div.className = 'bg-green-600 text-white p-3 rounded-2xl rounded-tr-sm text-sm shadow-sm self-end max-w-[85%] ml-auto leading-relaxed';
             } else {
-                div.className = 'bg-white border border-gray-200 p-3 rounded-lg rounded-tl-none text-sm text-gray-700 shadow-sm self-start max-w-[80%]';
+                div.className = 'bg-white border border-gray-100 p-3 rounded-2xl rounded-tl-sm text-sm text-gray-700 shadow-sm self-start max-w-[85%] leading-relaxed';
             }
             
             if (isLoading) {
