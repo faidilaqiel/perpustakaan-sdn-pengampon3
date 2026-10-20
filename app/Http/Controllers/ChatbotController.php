@@ -16,7 +16,7 @@ class ChatbotController extends Controller
             return response()->json(['reply' => 'Konfigurasi Chatbot belum lengkap.'], 500);
         }
 
-        // Daftar model yang VALID dan tersedia di API v1beta
+        // Daftar model yang VALID
         $models = [
             'gemini-3.8-flash',
             'gemini-2.5-flash',
@@ -24,6 +24,9 @@ class ChatbotController extends Controller
         ];
 
         $lastError = 'Tidak ada model yang tersedia.';
+
+        // SYSTEM INSTRUCTION (Pengetahuan Dasar AI)
+        $systemInstruction = "Anda adalah asisten perpustakaan digital SDN Pengampon 3. Jawablah dengan ramah dan singkat. Informasi penting: Kepala Sekolah SDN Pengampon 3 saat ini adalah H. Noni Risanto, M.Pd.I.";
 
         foreach ($models as $model) {
             try {
@@ -36,7 +39,7 @@ class ChatbotController extends Controller
                         ['parts' => [['text' => $message]]]
                     ],
                     'systemInstruction' => [
-                        'parts' => [['text' => 'Anda adalah asisten perpustakaan digital SDN Pengampon 3. Jawablah dengan ramah dan singkat.']]
+                        'parts' => [['text' => $systemInstruction]]
                     ]
                 ]);
 
@@ -44,7 +47,7 @@ class ChatbotController extends Controller
 
                 if (isset($data['error'])) {
                     $lastError = $data['error']['message'];
-                    continue; // Coba model berikutnya
+                    continue; 
                 }
 
                 $reply = null;

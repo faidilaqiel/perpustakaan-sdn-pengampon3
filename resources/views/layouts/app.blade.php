@@ -151,9 +151,13 @@
         async function sendMessage() {
             const message = chatInput.value.trim();
             if (!message) return;
+
+            // 1. Tampilkan pesan user dengan benar
             appendMessage(message, 'user');
             chatInput.value = '';
+            
             const loadingId = appendMessage('Sedang mengetik...', 'bot', true);
+            
             try {
                 const response = await fetch(CHATBOT_API_URL, {
                     method: 'POST',
@@ -164,10 +168,22 @@
                     body: JSON.stringify({ message: message })
                 });
                 const data = await response.json();
-                document.getElementById(loadingId).remove();
-                appendMessage(data.reply || 'Maaf, saya tidak mengerti.', 'bot');
+                
+                // Hapus tulisan "Sedang mengetik..."
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
+
+                // 2. Bersihkan tanda bintang (**) dari jawaban AI
+                let cleanReply = '';
+                if (data.reply) {
+                    cleanReply = data.reply.replace(/\*\*/g, '').replace(/\*/g, '');
+                }
+
+                appendMessage(cleanReply || 'Maaf, saya tidak mengerti.', 'bot');
+                
             } catch (error) {
-                document.getElementById(loadingId).remove();
+                const loadingElement = document.getElementById(loadingId);
+                if (loadingElement) loadingElement.remove();
                 appendMessage('Maaf, koneksi ke server AI gagal.', 'bot');
             }
         }
@@ -176,13 +192,19 @@
             const id = 'msg-' + Date.now();
             const div = document.createElement('div');
             div.id = id;
+            
             if (sender === 'user') {
                 div.className = 'bg-green-600 text-white p-3 rounded-lg rounded-tr-none text-sm shadow-sm self-end max-w-[80%] ml-auto';
             } else {
                 div.className = 'bg-white border border-gray-200 p-3 rounded-lg rounded-tl-none text-sm text-gray-700 shadow-sm self-start max-w-[80%]';
             }
-            if (isLoading) div.innerHTML = `<span class="animate-pulse">${text}</span>`;
-            else div.textContent = text;
+            
+            if (isLoading) {
+                div.innerHTML = `<span class="animate-pulse">${text}</span>`;
+            } else {
+                div.textContent = text; 
+            }
+            
             chatMessages.appendChild(div);
             chatMessages.scrollTop = chatMessages.scrollHeight;
             return id;
