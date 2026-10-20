@@ -4,6 +4,25 @@
 
 @section('content')
     <div class="max-w-2xl mx-auto">
+        
+        {{-- ================= TOMBOL KEMBALI DINAMIS ================= --}}
+        <div class="mb-4">
+            @if(Auth::user()->role === 'petugas')
+                <a href="{{ route('petugas.dashboard') }}" class="inline-flex items-center gap-2 text-green-600 hover:text-green-800 font-semibold text-sm transition">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Dashboard
+                </a>
+            @elseif(Auth::user()->role === 'kepsek')
+                <a href="{{ route('kepsek.laporan') }}" class="inline-flex items-center gap-2 text-green-600 hover:text-green-800 font-semibold text-sm transition">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Laporan
+                </a>
+            @else
+                <a href="{{ route('siswa.katalog') }}" class="inline-flex items-center gap-2 text-green-600 hover:text-green-800 font-semibold text-sm transition">
+                    <i class="fas fa-arrow-left"></i> Kembali ke Katalog
+                </a>
+            @endif
+        </div>
+
+        {{-- KARTU PROFIL --}}
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 md:p-8">
             <h2 class="text-xl font-bold text-gray-800 mb-6 text-center">Profil Saya</h2>
 
