@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>@yield('title', 'Perpustakaan Digital')</title>
-    <!-- Favicon dengan trik cache busting -->
-    <link rel="icon" href="{{ asset('images/favicon.png?v=2') }}" type="image/png">
+    <!-- Favicon dengan nama file baru -->
+    <link rel="icon" href="{{ asset('images/logo-perpus.png') }}" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -104,9 +104,7 @@
     </div>
 
     {{-- ================= FLOATING CHATBOT (BOTPRESS) ================= --}}
-    {{-- KODE EMBED BOTPRESS ANDA --}}
     <script src="https://cdn.botpress.cloud/webchat/v5.0/inject.js"></script>
-    <script src="https://files.bpcontent.cloud/2026/10/20/07/20261020071537-14781M7K.js" defer></script>
-
+    <script src="https://files.bpcontent.cloud/2026/10/20/07/20261020071537-L4781M7K.js" defer></script>
 </body>
 </html>
