@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>@yield('title', 'Perpustakaan Digital')</title>
-    <!-- Favicon -->
-    <link rel="icon" href="{{ asset('images/favicon.png') }}" type="image/png">
+    <!-- Favicon dengan trik cache busting -->
+    <link rel="icon" href="{{ asset('images/favicon.png?v=2') }}" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
