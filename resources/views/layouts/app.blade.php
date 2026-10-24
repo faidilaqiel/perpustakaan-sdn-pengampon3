@@ -104,5 +104,25 @@
     <script src="https://cdn.botpress.cloud/webchat/v5.0/inject.js"></script>
     <script src="https://files.bpcontent.cloud/2026/10/20/07/20261020071537-L4781M7K.js" defer></script>
 
+    {{-- SCRIPT UNTUK MENGIRIM DATA USER KE BOTPRESS V5 --}}
+    <script>
+        // Gunakan interval untuk menunggu Botpress selesai dimuat di background
+        const waitForBotpress = setInterval(() => {
+            // Di Botpress v5, objek globalnya adalah window.botpress
+            if (window.botpress && window.botpress.updateUser) {
+                clearInterval(waitForBotpress); // Hentikan pengecekan jika sudah siap
+
+                // Kirim data user dari Laravel
+                window.botpress.updateUser({
+                    data: {
+                        name: "{{ Auth::user()->name ?? 'Tamu' }}",
+                        role: "{{ Auth::user()->role ?? 'Siswa' }}"
+                    }
+                });
+
+                console.log("✅ Berhasil! Data user terkirim ke Botpress.");
+            }
+        }, 500); // Cek setiap 0.5 detik
+    </script>
 </body>
 </html>
