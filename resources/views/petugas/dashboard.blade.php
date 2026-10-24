@@ -89,6 +89,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
+        // 1. Script untuk Grafik Chart.js (Kode Lama Anda)
         const ctx = document.getElementById('chartDashboard').getContext('2d');
         new Chart(ctx, {
             type: 'bar',
@@ -108,5 +109,29 @@
                 scales: { y: { beginAtZero: true, ticks: { stepSize: 10 } } }
             }
         });
+
+        // 2. Script untuk Mengirim Data User ke Botpress (Kode Baru)
+        // Kita gunakan interval untuk menunggu script Botpress utama dari 'layouts/app.blade.php' selesai dimuat
+        const checkBotpress = setInterval(() => {
+            if (window.botpressWebChat) {
+                clearInterval(checkBotpress); // Hentikan pengecekan jika Botpress sudah siap
+                
+                // Dengarkan event saat Botpress selesai dimuat
+                window.botpressWebChat.onEvent(function (event) {
+                    if (event.type === 'LIFECYCLE.LOADED') {
+                        
+                        // Kirim data user dari Laravel ke Botpress
+                        window.botpressWebChat.updateUser({
+                            data: {
+                                name: "{{ Auth::user()->name }}", 
+                                role: "{{ Auth::user()->role }}" 
+                            }
+                        });
+                        
+                        console.log("Data user berhasil dikirim ke Botpress!");
+                    }
+                });
+            }
+        }, 500); // Cek setiap 0.5 detik
     </script>
 @endsection
