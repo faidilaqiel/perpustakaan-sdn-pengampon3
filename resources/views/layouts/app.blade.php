@@ -106,13 +106,11 @@
 
     {{-- SCRIPT UNTUK MENGIRIM DATA USER KE BOTPRESS V5 --}}
     <script>
-        // Gunakan interval untuk menunggu Botpress selesai dimuat di background
         const waitForBotpress = setInterval(() => {
-            // Di Botpress v5, objek globalnya adalah window.botpress
             if (window.botpress && window.botpress.updateUser) {
-                clearInterval(waitForBotpress); // Hentikan pengecekan jika sudah siap
+                clearInterval(waitForBotpress); 
 
-                // Kirim data user dari Laravel
+                // 1. Kirim data saat pertama kali load
                 window.botpress.updateUser({
                     data: {
                         name: "{{ Auth::user()->name ?? 'Tamu' }}",
@@ -120,9 +118,20 @@
                     }
                 });
 
+                // 2. Dengarkan event jika chat dibuka/tutup, lalu kirim ulang datanya (mencegah Anonymous)
+                window.botpress.on('webchat:opened', () => {
+                    window.botpress.updateUser({
+                        data: {
+                            name: "{{ Auth::user()->name ?? 'Tamu' }}",
+                            role: "{{ Auth::user()->role ?? 'Siswa' }}"
+                        }
+                    });
+                    console.log("🔄 Data user di-refresh saat chat dibuka.");
+                });
+
                 console.log("✅ Berhasil! Data user terkirim ke Botpress.");
             }
-        }, 500); // Cek setiap 0.5 detik
+        }, 500); 
     </script>
 </body>
 </html>
