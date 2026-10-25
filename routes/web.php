@@ -156,8 +156,33 @@ Route::get('/informasi-perpustakaan', function () {
     }
     $html .= "</ol>";
 
-    $html .= "<h2>Tata Cara Peminjaman Buku</h2>";
-    $html .= "<p>1. Buka menu Katalog di website perpustakaan. 2. Pilih buku yang diinginkan. 3. Klik tombol Pinjam Buku Ini. 4. Status pinjaman Menunggu konfirmasi Petugas. 5. Datang ke perpustakaan untuk ambil buku fisik dan konfirmasi ke Petugas. Batas waktu pinjam 7 hari, maksimal 2 buku.</p>";
+    $html .= "<h2>Durasi dan Batas Waktu Peminjaman Buku</h2>";
+    $html .= "<p>Pertanyaan: Berapa lama saya boleh meminjam buku? Batas waktu peminjaman buku di Perpustakaan Digital SDN Pengampon 3 adalah maksimal <strong>7 (tujuh) hari kalender</strong> terhitung sejak disetujui petugas. Anggota dapat melihat tanggal jatuh tempo pengembalian di menu Riwayat.</p>";
+
+    $html .= "<h2>Jumlah Maksimal Buku yang Boleh Dipinjam</h2>";
+    $html .= "<p>Pertanyaan: Apakah boleh meminjam lebih dari 2 buku? Maksimal berapa buku yang boleh dipinjam? Setiap anggota (siswa) diperbolehkan meminjam maksimal <strong>2 (dua) buku</strong> sekaligus dalam satu waktu. Jika ingin meminjam buku lain, kembalikan buku yang sedang dipinjam terlebih dahulu.</p>";
+
+    $html .= "<h2>Sanksi dan Denda Keterlambatan Pengembalian Buku</h2>";
+    $html .= "<p>Pertanyaan: Berapa denda jika terlambat mengembalikan buku? Denda keterlambatan pengembalian buku di Perpustakaan SDN Pengampon 3 adalah sebesar <strong>Rp 1.000,- (seribu rupiah) per hari</strong> untuk setiap buku yang terlambat dikembalikan. Contoh jika terlambat 3 hari, maka dendanya adalah Rp 3.000,-.</p>";
+
+    $html .= "<h2>Prosedur dan Langkah-Langkah Meminjam Buku</h2>";
+    $html .= "<p>Pertanyaan: Bagaimana cara meminjam buku di perpustakaan ini?<br>";
+    $html .= "1. Buka menu Katalog di aplikasi web perpustakaan.<br>";
+    $html .= "2. Cari buku yang diinginkan dan pastikan stoknya berstatus 'Tersedia'.<br>";
+    $html .= "3. Klik tombol hijau 'Pinjam Buku Ini' untuk mengajukan peminjaman.<br>";
+    $html .= "4. Status peminjaman akan menjadi 'Menunggu'.<br>";
+    $html .= "5. Datanglah ke meja Petugas Perpustakaan untuk verifikasi/scan QR dan mengambil buku fisik.<br>";
+    $html .= "6. Setelah disetujui Petugas, buku resmi dipinjam dan batas waktu pengembalian dapat dicek di menu Riwayat.</p>";
+
+    $html .= "<h2>Jam Operasional dan Hari Buka Perpustakaan</h2>";
+    $html .= "<p>Pertanyaan: Jam berapa perpustakaan buka dan tutup? Perpustakaan buka setiap hari <strong>Senin sampai Jumat pukul 07.30 - 14.00 WIB</strong>. Pada hari Sabtu, Minggu, dan hari libur nasional, perpustakaan tutup.</p>";
+
+    $html .= "<h2>Kehilangan atau Kerusakan Buku</h2>";
+    $html .= "<p>Pertanyaan: Bagaimana jika buku pinjaman hilang atau rusak? Peminjam wajib segera melapor kepada Petugas Perpustakaan. Peminjam bertanggung jawab mengganti buku dengan judul dan edisi yang sama, atau mengganti biaya buku sesuai ketentuan perpustakaan.</p>";
+
+    $html .= "<h2>Keanggotaan Perpustakaan</h2>";
+    $html .= "<p>Pertanyaan: Bagaimana cara mendaftar anggota perpustakaan? Seluruh siswa dan guru di SDN Pengampon 3 otomatis terdaftar sebagai anggota perpustakaan dan memiliki akun resmi berdasarkan NISN (siswa) atau NIP (guru). Tamu dari luar sekolah hanya diperkenankan membaca buku di tempat dan tidak dapat meminjam buku pulang.</p>";
+
     $html .= "</body></html>";
 
     return response($html)->header('Content-Type', 'text/html');

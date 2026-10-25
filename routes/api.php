@@ -182,8 +182,10 @@ Route::get('/library-info', function () {
         'jam_operasional' => 'Senin - Jumat: 07.30 - 14.00 WIB (Sabtu, Minggu & Hari Libur Nasional Tutup)',
         'aturan_peminjaman' => [
             'syarat' => 'Terdaftar sebagai siswa/guru/staf aktif SDN Pengampon 3.',
-            'batas_waktu_pinjam' => 'Maksimal 7 hari kalender per buku.',
-            'maksimal_buku' => 'Siswa dapat meminjam maksimal 2 buku sekaligus.',
+            'durasi_peminjaman' => 'Maksimal 7 (tujuh) hari kalender per buku.',
+            'maksimal_buku' => 'Siswa dapat meminjam maksimal 2 (dua) buku sekaligus dalam satu waktu.',
+            'denda_keterlambatan' => 'Denda keterlambatan adalah Rp 1.000,- (seribu rupiah) per hari untuk setiap buku yang terlambat.',
+            'sanksi_kehilangan_atau_kerusakan' => 'Wajib segera melapor ke petugas perpustakaan dan mengganti buku dengan judul yang sama atau membayar biaya penggantian buku.',
             'pengembalian' => 'Pengembalian buku diserahkan kepada petugas perpustakaan untuk diverifikasi / scan QR.',
             'langkah_meminjam_di_aplikasi' => [
                 '1. Buka menu Katalog di website/aplikasi perpustakaan.',

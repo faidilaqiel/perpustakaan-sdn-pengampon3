@@ -64,13 +64,14 @@
                     <div id="field-siswa" class="{{ old('role', $user->role ?? 'siswa') === 'guru' ? 'hidden' : '' }}">
                         <div class="mb-5">
                             <label class="block text-sm font-bold text-gray-700 mb-2">Kelas <span class="text-red-500">*</span></label>
-                            <input type="text" name="class" value="{{ old('class', $user->class ?? '') }}"
+                            <input type="text" name="class" id="input-class" value="{{ old('class', $user->class ?? '') }}" placeholder="Contoh: 1, 2, 3, 4, 5, atau 6"
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-700 mb-2">NISN <span class="text-red-500">*</span></label>
-                            <input type="text" name="nisn" value="{{ old('nisn', $user->nisn ?? '') }}"
+                            <input type="text" name="nisn" id="input-nisn" value="{{ old('nisn', $user->nisn ?? '') }}" placeholder="Contoh: 0012345678"
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none font-mono">
+                            <p class="text-xs text-gray-500 mt-1">NISN terdiri dari 5-10 digit angka.</p>
                         </div>
                     </div>
 
@@ -78,15 +79,21 @@
                     <div id="field-guru" class="{{ old('role', $user->role ?? 'siswa') === 'guru' ? '' : 'hidden' }}">
                         <div class="mb-5">
                             <label class="block text-sm font-bold text-gray-700 mb-2">NIP <span class="text-red-500">*</span></label>
-                            <input type="text" name="nip" value="{{ old('nip', $user->nip ?? '') }}"
+                            <input type="text" name="nip" id="input-nip" value="{{ old('nip', $user->nip ?? '') }}" placeholder="Contoh: 19750717 202321 2 001"
                                    class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none font-mono">
+                            <p class="text-xs text-gray-500 mt-1">NIP terdiri dari 5-18 digit angka (spasi atau tanda hubung akan otomatis dibersihkan).</p>
                         </div>
                     </div>
 
                     <div>
                         <label class="block text-sm font-bold text-gray-700 mb-2">Kata Sandi {{ isset($user) ? '(Kosongkan jika tidak diubah)' : '*' }}</label>
-                        <input type="password" name="password" {{ isset($user) ? '' : 'required' }}
-                               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
+                        <div class="relative">
+                            <input type="password" name="password" id="member-password" {{ isset($user) ? '' : 'required' }} placeholder="Minimal 6 karakter"
+                                   class="w-full pl-4 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
+                            <button type="button" onclick="togglePassword('member-password', 'eye-icon-member')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
+                                <i class="fas fa-eye" id="eye-icon-member"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <div>
@@ -109,21 +116,46 @@
         </form>
     </div>
 
-    {{-- Script untuk Toggle Form Siswa/Guru --}}
+    {{-- Script untuk Toggle Form Siswa/Guru & Toggle Password --}}
     <script>
         function toggleFields() {
             const role = document.getElementById('role').value;
             const fieldSiswa = document.getElementById('field-siswa');
             const fieldGuru = document.getElementById('field-guru');
+            const inputClass = document.getElementById('input-class');
+            const inputNisn = document.getElementById('input-nisn');
+            const inputNip = document.getElementById('input-nip');
 
             if (role === 'guru') {
                 fieldSiswa.classList.add('hidden');
                 fieldGuru.classList.remove('hidden');
+                if (inputClass) inputClass.disabled = true;
+                if (inputNisn) inputNisn.disabled = true;
+                if (inputNip) inputNip.disabled = false;
             } else {
                 fieldSiswa.classList.remove('hidden');
                 fieldGuru.classList.add('hidden');
+                if (inputClass) inputClass.disabled = false;
+                if (inputNisn) inputNisn.disabled = false;
+                if (inputNip) inputNip.disabled = true;
             }
         }
         document.addEventListener('DOMContentLoaded', toggleFields);
+
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
     </script>
 @endsection

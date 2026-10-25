@@ -73,7 +73,12 @@
                 {{-- Password --}}
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-2">Kata Sandi Baru (Opsional)</label>
-                    <input type="password" name="password" placeholder="Kosongkan jika tidak ingin mengubah sandi" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
+                    <div class="relative">
+                        <input type="password" name="password" id="profil-password" placeholder="Kosongkan jika tidak ingin mengubah sandi" class="w-full pl-4 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
+                        <button type="button" onclick="togglePassword('profil-password', 'eye-icon-profil')" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none">
+                            <i class="fas fa-eye" id="eye-icon-profil"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div class="pt-4 border-t border-gray-100 flex justify-end">
@@ -84,4 +89,22 @@
             </form>
         </div>
     </div>
+
+    <script>
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            if (!input || !icon) return;
+
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        }
+    </script>
 @endsection

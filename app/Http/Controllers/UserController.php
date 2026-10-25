@@ -67,17 +67,29 @@ class UserController extends Controller
     // ===== SIMPAN ANGGOTA BARU =====
     public function store(Request $request)
     {
+        // Bersihkan spasi dan karakter non-angka dari NIP & NISN
+        if ($request->filled('nip')) {
+            $request->merge(['nip' => preg_replace('/[^0-9]/', '', $request->nip)]);
+        }
+        if ($request->filled('nisn')) {
+            $request->merge(['nisn' => preg_replace('/[^0-9]/', '', $request->nisn)]);
+        }
+
+        // Netralkan field yang tidak sesuai role agar tidak memicu validasi silang
+        if ($request->role === 'guru') {
+            $request->merge(['nisn' => null, 'class' => null]);
+        } elseif ($request->role === 'siswa') {
+            $request->merge(['nip' => null]);
+        }
+
         $request->validate([
             'role' => 'required|in:siswa,guru',
             'name' => 'required|max:100',
             'gender' => 'required|in:L,P',
-            'class' => 'required_if:role,siswa|max:10|nullable',
-            // Validasi NISN: Hanya angka, maksimal 10 digit
-            'nisn' => 'required_if:role,siswa|numeric|digits_between:5,10|unique:users,nisn|nullable',
-            // Validasi NIP: Hanya angka, maksimal 18 digit (sesuai standar NIP)
-            'nip' => 'required_if:role,guru|numeric|digits_between:5,18|unique:users,nip|nullable',
+            'class' => 'nullable|required_if:role,siswa|max:10',
+            'nisn' => 'nullable|required_if:role,siswa|numeric|digits_between:5,10|unique:users,nisn',
+            'nip' => 'nullable|required_if:role,guru|numeric|digits_between:5,18|unique:users,nip',
             'password' => 'required|min:6',
-            // Validasi Foto: Hanya jpg, jpeg, png, maksimal 2MB
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ], [
             'role.required' => 'Role wajib dipilih.',
@@ -137,15 +149,47 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
+        // Bersihkan spasi dan karakter non-angka dari NIP & NISN
+        if ($request->filled('nip')) {
+            $request->merge(['nip' => preg_replace('/[^0-9]/', '', $request->nip)]);
+        }
+        if ($request->filled('nisn')) {
+            $request->merge(['nisn' => preg_replace('/[^0-9]/', '', $request->nisn)]);
+        }
+
+        // Netralkan field yang tidak sesuai role
+        if ($request->role === 'guru') {
+            $request->merge(['nisn' => null, 'class' => null]);
+        } elseif ($request->role === 'siswa') {
+            $request->merge(['nip' => null]);
+        }
+
         $request->validate([
             'role' => 'required|in:siswa,guru',
             'name' => 'required|max:100',
             'gender' => 'required|in:L,P',
-            'class' => 'required_if:role,siswa|max:10|nullable',
-            'nisn' => 'required_if:role,siswa|numeric|digits_between:5,10|unique:users,nisn,' . $id . '|nullable',
-            'nip' => 'required_if:role,guru|numeric|digits_between:5,18|unique:users,nip,' . $id . '|nullable',
+            'class' => 'nullable|required_if:role,siswa|max:10',
+            'nisn' => 'nullable|required_if:role,siswa|numeric|digits_between:5,10|unique:users,nisn,' . $id,
+            'nip' => 'nullable|required_if:role,guru|numeric|digits_between:5,18|unique:users,nip,' . $id,
             'password' => 'nullable|min:6',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+        ], [
+            'role.required' => 'Role wajib dipilih.',
+            'name.required' => 'Nama wajib diisi.',
+            'gender.required' => 'Jenis kelamin wajib dipilih.',
+            'class.required_if' => 'Kelas wajib diisi untuk siswa.',
+            'nisn.required_if' => 'NISN wajib diisi untuk siswa.',
+            'nisn.numeric' => 'NISN harus berupa angka.',
+            'nisn.digits_between' => 'NISN harus 5-10 digit.',
+            'nisn.unique' => 'NISN sudah terdaftar.',
+            'nip.required_if' => 'NIP wajib diisi untuk guru.',
+            'nip.numeric' => 'NIP harus berupa angka.',
+            'nip.digits_between' => 'NIP harus 5-18 digit.',
+            'nip.unique' => 'NIP sudah terdaftar.',
+            'password.min' => 'Password minimal 6 karakter.',
+            'photo.image' => 'File harus berupa gambar.',
+            'photo.mimes' => 'Format foto harus JPG, JPEG, atau PNG.',
+            'photo.max' => 'Ukuran foto maksimal 2MB.',
         ]);
 
         $photoName = $user->photo;
