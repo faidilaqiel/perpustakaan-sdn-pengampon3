@@ -108,22 +108,38 @@
     <script src="https://files.bpcontent.cloud/2026/10/20/07/20261020071537-L4781M7K.js" defer></script>
 
     <script>
-        const botUserData = {
-            name: @json(Auth::user()->name ?? 'Siswa'),
-            role: 'Siswa',
-            userName: @json(Auth::user()->name ?? 'Siswa'),
-            userRole: 'Siswa'
+        const sendUserToBotpress = () => {
+            if (window.botpress && window.botpress.updateUser) {
+                window.botpress.updateUser({
+                    name: @json(Auth::user()->name ?? 'Siswa'),
+                    data: {
+                        name: @json(Auth::user()->name ?? 'Siswa'),
+                        role: 'Siswa',
+                        userName: @json(Auth::user()->name ?? 'Siswa'),
+                        userRole: 'Siswa',
+                        isSiswa: true,
+                    }
+                });
+                console.log("✅ Data siswa berhasil disinkronkan ke Botpress:", @json(Auth::user()->name ?? 'Siswa'));
+            }
         };
 
-        const sendUserToBotpress = () => window.botpress && window.botpress.updateUser && window.botpress.updateUser({ data: botUserData });
+        const initBotpressSync = () => {
+            if (window.botpress) {
+                if (window.botpress.on) {
+                    window.botpress.on('webchat:initialized', sendUserToBotpress);
+                    window.botpress.on('webchat:opened', sendUserToBotpress);
+                }
+                sendUserToBotpress();
+            }
+        };
 
         const waitForBotpress = setInterval(() => {
             if (window.botpress && window.botpress.updateUser) {
                 clearInterval(waitForBotpress);
-                sendUserToBotpress();
-                window.botpress.on('webchat:opened', sendUserToBotpress);
+                initBotpressSync();
             }
-        }, 500);
+        }, 300);
     </script>
 </body>
 </html>

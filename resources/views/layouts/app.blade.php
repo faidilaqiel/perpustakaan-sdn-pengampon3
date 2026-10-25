@@ -118,22 +118,38 @@
 @endphp
 
 <script>
-    const botUserData = {
-        name: @json($userName),
-        role: @json($roleLabel),
-        userName: @json($userName),
-        userRole: @json($roleLabel),
+    const sendUserToBotpress = () => {
+        if (window.botpress && window.botpress.updateUser) {
+            window.botpress.updateUser({
+                name: @json($userName),
+                data: {
+                    name: @json($userName),
+                    role: @json($roleLabel),
+                    userName: @json($userName),
+                    userRole: @json($roleLabel),
+                    isPetugas: @json(Auth::user()->role === 'petugas'),
+                }
+            });
+            console.log("✅ Data user berhasil disinkronkan ke Botpress:", @json($userName), @json($roleLabel));
+        }
     };
 
-    const sendUserToBotpress = () => window.botpress.updateUser({ data: botUserData });
+    const initBotpressSync = () => {
+        if (window.botpress) {
+            if (window.botpress.on) {
+                window.botpress.on('webchat:initialized', sendUserToBotpress);
+                window.botpress.on('webchat:opened', sendUserToBotpress);
+            }
+            sendUserToBotpress();
+        }
+    };
 
     const waitForBotpress = setInterval(() => {
         if (window.botpress && window.botpress.updateUser) {
             clearInterval(waitForBotpress);
-            sendUserToBotpress();
-            window.botpress.on('webchat:opened', sendUserToBotpress);
+            initBotpressSync();
         }
-    }, 500);
+    }, 300);
 </script>
 </body>
 </html>
