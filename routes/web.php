@@ -92,3 +92,56 @@ Route::get('/petugas/scan/qr-code/{id}', [ScanController::class, 'qrCode'])->nam
 Route::get('/kepsek/laporan', [ReportController::class, 'laporan'])->name('kepsek.laporan');
 Route::get('/kepsek/laporan/cetak-pdf', [ReportController::class, 'cetakPdf'])->name('kepsek.cetakPdf');
 Route::post('/api/chatbot', [App\Http\Controllers\ChatbotController::class, 'chat'])->name('api.chatbot');
+
+// ===== HALAMAN DATA PUBLIK UNTUK KNOWLEDGE BASE BOTPRESS =====
+Route::get('/informasi-perpustakaan', function () {
+    $totalBuku = \App\Models\Book::count();
+    $members = \App\Models\User::whereIn('role', ['siswa', 'guru'])->orderBy('role', 'asc')->orderBy('name', 'asc')->get();
+    $totalAnggota = $members->count();
+    $totalSiswa = $members->where('role', 'siswa')->count();
+    $totalGuru = $members->where('role', 'guru')->count();
+
+    $activeLoans = \App\Models\Loan::with(['book', 'user'])->where('status', 'dipinjam')->get();
+    $totalDipinjam = $activeLoans->count();
+
+    $html = "<!DOCTYPE html><html lang='id'><head><meta charset='UTF-8'><title>Informasi Publik Perpustakaan SDN Pengampon 3</title></head><body>";
+    $html .= "<h1>Informasi Resmi Perpustakaan Digital SDN Pengampon 3 Cirebon</h1>";
+    $html .= "<p>Layanan informasi resmi perpustakaan sekolah SDN Pengampon 3 Kota Cirebon. Kepala Sekolah: Bapak H. Noni Risanto, M.Pd.I. Jam buka: Senin - Jumat pukul 07.30 - 14.00 WIB.</p>";
+
+    $html .= "<h2>Statistik Terkini Perpustakaan</h2>";
+    $html .= "<ul>";
+    $html .= "<li><strong>Total Buku:</strong> {$totalBuku} judul buku.</li>";
+    $html .= "<li><strong>Total Anggota:</strong> {$totalAnggota} orang (terdiri dari {$totalSiswa} siswa dan {$totalGuru} guru).</li>";
+    $html .= "<li><strong>Buku Sedang Dipinjam:</strong> {$totalDipinjam} buku.</li>";
+    $html .= "</ul>";
+
+    $html .= "<h2>Status Buku yang Sedang Dipinjam</h2>";
+    if ($totalDipinjam === 0) {
+        $html .= "<p>Saat ini tidak ada buku yang sedang dipinjam (0 buku). Semua koleksi buku di perpustakaan dalam status tersedia dan siap dipinjam oleh siswa maupun guru.</p>";
+    } else {
+        $html .= "<p>Saat ini terdapat {$totalDipinjam} buku yang sedang dipinjam:</p><ol>";
+        foreach ($activeLoans as $loan) {
+            $judul = $loan->book->title ?? 'Buku';
+            $peminjam = $loan->user->name ?? 'Anggota';
+            $kelas = $loan->user->class ? " (Kelas {$loan->user->class})" : "";
+            $tgl = \Carbon\Carbon::parse($loan->loan_date)->translatedFormat('d M Y');
+            $tempo = \Carbon\Carbon::parse($loan->due_date)->translatedFormat('d M Y');
+            $html .= "<li>Buku '{$judul}' dipinjam oleh {$peminjam}{$kelas}. Dipinjam tanggal {$tgl}, batas pengembalian {$tempo}.</li>";
+        }
+        $html .= "</ol>";
+    }
+
+    $html .= "<h2>Daftar Anggota Perpustakaan SDN Pengampon 3</h2>";
+    $html .= "<p>Total anggota perpustakaan yang terdaftar berjumlah {$totalAnggota} orang. Berikut daftar nama-nama anggota:</p><ul>";
+    foreach ($members as $m) {
+        $roleInfo = $m->role === 'siswa' && $m->class ? "Siswa Kelas {$m->class}" : ucfirst($m->role);
+        $html .= "<li>{$m->name} ({$roleInfo})</li>";
+    }
+    $html .= "</ul>";
+
+    $html .= "<h2>Tata Cara Peminjaman Buku</h2>";
+    $html .= "<p>1. Buka menu Katalog di website perpustakaan. 2. Pilih buku yang diinginkan. 3. Klik tombol Pinjam Buku Ini. 4. Status pinjaman Menunggu konfirmasi Petugas. 5. Datang ke perpustakaan untuk ambil buku fisik dan konfirmasi ke Petugas. Batas waktu pinjam 7 hari, maksimal 2 buku.</p>";
+    $html .= "</body></html>";
+
+    return response($html)->header('Content-Type', 'text/html');
+});

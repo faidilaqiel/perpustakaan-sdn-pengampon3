@@ -3,6 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Models\Book;
+use App\Models\User;
+use App\Models\Loan;
+use Carbon\Carbon;
 
 // Endpoint koleksi buku untuk integrasi Botpress AI Knowledge Base
 Route::get('/books', function () {
@@ -31,6 +34,132 @@ Route::get('/books', function () {
         'status' => 'success',
         'total' => $books->count(),
         'data' => $books,
+    ])->header('Access-Control-Allow-Origin', '*')
+      ->header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+      ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+});
+
+// Endpoint informasi buku yang sedang dipinjam (sirkulasi aktif)
+Route::get('/loans-active', function () {
+    $activeLoans = Loan::with(['book', 'user'])
+        ->where('status', 'dipinjam')
+        ->orderBy('due_date', 'asc')
+        ->get();
+
+    $count = $activeLoans->count();
+
+    if ($count === 0) {
+        $narasi = "Saat ini tidak ada buku yang sedang dipinjam (0 buku sedang dipinjam). Semua koleksi buku perpustakaan berstatus tersedia untuk dipinjam.";
+    } else {
+        $items = $activeLoans->map(function ($loan, $index) {
+            $nomor = $index + 1;
+            $judul = $loan->book->title ?? 'Buku';
+            $peminjam = $loan->user->name ?? 'Anggota';
+            $kelas = $loan->user->class ? " (Kelas {$loan->user->class})" : '';
+            $tglPinjam = Carbon::parse($loan->loan_date)->translatedFormat('d M Y');
+            $jatuhTempo = Carbon::parse($loan->due_date)->translatedFormat('d M Y');
+            return "{$nomor}. '{$judul}' dipinjam oleh {$peminjam}{$kelas}, dipinjam sejak {$tglPinjam}, jatuh tempo {$jatuhTempo}.";
+        })->implode("\n");
+
+        $narasi = "Saat ini terdapat {$count} buku yang sedang dipinjam di Perpustakaan SDN Pengampon 3:\n" . $items;
+    }
+
+    return response()->json([
+        'status' => 'success',
+        'total_sedang_dipinjam' => $count,
+        'ringkasan_ai' => $narasi,
+        'data' => $activeLoans->map(function ($loan) {
+            return [
+                'buku' => $loan->book->title ?? '-',
+                'kode_buku' => $loan->book->code ?? '-',
+                'peminjam' => $loan->user->name ?? '-',
+                'peran' => $loan->user->role ?? '-',
+                'kelas' => $loan->user->class ?? '-',
+                'tanggal_pinjam' => $loan->loan_date,
+                'jatuh_tempo' => $loan->due_date,
+            ];
+        }),
+    ])->header('Access-Control-Allow-Origin', '*')
+      ->header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+      ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+});
+
+// Endpoint data anggota perpustakaan (siswa & guru)
+Route::get('/members', function () {
+    $members = User::whereIn('role', ['siswa', 'guru'])
+        ->orderBy('role', 'asc')
+        ->orderBy('class', 'asc')
+        ->orderBy('name', 'asc')
+        ->get(['id', 'name', 'role', 'class', 'nisn', 'nip']);
+
+    $totalSiswa = $members->where('role', 'siswa')->count();
+    $totalGuru = $members->where('role', 'guru')->count();
+    $totalAnggota = $members->count();
+
+    $namaAnggota = $members->map(function ($m) {
+        $ket = $m->role === 'siswa' && $m->class ? " (Siswa Kelas {$m->class})" : " (" . ucfirst($m->role) . ")";
+        return $m->name . $ket;
+    })->implode(", ");
+
+    $narasi = "Perpustakaan Digital SDN Pengampon 3 memiliki total {$totalAnggota} anggota terdaftar (terdiri dari {$totalSiswa} siswa dan {$totalGuru} guru). Anggota yang terdaftar antara lain: " . $namaAnggota . ".";
+
+    return response()->json([
+        'status' => 'success',
+        'total_anggota' => $totalAnggota,
+        'total_siswa' => $totalSiswa,
+        'total_guru' => $totalGuru,
+        'ringkasan_ai' => $narasi,
+        'data' => $members,
+    ])->header('Access-Control-Allow-Origin', '*')
+      ->header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+      ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+});
+
+// Endpoint data statistik lengkap perpustakaan
+Route::get('/statistics', function () {
+    $totalBuku = Book::count();
+    $totalAnggota = User::whereIn('role', ['siswa', 'guru'])->count();
+    $sedangDipinjam = Loan::where('status', 'dipinjam')->count();
+    $terlambat = Loan::where('status', 'dipinjam')
+        ->where('due_date', '<', Carbon::now()->format('Y-m-d'))
+        ->count();
+
+    $narasi = "Statistik resmi Perpustakaan SDN Pengampon 3 saat ini: Total Koleksi Buku ada {$totalBuku} judul, Total Anggota aktif ada {$totalAnggota} orang, Buku yang sedang dipinjam ada {$sedangDipinjam} buku, dan Buku terlambat ada {$terlambat} buku.";
+
+    return response()->json([
+        'status' => 'success',
+        'total_buku' => $totalBuku,
+        'total_anggota' => $totalAnggota,
+        'sedang_dipinjam' => $sedangDipinjam,
+        'terlambat' => $terlambat,
+        'ringkasan_ai' => $narasi,
+    ])->header('Access-Control-Allow-Origin', '*')
+      ->header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+      ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+});
+
+// Endpoint ringkasan menyeluruh (Knowledge Data Lengkap) untuk Botpress
+Route::get('/perpustakaan-data', function () {
+    $totalBuku = Book::count();
+    $members = User::whereIn('role', ['siswa', 'guru'])->get();
+    $totalAnggota = $members->count();
+    $activeLoans = Loan::with(['book', 'user'])->where('status', 'dipinjam')->get();
+    $totalDipinjam = $activeLoans->count();
+
+    $pinjamText = $totalDipinjam === 0 
+        ? "Saat ini tidak ada buku yang sedang dipinjam (0 buku dipinjam)." 
+        : "Ada {$totalDipinjam} buku sedang dipinjam: " . $activeLoans->map(fn($l) => "'{$l->book->title}' oleh {$l->user->name}")->implode(', ');
+
+    $anggotaText = "Total anggota perpustakaan adalah {$totalAnggota} orang. Daftar anggota: " . $members->pluck('name')->implode(', ');
+
+    return response()->json([
+        'status' => 'success',
+        'nama_perpustakaan' => 'Perpustakaan Digital SDN Pengampon 3',
+        'total_buku' => $totalBuku,
+        'total_anggota' => $totalAnggota,
+        'sedang_dipinjam' => $totalDipinjam,
+        'status_peminjaman_terkini' => $pinjamText,
+        'data_anggota_terkini' => $anggotaText,
     ])->header('Access-Control-Allow-Origin', '*')
       ->header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
       ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
