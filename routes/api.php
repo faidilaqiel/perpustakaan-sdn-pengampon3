@@ -152,6 +152,12 @@ Route::get('/perpustakaan-data', function () {
 
     $anggotaText = "Total anggota perpustakaan adalah {$totalAnggota} orang. Daftar anggota: " . $members->pluck('name')->implode(', ');
 
+    $allBooks = Book::with('category')->get();
+    $bukuText = $allBooks->map(function ($b) {
+        $kat = $b->category ? $b->category->name : 'Umum';
+        return "Buku '{$b->title}' (Kode {$b->code}, Penulis {$b->author}, Kategori {$kat}): Stok tersedia {$b->stock_available} buku dari total {$b->stock_total} buku.";
+    })->implode("\n");
+
     return response()->json([
         'status' => 'success',
         'nama_perpustakaan' => 'Perpustakaan Digital SDN Pengampon 3',
@@ -160,6 +166,7 @@ Route::get('/perpustakaan-data', function () {
         'sedang_dipinjam' => $totalDipinjam,
         'status_peminjaman_terkini' => $pinjamText,
         'data_anggota_terkini' => $anggotaText,
+        'koleksi_buku_dan_stok' => $bukuText,
     ])->header('Access-Control-Allow-Origin', '*')
       ->header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
       ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');

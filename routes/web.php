@@ -139,6 +139,23 @@ Route::get('/informasi-perpustakaan', function () {
     }
     $html .= "</ul>";
 
+    $html .= "<h2>Daftar Seluruh Koleksi Buku dan Stok Tersedia</h2>";
+    $html .= "<p>Berikut adalah rincian lengkap seluruh koleksi buku, penulis, kategori, dan jumlah stok tersedia di Perpustakaan Digital SDN Pengampon 3:</p><ol>";
+    $allBooks = \App\Models\Book::with('category')->get();
+    foreach ($allBooks as $book) {
+        $kategori = $book->category ? $book->category->name : 'Umum';
+        $statusStok = $book->stock_available > 0 
+            ? "Tersedia ({$book->stock_available} eksemplar siap dipinjam)" 
+            : "Sedang habis dipinjam";
+        $html .= "<li><strong>{$book->title}</strong> (Kode Buku: {$book->code})<br>";
+        $html .= "- Penulis: {$book->author}<br>";
+        $html .= "- Kategori: {$kategori}<br>";
+        $html .= "- Penerbit: " . ($book->publisher ?? '-') . " (Tahun {$book->year})<br>";
+        $html .= "- Jumlah Stok Tersedia: <strong>{$book->stock_available} buku</strong> (dari total {$book->stock_total} buku)<br>";
+        $html .= "- Status: {$statusStok}</li>";
+    }
+    $html .= "</ol>";
+
     $html .= "<h2>Tata Cara Peminjaman Buku</h2>";
     $html .= "<p>1. Buka menu Katalog di website perpustakaan. 2. Pilih buku yang diinginkan. 3. Klik tombol Pinjam Buku Ini. 4. Status pinjaman Menunggu konfirmasi Petugas. 5. Datang ke perpustakaan untuk ambil buku fisik dan konfirmasi ke Petugas. Batas waktu pinjam 7 hari, maksimal 2 buku.</p>";
     $html .= "</body></html>";
