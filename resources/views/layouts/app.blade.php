@@ -113,13 +113,15 @@
         'siswa'   => 'Siswa',
         default   => 'Pengguna',
     };
-    // Petugas dipanggil "Administrator"; role lain namanya sama dengan perannya
-    $displayName = $roleLabel === 'Petugas Perpustakaan' ? 'Administrator' : $roleLabel;
+    // Tampilkan nama pengguna jika tersedia, atau label perannya
+    $userName = Auth::user()->name ?? $roleLabel;
 @endphp
 
 <script>
     const botUserData = {
-        userName: @json($displayName),
+        name: @json($userName),
+        role: @json($roleLabel),
+        userName: @json($userName),
         userRole: @json($roleLabel),
     };
 

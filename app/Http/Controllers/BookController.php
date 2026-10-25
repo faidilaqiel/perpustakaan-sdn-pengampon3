@@ -198,6 +198,9 @@ class BookController extends Controller
             'cover' => $coverName,
         ]);
 
+        // Perbarui data buku di Botpress Knowledge Base
+        $this->syncToBotpress($book);
+
         return redirect()->route('petugas.kelolaBuku')->with('success', '✅ Buku berhasil diperbarui!');
     }
 
@@ -215,37 +218,54 @@ class BookController extends Controller
         return redirect()->route('petugas.kelolaBuku')->with('success', '✅ Buku berhasil dihapus!');
     }
 
-    // ===== INTEGRASI BOTPRESS (SINKRONISASI) =====
+    // ===== INTEGRASI BOTPRESS (SINKRONISASI KNOWLEDGE BASE) =====
     private function syncToBotpress(Book $book)
     {
         try {
-            $token = env('BOTPRESS_API_TOKEN', 'bp_pat_7REmequi2SC70KV6yomtrLqgASHQEEVKRLg1');
+            $token = env('BOTPRESS_API_TOKEN', 'bp_pat_7REmequi2SC70KV6yomtrLqgAShQEEVkRLgi');
             $botId = env('BOTPRESS_BOT_ID', '8ba49550-a45f-4fee-bcbf-b22279865dd3');
 
-            Http::withHeaders([
+            $categoryName = $book->category ? $book->category->name : 'Umum';
+            $status = $book->stock_available > 0 
+                ? "Tersedia ({$book->stock_available} buku siap dipinjam)" 
+                : "Sedang habis/sedang dipinjam seluruhnya";
+
+            $content = "Informasi Buku Perpustakaan SDN Pengampon 3:\n"
+                . "- Judul: {$book->title}\n"
+                . "- Penulis: {$book->author}\n"
+                . "- Penerbit: " . ($book->publisher ?? '-') . "\n"
+                . "- Tahun: " . ($book->year ?? '-') . "\n"
+                . "- Kategori: {$categoryName}\n"
+                . "- Kode Buku: {$book->code}\n"
+                . "- Status Stok: {$status}\n"
+                . "- Total Eksemplar: {$book->stock_total}, Tersedia: {$book->stock_available}";
+
+            Http::timeout(5)->withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'x-bot-id' => $botId,
-            ])->post('https://api.botpress.cloud/v1/admin/knowledge_bases/documents', [
-                'title' => 'Buku: ' . $book->title,
-                'content' => "Buku dengan judul {$book->title} karya {$book->author} tersedia dengan stok {$book->stock_available}.",
+                'Content-Type' => 'application/json',
+            ])->post('https://api.botpress.cloud/v1/admin/knowledge-bases/documents', [
+                'title' => 'Buku: ' . $book->title . ' (' . $book->code . ')',
+                'content' => $content,
+                'tags' => ['buku', $book->code, strtolower($categoryName)]
             ]);
         } catch (\Exception $e) {
-            \Log::error("Gagal sinkronisasi buku ke Botpress: " . $e->getMessage());
+            \Log::warning("Sinkronisasi Botpress dilewati/gagal: " . $e->getMessage());
         }
     }
 
     private function deleteFromBotpress(Book $book)
     {
         try {
-            $token = env('BOTPRESS_API_TOKEN', 'bp_pat_7REmequi2SC70KV6yomtrLqgASHQEEVKRLg1');
+            $token = env('BOTPRESS_API_TOKEN', 'bp_pat_7REmequi2SC70KV6yomtrLqgAShQEEVkRLgi');
             $botId = env('BOTPRESS_BOT_ID', '8ba49550-a45f-4fee-bcbf-b22279865dd3');
 
-            Http::withHeaders([
+            Http::timeout(5)->withHeaders([
                 'Authorization' => 'Bearer ' . $token,
                 'x-bot-id' => $botId,
-            ])->delete('https://api.botpress.cloud/v1/admin/knowledge_bases/documents/Buku_' . $book->code);
+            ])->delete('https://api.botpress.cloud/v1/admin/knowledge-bases/documents/Buku_' . $book->code);
         } catch (\Exception $e) {
-            \Log::error("Gagal menghapus buku dari Botpress: " . $e->getMessage());
+            \Log::warning("Gagal menghapus dokumen buku dari Botpress: " . $e->getMessage());
         }
     }
 }

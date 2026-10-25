@@ -106,5 +106,24 @@
     {{-- ================= FLOATING CHATBOT (BOTPRESS) ================= --}}
     <script src="https://cdn.botpress.cloud/webchat/v5.0/inject.js"></script>
     <script src="https://files.bpcontent.cloud/2026/10/20/07/20261020071537-L4781M7K.js" defer></script>
+
+    <script>
+        const botUserData = {
+            name: @json(Auth::user()->name ?? 'Siswa'),
+            role: 'Siswa',
+            userName: @json(Auth::user()->name ?? 'Siswa'),
+            userRole: 'Siswa'
+        };
+
+        const sendUserToBotpress = () => window.botpress && window.botpress.updateUser && window.botpress.updateUser({ data: botUserData });
+
+        const waitForBotpress = setInterval(() => {
+            if (window.botpress && window.botpress.updateUser) {
+                clearInterval(waitForBotpress);
+                sendUserToBotpress();
+                window.botpress.on('webchat:opened', sendUserToBotpress);
+            }
+        }, 500);
+    </script>
 </body>
 </html>
