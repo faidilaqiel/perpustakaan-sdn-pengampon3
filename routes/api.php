@@ -46,10 +46,17 @@ Route::get('/library-info', function () {
         'jam_operasional' => 'Senin - Jumat: 07.30 - 14.00 WIB (Sabtu, Minggu & Hari Libur Nasional Tutup)',
         'aturan_peminjaman' => [
             'syarat' => 'Terdaftar sebagai siswa/guru/staf aktif SDN Pengampon 3.',
-            'cara_pinjam' => 'Buka katalog di website, pilih buku, klik tombol Pinjam Buku, lalu konfirmasi ke petugas perpustakaan.',
             'batas_waktu_pinjam' => 'Maksimal 7 hari kalender per buku.',
             'maksimal_buku' => 'Siswa dapat meminjam maksimal 2 buku sekaligus.',
-            'pengembalian' => 'Pengembalian buku diserahkan kepada petugas perpustakaan untuk di-scan QR/diverifikasi.',
+            'pengembalian' => 'Pengembalian buku diserahkan kepada petugas perpustakaan untuk diverifikasi / scan QR.',
+            'langkah_meminjam_di_aplikasi' => [
+                '1. Buka menu Katalog di website/aplikasi perpustakaan.',
+                '2. Cari dan klik buku yang ingin dipinjam (pastikan status stok tersedia).',
+                '3. Klik tombol hijau "Pinjam Buku Ini" untuk mengajukan peminjaman.',
+                '4. Status pinjaman akan menjadi "Menunggu". Datanglah ke ruang perpustakaan untuk mengambil buku fisik dan meminta konfirmasi Petugas.',
+                '5. Setelah disetujui Petugas, buku resmi dipinjam dan batas pengembalian dapat dipantau di menu Riwayat.',
+            ],
+            'ringkasan_cara_pinjam' => 'Untuk meminjam buku: Buka menu Katalog -> Pilih buku yang tersedia -> Klik tombol "Pinjam Buku Ini" -> Datang ke perpustakaan untuk verifikasi dan ambil buku fisik dari Petugas.',
         ],
         'kontak' => [
             'email' => 'sdpengampon3cirebon@gmail.com',
