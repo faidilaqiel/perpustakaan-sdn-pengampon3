@@ -104,34 +104,34 @@
     <script src="https://cdn.botpress.cloud/webchat/v5.0/inject.js"></script>
     <script src="https://files.bpcontent.cloud/2026/10/20/07/20261020071537-L4781M7K.js" defer></script>
 
-    {{-- SCRIPT UNTUK MENGIRIM DATA USER KE BOTPRESS V5 --}}
-    <script>
-        const waitForBotpress = setInterval(() => {
-            if (window.botpress && window.botpress.updateUser) {
-                clearInterval(waitForBotpress); 
+    @php
+    // Terjemahkan role database menjadi label untuk bot
+    $roleLabel = match (strtolower(Auth::user()->role ?? '')) {
+        'petugas' => 'Petugas Perpustakaan',
+        'kepsek'  => 'Kepala Sekolah',
+        'guru'    => 'Guru',
+        'siswa'   => 'Siswa',
+        default   => 'Pengguna',
+    };
+    // Petugas dipanggil "Administrator"; role lain namanya sama dengan perannya
+    $displayName = $roleLabel === 'Petugas Perpustakaan' ? 'Administrator' : $roleLabel;
+@endphp
 
-                // 1. Kirim data saat pertama kali load
-                window.botpress.updateUser({
-                    data: {
-                        name: "{{ Auth::user()->name ?? 'Tamu' }}",
-                        role: "{{ Auth::user()->role ?? 'Siswa' }}"
-                    }
-                });
+<script>
+    const botUserData = {
+        userName: @json($displayName),
+        userRole: @json($roleLabel),
+    };
 
-                // 2. Dengarkan event jika chat dibuka/tutup, lalu kirim ulang datanya (mencegah Anonymous)
-                window.botpress.on('webchat:opened', () => {
-                    window.botpress.updateUser({
-                        data: {
-                            name: "{{ Auth::user()->name ?? 'Tamu' }}",
-                            role: "{{ Auth::user()->role ?? 'Siswa' }}"
-                        }
-                    });
-                    console.log("🔄 Data user di-refresh saat chat dibuka.");
-                });
+    const sendUserToBotpress = () => window.botpress.updateUser({ data: botUserData });
 
-                console.log("✅ Berhasil! Data user terkirim ke Botpress.");
-            }
-        }, 500); 
-    </script>
+    const waitForBotpress = setInterval(() => {
+        if (window.botpress && window.botpress.updateUser) {
+            clearInterval(waitForBotpress);
+            sendUserToBotpress();
+            window.botpress.on('webchat:opened', sendUserToBotpress);
+        }
+    }, 500);
+</script>
 </body>
 </html>
