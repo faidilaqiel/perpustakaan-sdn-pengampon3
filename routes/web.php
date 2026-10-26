@@ -180,6 +180,20 @@ Route::get('/informasi-perpustakaan', function () {
     }
     $html .= "</ol>";
 
+    $html .= "<h2>Daftar Buku Berdasarkan Tahun Terbit (Tahun 2020 ke Atas dan Sebelum 2020)</h2>";
+    $html .= "<p>Pertanyaan: Buku apa saja yang diterbitkan pada tahun 2020 atau di atasnya?</p>";
+    $html .= "<p>Di Perpustakaan Digital SDN Pengampon 3, terdapat <strong>4 (empat) judul buku</strong> yang diterbitkan pada tahun 2020 atau setelahnya (tahun 2020 ke atas):</p><ol>";
+    $html .= "<li><strong>Matematika Kelas VI</strong> - Tahun Terbit: <strong>2020</strong> (Penulis: Tim Erlangga, Penerbit: Erlangga, Kategori: Matematika, Stok Tersedia: 10 eksemplar)</li>";
+    $html .= "<li><strong>Bahasa Indonesia: Aku Bisa! Kelas 1</strong> - Tahun Terbit: <strong>2022</strong> (Penulis: Kemendikbudristek, Penerbit: Pusat Kurikulum, Kategori: Pelajaran / Bahasa, Stok Tersedia: 10 eksemplar)</li>";
+    $html .= "<li><strong>Matematika Kelas 4 SD</strong> - Tahun Terbit: <strong>2022</strong> (Penulis: Kemendikbudristek, Penerbit: Pusat Kurikulum, Kategori: Matematika, Stok Tersedia: 10 eksemplar)</li>";
+    $html .= "<li><strong>IPAS Kelas 5 SD</strong> - Tahun Terbit: <strong>2022</strong> (Penulis: Kemendikbudristek, Penerbit: Pusat Kurikulum, Kategori: IPA, Stok Tersedia: 7 eksemplar)</li>";
+    $html .= "</ol>";
+    $html .= "<p>Sedangkan 3 (tiga) judul buku lainnya diterbitkan sebelum tahun 2020:</p><ul>";
+    $html .= "<li><strong>Sains untuk SD</strong> - Tahun Terbit: <strong>2019</strong> (Penulis: Tim Yudhistira, Penerbit: Yudhistira, Stok Tersedia: 8 eksemplar)</li>";
+    $html .= "<li><strong>Cerita Rakyat Nusantara</strong> - Tahun Terbit: <strong>2018</strong> (Penulis: Ali Muakhir, Penerbit: Dar! Mizan, Stok Tersedia: 6 eksemplar)</li>";
+    $html .= "<li><strong>Laskar Sipitung</strong> - Tahun Terbit: <strong>2005</strong> (Penulis: Andrea Hirata, Penerbit: Bentang Pustaka, Stok Tersedia: 5 eksemplar)</li>";
+    $html .= "</ul>";
+
     $html .= "<h2>Durasi dan Batas Waktu Peminjaman Buku</h2>";
     $html .= "<p>Pertanyaan: Berapa lama saya boleh meminjam buku? Batas waktu peminjaman buku di Perpustakaan Digital SDN Pengampon 3 adalah maksimal <strong>7 (tujuh) hari kalender</strong> terhitung sejak disetujui petugas. Anggota dapat melihat tanggal jatuh tempo pengembalian di menu Riwayat.</p>";
 

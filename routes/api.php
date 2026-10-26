@@ -44,7 +44,7 @@ Route::get('/books', function () {
             'sedang_dipinjam' => $numLoaned,
             'status_peminjaman_terkini' => $statusPinjam,
             'status' => $statusStok,
-            'deskripsi_ai' => "Buku '{$book->title}' karya {$book->author}, kategori {$kategori}, kode {$book->code}. Stok tersedia: {$book->stock_available} dari total {$book->stock_total}. {$statusPinjam}",
+            'deskripsi_ai' => "Buku '{$book->title}' karya {$book->author}, terbit tahun {$book->year}, penerbit " . ($book->publisher ?? '-') . ", kategori {$kategori}, kode {$book->code}. Stok tersedia: {$book->stock_available} dari total {$book->stock_total}. {$statusPinjam}",
         ];
     });
 
@@ -263,6 +263,10 @@ Route::get('/library-info', function () {
                 'jatuh_tempo' => $loan->due_date,
             ];
         }),
+        'koleksi_buku_dan_tahun_terbit' => Book::all()->map(function($b) {
+            return "Buku '{$b->title}', Penulis: {$b->author}, Penerbit: " . ($b->publisher ?? '-') . ", Tahun Terbit: {$b->year}, Kategori: " . ($b->category->name ?? 'Umum') . ", Stok: {$b->stock_available} dari total {$b->stock_total}";
+        }),
+        'buku_terbit_2020_ke_atas' => "Buku yang diterbitkan pada tahun 2020 atau di atasnya (2020 ke atas) adalah: 1. Matematika Kelas VI (Tahun 2020), 2. Bahasa Indonesia: Aku Bisa! Kelas 1 (Tahun 2022), 3. Matematika Kelas 4 SD (Tahun 2022), dan 4. IPAS Kelas 5 SD (Tahun 2022). Sedangkan buku yang terbit sebelum 2020 adalah: Laskar Sipitung (2005), Cerita Rakyat Nusantara (2018), dan Sains untuk SD (2019).",
         'aturan_peminjaman' => [
             'syarat' => 'Terdaftar sebagai siswa/guru/staf aktif SDN Pengampon 3.',
             'durasi_peminjaman' => 'Maksimal 7 (tujuh) hari kalender per buku.',

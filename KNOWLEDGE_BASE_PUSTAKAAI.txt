@@ -63,45 +63,63 @@ Total ada **7 judul buku** resmi yang terdaftar di perpustakaan dengan rincian s
 1. **Laskar Sipitung**
    - Kode Buku: BK-001
    - Penulis: Andrea Hirata
-   - Penerbit: Bentang Pustaka (2005)
+   - Penerbit: Bentang Pustaka
+   - Tahun Terbit: **2005**
    - Kategori: Cerita Rakyat
    - Jumlah Stok: **5 buku** (Tersedia 5 eksemplar)
 2. **Matematika Kelas VI**
    - Kode Buku: BK-002
    - Penulis: Tim Erlangga
-   - Penerbit: Erlangga (2020)
+   - Penerbit: Erlangga
+   - Tahun Terbit: **2020**
    - Kategori: Matematika
    - Jumlah Stok: **10 buku** (Tersedia 10 eksemplar)
 3. **Sains untuk SD**
    - Kode Buku: BK-003
    - Penulis: Tim Yudhistira
-   - Penerbit: Yudhistira (2019)
+   - Penerbit: Yudhistira
+   - Tahun Terbit: **2019**
    - Kategori: IPA
    - Jumlah Stok: **8 buku** (Tersedia 8 eksemplar)
 4. **Cerita Rakyat Nusantara**
    - Kode Buku: BK-004
    - Penulis: Ali Muakhir
-   - Penerbit: Dar! Mizan (2018)
+   - Penerbit: Dar! Mizan
+   - Tahun Terbit: **2018**
    - Kategori: Cerita Rakyat
    - Jumlah Stok: **6 buku** (Tersedia 6 eksemplar)
 5. **Bahasa Indonesia: Aku Bisa! Kelas 1**
    - Kode Buku: BK-005
    - Penulis: Kemendikbudristek
-   - Penerbit: Pusat Kurikulum (2022)
+   - Penerbit: Pusat Kurikulum
+   - Tahun Terbit: **2022**
    - Kategori: Pelajaran / Bahasa
    - Jumlah Stok: **10 buku** (Tersedia 10 eksemplar)
 6. **Matematika Kelas 4 SD**
    - Kode Buku: BK-006
    - Penulis: Kemendikbudristek
-   - Penerbit: Pusat Kurikulum (2022)
+   - Penerbit: Pusat Kurikulum
+   - Tahun Terbit: **2022**
    - Kategori: Matematika
    - Jumlah Stok: **10 buku** (Tersedia 10 eksemplar)
 7. **IPAS Kelas 5 SD**
    - Kode Buku: BK-007
    - Penulis: Kemendikbudristek
-   - Penerbit: Pusat Kurikulum (2022)
+   - Penerbit: Pusat Kurikulum
+   - Tahun Terbit: **2022**
    - Kategori: IPA
    - Jumlah Stok: **7 buku** (Tersedia 7 eksemplar - BUKAN 10)
+
+### Klasifikasi Buku Berdasarkan Tahun Terbit
+- **Buku yang Diterbitkan pada Tahun 2020 atau di Atasnya (Total 4 Buku):**
+  1. **Matematika Kelas VI** - Tahun Terbit: **2020** (Tim Erlangga, stok 10)
+  2. **Bahasa Indonesia: Aku Bisa! Kelas 1** - Tahun Terbit: **2022** (Kemendikbudristek, stok 10)
+  3. **Matematika Kelas 4 SD** - Tahun Terbit: **2022** (Kemendikbudristek, stok 10)
+  4. **IPAS Kelas 5 SD** - Tahun Terbit: **2022** (Kemendikbudristek, stok 7)
+- **Buku yang Diterbitkan Sebelum Tahun 2020 (Total 3 Buku):**
+  1. **Sains untuk SD** - Tahun Terbit: **2019** (Tim Yudhistira, stok 8)
+  2. **Cerita Rakyat Nusantara** - Tahun Terbit: **2018** (Ali Muakhir, stok 6)
+  3. **Laskar Sipitung** - Tahun Terbit: **2005** (Andrea Hirata, stok 5)
 
 ---
 
@@ -157,6 +175,19 @@ Total ada **7 judul buku** resmi yang terdaftar di perpustakaan dengan rincian s
   2. **Matematika Kelas VI** (karya Tim Erlangga) - Buku pelajaran yang paling sering dipinjam siswa kelas tinggi untuk belajar dan latihan soal.
   3. **Sains untuk SD** (karya Tim Yudhistira) - Buku sains favorit yang menyajikan fakta alam dan eksperimen menarik untuk anak SD.
   Silakan cek menu **Katalog** jika kamu ingin meminjam buku-buku favorit tersebut ya! 😊📚✨"
+- **Tanya Buku Diterbitkan Tahun 2020 atau di Atasnya ("Buku apa saja yang diterbitkan pada tahun 2020 atau di atasnya?"):**
+  *Respon:* "Berikut adalah **4 (empat) judul buku** di Perpustakaan SDN Pengampon 3 yang diterbitkan pada tahun 2020 atau setelahnya:
+  1. **Matematika Kelas VI** - Tahun **2020** (karya Tim Erlangga, stok: 10 eksemplar)
+  2. **Bahasa Indonesia: Aku Bisa! Kelas 1** - Tahun **2022** (karya Kemendikbudristek, stok: 10 eksemplar)
+  3. **Matematika Kelas 4 SD** - Tahun **2022** (karya Kemendikbudristek, stok: 10 eksemplar)
+  4. **IPAS Kelas 5 SD** - Tahun **2022** (karya Kemendikbudristek, stok: 7 eksemplar)
+
+  Sedangkan 3 buku lainnya diterbitkan sebelum tahun 2020:
+  - **Sains untuk SD** (Tahun 2019, karya Tim Yudhistira)
+  - **Cerita Rakyat Nusantara** (Tahun 2018, karya Ali Muakhir)
+  - **Laskar Sipitung** (Tahun 2005, karya Andrea Hirata)
+
+  Seluruh buku tersebut tersedia di perpustakaan dan dapat kamu pinjam melalui menu **Katalog**! 📚✨"
 
 ### C. Sirkulasi & Status Peminjaman
 - **Tanya Buku yang Sedang Dipinjam Sekarang ("Buku apa yang sedang dipinjam sekarang? / Siapa yang pinjam buku?"):**

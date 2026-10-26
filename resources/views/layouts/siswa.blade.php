@@ -136,8 +136,11 @@
         $totalBukuCount = \App\Models\Book::count();
         $totalAnggotaCount = \App\Models\User::whereIn('role', ['siswa', 'guru'])->count();
         $stokBukuList = \App\Models\Book::all()->map(function($b) {
-            return "{$b->title}: {$b->stock_available} tersedia (total {$b->stock_total})";
+            return "{$b->title} (Tahun {$b->year}): {$b->stock_available} tersedia (total {$b->stock_total})";
         })->implode(', ');
+
+        // Buku Berdasarkan Tahun Terbit
+        $bukuTahun2020Summary = "Buku terbit tahun 2020 ke atas (4 buku): 1. Matematika Kelas VI (2020, stok 10), 2. Bahasa Indonesia: Aku Bisa! Kelas 1 (2022, stok 10), 3. Matematika Kelas 4 SD (2022, stok 10), 4. IPAS Kelas 5 SD (2022, stok 7). Buku terbit sebelum tahun 2020 (3 buku): Sains untuk SD (2019, stok 8), Cerita Rakyat Nusantara (2018, stok 6), Laskar Sipitung (2005, stok 5).";
 
         // Buku Paling Favorit & Sering Dipinjam
         $popularLoansList = \App\Models\Loan::select('book_id', \Illuminate\Support\Facades\DB::raw('count(*) as total_dipinjam'))
@@ -170,11 +173,12 @@
                         totalDipinjam: @json($totalDipinjamCount),
                         bukuSedangDipinjam: @json($peminjamanRealtimeText),
                         stokBuku: @json($stokBukuList),
+                        bukuTahunTerbit: @json($bukuTahun2020Summary),
                         bukuPalingFavorit: @json($bukuFavoritSummary),
-                        statusPerpustakaan: @json("Statistik Realtime: {$totalBukuCount} total judul buku, {$totalAnggotaCount} anggota terdaftar, {$totalDipinjamCount} buku sedang dipinjam saat ini. Buku paling favorit siswa: {$bukuFavoritSummary}. Rincian Peminjaman:\n{$peminjamanRealtimeText}"),
+                        statusPerpustakaan: @json("Statistik Realtime: {$totalBukuCount} total judul buku, {$totalAnggotaCount} anggota terdaftar, {$totalDipinjamCount} buku sedang dipinjam saat ini. {$bukuTahun2020Summary}. Buku paling favorit siswa: {$bukuFavoritSummary}. Rincian Peminjaman:\n{$peminjamanRealtimeText}"),
                     }
                 });
-                console.log("✅ Data siswa, sirkulasi & buku favorit berhasil disinkronkan ke Botpress:", @json($userName));
+                console.log("✅ Data siswa, sirkulasi & buku tahun terbit berhasil disinkronkan ke Botpress:", @json($userName));
             }
         };
 
