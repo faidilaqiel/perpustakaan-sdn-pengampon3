@@ -113,8 +113,35 @@
         'siswa'   => 'Siswa',
         default   => 'Pengguna',
     };
-    // Tampilkan nama pengguna jika tersedia, atau label perannya
     $userName = Auth::user()->name ?? $roleLabel;
+
+    // Data Sirkulasi & Statistik Real-Time Langsung dari Database
+    $activeLoansList = \App\Models\Loan::with(['book', 'user'])
+        ->where('status', 'dipinjam')
+        ->orderBy('due_date', 'asc')
+        ->get();
+    $totalDipinjamCount = $activeLoansList->count();
+
+    if ($totalDipinjamCount === 0) {
+        $peminjamanRealtimeText = "Saat ini tidak ada buku yang sedang dipinjam (0 buku). Semua koleksi buku di perpustakaan dalam status tersedia dan siap dipinjam.";
+    } else {
+        $rincianList = $activeLoansList->map(function ($l, $idx) {
+            $nomor = $idx + 1;
+            $judul = $l->book->title ?? 'Buku';
+            $peminjam = $l->user->name ?? 'Anggota';
+            $kelas = $l->user->class ? " (Kelas {$l->user->class})" : '';
+            $tglPinjam = \Carbon\Carbon::parse($l->loan_date)->translatedFormat('d M Y');
+            $tglTempo = \Carbon\Carbon::parse($l->due_date)->translatedFormat('d M Y');
+            return "{$nomor}. Buku '{$judul}' sedang dipinjam oleh {$peminjam}{$kelas}, dipinjam sejak {$tglPinjam}, batas jatuh tempo pengembalian {$tglTempo}.";
+        })->implode("\n");
+        $peminjamanRealtimeText = "Saat ini terdapat {$totalDipinjamCount} buku yang sedang dipinjam di Perpustakaan SDN Pengampon 3:\n" . $rincianList;
+    }
+
+    $totalBukuCount = \App\Models\Book::count();
+    $totalAnggotaCount = \App\Models\User::whereIn('role', ['siswa', 'guru'])->count();
+    $stokBukuList = \App\Models\Book::all()->map(function($b) {
+        return "{$b->title}: {$b->stock_available} tersedia (total {$b->stock_total})";
+    })->implode(', ');
 @endphp
 
 <script>
@@ -128,9 +155,15 @@
                     userName: @json($userName),
                     userRole: @json($roleLabel),
                     isPetugas: @json(Auth::user()->role === 'petugas'),
+                    totalBuku: @json($totalBukuCount),
+                    totalAnggota: @json($totalAnggotaCount),
+                    totalDipinjam: @json($totalDipinjamCount),
+                    bukuSedangDipinjam: @json($peminjamanRealtimeText),
+                    stokBuku: @json($stokBukuList),
+                    statusPerpustakaan: @json("Statistik Realtime: {$totalBukuCount} total judul buku, {$totalAnggotaCount} anggota terdaftar, {$totalDipinjamCount} buku sedang dipinjam saat ini. Rincian Peminjaman:\n{$peminjamanRealtimeText}"),
                 }
             });
-            console.log("✅ Data user berhasil disinkronkan ke Botpress:", @json($userName), @json($roleLabel));
+            console.log("✅ Data user & sirkulasi real-time berhasil disinkronkan ke Botpress:", @json($userName), @json($totalDipinjamCount) + " buku dipinjam");
         }
     };
 

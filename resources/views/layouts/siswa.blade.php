@@ -107,20 +107,60 @@
     <script src="https://cdn.botpress.cloud/webchat/v5.0/inject.js"></script>
     <script src="https://files.bpcontent.cloud/2026/10/20/07/20261020071537-L4781M7K.js" defer></script>
 
+    @php
+        $userName = Auth::user()->name ?? 'Siswa';
+        $userClass = Auth::user()->class ? "Kelas " . Auth::user()->class : 'Siswa';
+
+        // Data Sirkulasi & Statistik Real-Time Langsung dari Database
+        $activeLoansList = \App\Models\Loan::with(['book', 'user'])
+            ->where('status', 'dipinjam')
+            ->orderBy('due_date', 'asc')
+            ->get();
+        $totalDipinjamCount = $activeLoansList->count();
+
+        if ($totalDipinjamCount === 0) {
+            $peminjamanRealtimeText = "Saat ini tidak ada buku yang sedang dipinjam (0 buku). Semua koleksi buku di perpustakaan dalam status tersedia dan siap dipinjam.";
+        } else {
+            $rincianList = $activeLoansList->map(function ($l, $idx) {
+                $nomor = $idx + 1;
+                $judul = $l->book->title ?? 'Buku';
+                $peminjam = $l->user->name ?? 'Anggota';
+                $kelas = $l->user->class ? " (Kelas {$l->user->class})" : '';
+                $tglPinjam = \Carbon\Carbon::parse($l->loan_date)->translatedFormat('d M Y');
+                $tglTempo = \Carbon\Carbon::parse($l->due_date)->translatedFormat('d M Y');
+                return "{$nomor}. Buku '{$judul}' sedang dipinjam oleh {$peminjam}{$kelas}, dipinjam sejak {$tglPinjam}, batas jatuh tempo pengembalian {$tglTempo}.";
+            })->implode("\n");
+            $peminjamanRealtimeText = "Saat ini terdapat {$totalDipinjamCount} buku yang sedang dipinjam di Perpustakaan SDN Pengampon 3:\n" . $rincianList;
+        }
+
+        $totalBukuCount = \App\Models\Book::count();
+        $totalAnggotaCount = \App\Models\User::whereIn('role', ['siswa', 'guru'])->count();
+        $stokBukuList = \App\Models\Book::all()->map(function($b) {
+            return "{$b->title}: {$b->stock_available} tersedia (total {$b->stock_total})";
+        })->implode(', ');
+    @endphp
+
     <script>
         const sendUserToBotpress = () => {
             if (window.botpress && window.botpress.updateUser) {
                 window.botpress.updateUser({
-                    name: @json(Auth::user()->name ?? 'Siswa'),
+                    name: @json($userName),
                     data: {
-                        name: @json(Auth::user()->name ?? 'Siswa'),
+                        name: @json($userName),
                         role: 'Siswa',
-                        userName: @json(Auth::user()->name ?? 'Siswa'),
+                        userName: @json($userName),
                         userRole: 'Siswa',
+                        userClass: @json($userClass),
                         isSiswa: true,
+                        totalBuku: @json($totalBukuCount),
+                        totalAnggota: @json($totalAnggotaCount),
+                        totalDipinjam: @json($totalDipinjamCount),
+                        bukuSedangDipinjam: @json($peminjamanRealtimeText),
+                        stokBuku: @json($stokBukuList),
+                        statusPerpustakaan: @json("Statistik Realtime: {$totalBukuCount} total judul buku, {$totalAnggotaCount} anggota terdaftar, {$totalDipinjamCount} buku sedang dipinjam saat ini. Rincian Peminjaman:\n{$peminjamanRealtimeText}"),
                     }
                 });
-                console.log("✅ Data siswa berhasil disinkronkan ke Botpress:", @json(Auth::user()->name ?? 'Siswa'));
+                console.log("✅ Data siswa & sirkulasi real-time berhasil disinkronkan ke Botpress:", @json($userName), @json($totalDipinjamCount) + " buku dipinjam");
             }
         };
 
