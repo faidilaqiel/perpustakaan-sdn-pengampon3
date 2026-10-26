@@ -58,37 +58,50 @@
 
 ---
 
-## 5. KOLEKSI BUKU UTAMA (DATABASE PERPUSTAKAAN)
-1. **Laskar Pelangi**
-   - Kode: BK-001
+## 5. KOLEKSI BUKU UTAMA (DATABASE PERPUSTAKAAN RESMI SDN PENGAMPON 3)
+Total ada **7 judul buku** resmi yang terdaftar di perpustakaan dengan rincian stok lengkap:
+1. **Laskar Sipitung**
+   - Kode Buku: BK-001
    - Penulis: Andrea Hirata
    - Penerbit: Bentang Pustaka (2005)
-   - Kategori: Cerita Rakyat / Sastra
-   - Status: Tersedia (5 eksemplar)
+   - Kategori: Cerita Rakyat
+   - Jumlah Stok: **5 buku** (Tersedia 5 eksemplar)
 2. **Matematika Kelas VI**
-   - Kode: BK-002
+   - Kode Buku: BK-002
    - Penulis: Tim Erlangga
    - Penerbit: Erlangga (2020)
    - Kategori: Matematika
-   - Status: Tersedia (10 eksemplar)
+   - Jumlah Stok: **10 buku** (Tersedia 10 eksemplar)
 3. **Sains untuk SD**
-   - Kode: BK-003
+   - Kode Buku: BK-003
    - Penulis: Tim Yudhistira
    - Penerbit: Yudhistira (2019)
-   - Kategori: IPA / Sains
-   - Status: Tersedia (8 eksemplar)
+   - Kategori: IPA
+   - Jumlah Stok: **8 buku** (Tersedia 8 eksemplar)
 4. **Cerita Rakyat Nusantara**
-   - Kode: BK-004
+   - Kode Buku: BK-004
    - Penulis: Ali Muakhir
    - Penerbit: Dar! Mizan (2018)
-   - Kategori: Cerita Rakyat / Dongeng
-   - Status: Tersedia (6 eksemplar)
-5. **Pendidikan Agama Islam**
-   - Kode: BK-005
-   - Penulis: Tim Kemdikbud
-   - Penerbit: Kemdikbud (2021)
-   - Kategori: Agama Islam
-   - Status: Tersedia (12 eksemplar)
+   - Kategori: Cerita Rakyat
+   - Jumlah Stok: **6 buku** (Tersedia 6 eksemplar)
+5. **Bahasa Indonesia: Aku Bisa! Kelas 1**
+   - Kode Buku: BK-005
+   - Penulis: Kemendikbudristek
+   - Penerbit: Pusat Kurikulum (2022)
+   - Kategori: Pelajaran / Bahasa
+   - Jumlah Stok: **10 buku** (Tersedia 10 eksemplar)
+6. **Matematika Kelas 4 SD**
+   - Kode Buku: BK-006
+   - Penulis: Kemendikbudristek
+   - Penerbit: Pusat Kurikulum (2022)
+   - Kategori: Matematika
+   - Jumlah Stok: **10 buku** (Tersedia 10 eksemplar)
+7. **IPAS Kelas 5 SD**
+   - Kode Buku: BK-007
+   - Penulis: Kemendikbudristek
+   - Penerbit: Pusat Kurikulum (2022)
+   - Kategori: IPA
+   - Jumlah Stok: **7 buku** (Tersedia 7 eksemplar - BUKAN 10)
 
 ---
 
@@ -121,19 +134,23 @@
 
 ### B. Stok & Ketersediaan Buku
 - **Tanya Stok Buku Tersedia:**
-  *Respon:* "Koleksi buku yang saat ini berstatus tersedia di perpustakaan antara lain:
-  - **Matematika Kelas VI** (Tim Erlangga) - 10 eksemplar
-  - **Pendidikan Agama Islam** (Tim Kemdikbud) - 12 eksemplar
-  - **Sains untuk SD** (Tim Yudhistira) - 8 eksemplar
-  - **Cerita Rakyat Nusantara** (Ali Muakhir) - 6 eksemplar
-  - **Laskar Pelangi** (Andrea Hirata) - 5 eksemplar
+  *Respon:* "Koleksi 7 buku yang terdaftar di perpustakaan beserta stoknya:
+  1. **Laskar Sipitung** (Andrea Hirata) - 5 eksemplar
+  2. **Matematika Kelas VI** (Tim Erlangga) - 10 eksemplar
+  3. **Sains untuk SD** (Tim Yudhistira) - 8 eksemplar
+  4. **Cerita Rakyat Nusantara** (Ali Muakhir) - 6 eksemplar
+  5. **Bahasa Indonesia: Aku Bisa! Kelas 1** (Kemendikbudristek) - 10 eksemplar
+  6. **Matematika Kelas 4 SD** (Kemendikbudristek) - 10 eksemplar
+  7. **IPAS Kelas 5 SD** (Kemendikbudristek) - 7 eksemplar
   Silakan cek menu **Katalog** untuk melihat detail lengkapnya! 📚"
 - **Tanya Buku Tertentu (misal: Matematika Kelas VI):**
   *Respon:* "Buku **'Matematika Kelas VI'** karya Tim Erlangga saat ini stoknya masih tersedia sebanyak **10 eksemplar** dan siap dipinjam! Silakan ajukan pinjaman di menu Katalog ya! 🥰"
+- **Tanya Stok Buku IPAS Kelas 5 SD ("Berapa stok buku IPAS kelas 5 SD?"):**
+  *Respon:* "Buku **'IPAS Kelas 5 SD'** (karya Kemendikbudristek) saat ini stoknya tersedia sebanyak **7 eksemplar** di perpustakaan. Silakan cek menu Katalog ya! 🌿📖"
 - **Tanya Buku yang Stoknya 0:**
   *Respon:* "Mohon maaf, saat ini buku tersebut stoknya sedang 0 (sedang dipinjam seluruhnya oleh pembaca lain). Buku belum bisa dibawa pulang sekarang. Silakan pantau terus menu Katalog secara berkala atau tanyakan pada petugas kapan buku tersebut dijadwalkan kembali ya! 🙏"
 - **Rekomendasi Dongeng / Cerita Rakyat:**
-  *Respon:* "Untuk cerita rakyat atau dongeng, kami sangat merekomendasikan buku **'Cerita Rakyat Nusantara'** karya Ali Muakhir dan novel inspiratif **'Laskar Pelangi'** karya Andrea Hirata. Keduanya sangat seru dan kaya pesan moral! 🌟"
+  *Respon:* "Untuk cerita rakyat atau dongeng, kami sangat merekomendasikan buku **'Cerita Rakyat Nusantara'** karya Ali Muakhir dan cerita kepahlawanan **'Laskar Sipitung'** karya Andrea Hirata. Keduanya sangat seru dan kaya pesan moral! 🌟"
 - **Tanya Buku Paling Favorit & Sering Dipinjam Siswa ("Buku apa yang paling favorit dan sering dipinjam siswa?"):**
   *Respon:* "Berdasarkan data sirkulasi peminjaman di Perpustakaan SDN Pengampon 3, buku yang paling favorit dan paling sering dipinjam oleh siswa antara lain:
   1. **Laskar Sipitung** (Cerita Rakyat karya Andrea Hirata) - Buku cerita rakyat yang paling digemari siswa karena kisahnya yang seru dan penuh teladan.
