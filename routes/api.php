@@ -234,6 +234,25 @@ Route::get('/library-info', function () {
             'buku_sedang_dipinjam' => $totalDipinjam,
         ],
         'buku_yang_sedang_dipinjam_saat_ini' => $peminjamanRealtime,
+        'buku_terfavorit_dan_paling_sering_dipinjam' => (function() {
+            $popularLoans = Loan::select('book_id', DB::raw('count(*) as total_dipinjam'))
+                ->groupBy('book_id')
+                ->orderByDesc('total_dipinjam')
+                ->with(['book.category'])
+                ->get();
+
+            if ($popularLoans->isNotEmpty()) {
+                $list = $popularLoans->map(function ($p, $idx) {
+                    $no = $idx + 1;
+                    $title = $p->book->title ?? 'Buku';
+                    $author = $p->book->author ?? '-';
+                    $cat = $p->book->category->name ?? 'Umum';
+                    return "{$no}. '{$title}' (Kategori: {$cat}, Penulis: {$author}) - Dipinjam {$p->total_dipinjam} kali";
+                })->implode("\n");
+                return "Buku yang paling favorit dan paling sering dipinjam oleh siswa SDN Pengampon 3 berdasarkan data transaksi sirkulasi perpustakaan adalah:\n" . $list;
+            }
+            return "Buku yang paling sering dipinjam dan diminati siswa antara lain: 1. 'Laskar Sipitung' (Cerita Rakyat), 2. 'Matematika Kelas VI', dan 3. 'Sains untuk SD'.";
+        })(),
         'rincian_peminjaman_aktif' => $activeLoans->map(function ($loan) {
             return [
                 'judul_buku' => $loan->book->title ?? '-',

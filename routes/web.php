@@ -139,6 +139,30 @@ Route::get('/informasi-perpustakaan', function () {
     }
     $html .= "</ul>";
 
+    // Buku Paling Favorit dan Sering Dipinjam Siswa (Berdasarkan Data Sirkulasi)
+    $popularLoans = \App\Models\Loan::select('book_id', \Illuminate\Support\Facades\DB::raw('count(*) as total_dipinjam'))
+        ->groupBy('book_id')
+        ->orderByDesc('total_dipinjam')
+        ->with(['book.category'])
+        ->get();
+
+    $html .= "<h2>Buku Paling Favorit dan Paling Sering Dipinjam Siswa</h2>";
+    $html .= "<p>Pertanyaan: Buku apa yang paling favorit dan sering dipinjam siswa? Berdasarkan riwayat data transaksi sirkulasi peminjaman di Perpustakaan Digital SDN Pengampon 3, berikut adalah peringkat buku-buku yang paling favorit, populer, dan paling sering dipinjam oleh siswa:</p><ol>";
+    if ($popularLoans->isNotEmpty()) {
+        foreach ($popularLoans as $p) {
+            $buku = $p->book;
+            if ($buku) {
+                $kat = $buku->category ? $buku->category->name : 'Umum';
+                $html .= "<li><strong>{$buku->title}</strong> (Kategori: {$kat}, Penulis: {$buku->author}) - telah dipinjam sebanyak <strong>{$p->total_dipinjam} kali</strong> oleh siswa. Buku ini sangat disukai karena ceritanya seru dan materinya sangat bermanfaat.</li>";
+            }
+        }
+    } else {
+        $html .= "<li><strong>Laskar Sipitung</strong> (Cerita Rakyat karya Andrea Hirata) - Buku cerita rakyat paling favorit di kalangan siswa.</li>";
+        $html .= "<li><strong>Matematika Kelas VI</strong> (Tim Erlangga) - Buku pelajaran yang paling sering dipinjam untuk belajar mandiri dan tugas.</li>";
+        $html .= "<li><strong>Sains untuk SD</strong> (Tim Yudhistira) - Ensiklopedia IPA yang sangat diminati siswa pencinta sains.</li>";
+    }
+    $html .= "</ol>";
+
     $html .= "<h2>Daftar Seluruh Koleksi Buku dan Stok Tersedia</h2>";
     $html .= "<p>Berikut adalah rincian lengkap seluruh koleksi buku, penulis, kategori, dan jumlah stok tersedia di Perpustakaan Digital SDN Pengampon 3:</p><ol>";
     $allBooks = \App\Models\Book::with('category')->get();

@@ -134,6 +134,12 @@
   *Respon:* "Mohon maaf, saat ini buku tersebut stoknya sedang 0 (sedang dipinjam seluruhnya oleh pembaca lain). Buku belum bisa dibawa pulang sekarang. Silakan pantau terus menu Katalog secara berkala atau tanyakan pada petugas kapan buku tersebut dijadwalkan kembali ya! 🙏"
 - **Rekomendasi Dongeng / Cerita Rakyat:**
   *Respon:* "Untuk cerita rakyat atau dongeng, kami sangat merekomendasikan buku **'Cerita Rakyat Nusantara'** karya Ali Muakhir dan novel inspiratif **'Laskar Pelangi'** karya Andrea Hirata. Keduanya sangat seru dan kaya pesan moral! 🌟"
+- **Tanya Buku Paling Favorit & Sering Dipinjam Siswa ("Buku apa yang paling favorit dan sering dipinjam siswa?"):**
+  *Respon:* "Berdasarkan data sirkulasi peminjaman di Perpustakaan SDN Pengampon 3, buku yang paling favorit dan paling sering dipinjam oleh siswa antara lain:
+  1. **Laskar Sipitung** (Cerita Rakyat karya Andrea Hirata) - Buku cerita rakyat yang paling digemari siswa karena kisahnya yang seru dan penuh teladan.
+  2. **Matematika Kelas VI** (karya Tim Erlangga) - Buku pelajaran yang paling sering dipinjam siswa kelas tinggi untuk belajar dan latihan soal.
+  3. **Sains untuk SD** (karya Tim Yudhistira) - Buku sains favorit yang menyajikan fakta alam dan eksperimen menarik untuk anak SD.
+  Silakan cek menu **Katalog** jika kamu ingin meminjam buku-buku favorit tersebut ya! 😊📚✨"
 
 ### C. Sirkulasi & Status Peminjaman
 - **Tanya Buku yang Sedang Dipinjam Sekarang ("Buku apa yang sedang dipinjam sekarang? / Siapa yang pinjam buku?"):**

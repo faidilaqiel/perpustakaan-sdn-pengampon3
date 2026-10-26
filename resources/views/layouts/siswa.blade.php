@@ -138,6 +138,19 @@
         $stokBukuList = \App\Models\Book::all()->map(function($b) {
             return "{$b->title}: {$b->stock_available} tersedia (total {$b->stock_total})";
         })->implode(', ');
+
+        // Buku Paling Favorit & Sering Dipinjam
+        $popularLoansList = \App\Models\Loan::select('book_id', \Illuminate\Support\Facades\DB::raw('count(*) as total_dipinjam'))
+            ->groupBy('book_id')
+            ->orderByDesc('total_dipinjam')
+            ->with('book')
+            ->take(3)
+            ->get();
+        $bukuFavoritSummary = $popularLoansList->map(function($p, $i) {
+            $no = $i + 1;
+            $t = $p->book->title ?? 'Buku';
+            return "{$no}. '{$t}' (dipinjam {$p->total_dipinjam} kali)";
+        })->implode(', ');
     @endphp
 
     <script>
@@ -157,10 +170,11 @@
                         totalDipinjam: @json($totalDipinjamCount),
                         bukuSedangDipinjam: @json($peminjamanRealtimeText),
                         stokBuku: @json($stokBukuList),
-                        statusPerpustakaan: @json("Statistik Realtime: {$totalBukuCount} total judul buku, {$totalAnggotaCount} anggota terdaftar, {$totalDipinjamCount} buku sedang dipinjam saat ini. Rincian Peminjaman:\n{$peminjamanRealtimeText}"),
+                        bukuPalingFavorit: @json($bukuFavoritSummary),
+                        statusPerpustakaan: @json("Statistik Realtime: {$totalBukuCount} total judul buku, {$totalAnggotaCount} anggota terdaftar, {$totalDipinjamCount} buku sedang dipinjam saat ini. Buku paling favorit siswa: {$bukuFavoritSummary}. Rincian Peminjaman:\n{$peminjamanRealtimeText}"),
                     }
                 });
-                console.log("✅ Data siswa & sirkulasi real-time berhasil disinkronkan ke Botpress:", @json($userName), @json($totalDipinjamCount) + " buku dipinjam");
+                console.log("✅ Data siswa, sirkulasi & buku favorit berhasil disinkronkan ke Botpress:", @json($userName));
             }
         };
 
