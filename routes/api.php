@@ -9,10 +9,26 @@ use Carbon\Carbon;
 
 // Endpoint koleksi buku untuk integrasi Botpress AI Knowledge Base
 Route::get('/books', function () {
-    $books = Book::with('category')->get()->map(function ($book) {
+    $books = Book::with(['category', 'loans' => function ($q) {
+        $q->where('status', 'dipinjam')->with('user');
+    }])->get()->map(function ($book) {
         $kategori = $book->category ? $book->category->name : 'Umum';
+        $activeLoans = $book->loans;
+        $numLoaned = $activeLoans->count();
+
+        if ($numLoaned > 0) {
+            $peminjamList = $activeLoans->map(function ($l) {
+                $nama = $l->user->name ?? 'Anggota';
+                $kelas = $l->user->class ? ' Kelas ' . $l->user->class : '';
+                return "{$nama}{$kelas}";
+            })->implode(', ');
+            $statusPinjam = "Sedang dipinjam sebanyak {$numLoaned} buku oleh: {$peminjamList}.";
+        } else {
+            $statusPinjam = "Tidak ada eksemplar buku ini yang sedang dipinjam.";
+        }
+
         $statusStok = $book->stock_available > 0 
-            ? "Tersedia ({$book->stock_available} buku siap dipinjam)" 
+            ? "Tersedia ({$book->stock_available} buku siap dipinjam dari total {$book->stock_total} buku)" 
             : "Sedang habis dipinjam";
 
         return [
@@ -25,8 +41,10 @@ Route::get('/books', function () {
             'kategori' => $kategori,
             'stok_tersedia' => $book->stock_available,
             'stok_total' => $book->stock_total,
+            'sedang_dipinjam' => $numLoaned,
+            'status_peminjaman_terkini' => $statusPinjam,
             'status' => $statusStok,
-            'deskripsi_ai' => "Buku '{$book->title}' karya {$book->author}, kategori {$kategori}, kode {$book->code}. Status: {$statusStok}.",
+            'deskripsi_ai' => "Buku '{$book->title}' karya {$book->author}, kategori {$kategori}, kode {$book->code}. Stok tersedia: {$book->stock_available} dari total {$book->stock_total}. {$statusPinjam}",
         ];
     });
 
@@ -172,14 +190,60 @@ Route::get('/perpustakaan-data', function () {
       ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 });
 
-// Endpoint informasi resmi perpustakaan untuk Botpress AI Context
+// Endpoint informasi resmi perpustakaan untuk Botpress AI Context (terhubung ke Tool getLibraryInfo)
 Route::get('/library-info', function () {
+    $activeLoans = Loan::with(['book', 'user'])
+        ->where('status', 'dipinjam')
+        ->orderBy('due_date', 'asc')
+        ->get();
+
+    $totalDipinjam = $activeLoans->count();
+
+    if ($totalDipinjam === 0) {
+        $peminjamanRealtime = "Saat ini tidak ada buku yang sedang dipinjam (0 buku). Semua koleksi buku di perpustakaan dalam status tersedia dan siap dipinjam.";
+    } else {
+        $daftarPinjam = $activeLoans->map(function ($loan, $index) {
+            $nomor = $index + 1;
+            $judul = $loan->book->title ?? 'Buku';
+            $peminjam = $loan->user->name ?? 'Anggota';
+            $kelas = $loan->user->class ? " (Kelas {$loan->user->class})" : '';
+            $tglPinjam = Carbon::parse($loan->loan_date)->translatedFormat('d M Y');
+            $jatuhTempo = Carbon::parse($loan->due_date)->translatedFormat('d M Y');
+            return "{$nomor}. Buku '{$judul}' sedang dipinjam oleh {$peminjam}{$kelas}, dipinjam sejak {$tglPinjam}, batas jatuh tempo pengembalian {$jatuhTempo}.";
+        })->implode("\n");
+
+        $peminjamanRealtime = "Saat ini terdapat {$totalDipinjam} buku yang sedang dipinjam di Perpustakaan SDN Pengampon 3:\n" . $daftarPinjam;
+    }
+
+    $members = User::whereIn('role', ['siswa', 'guru'])->get();
+    $totalAnggota = $members->count();
+    $totalSiswa = $members->where('role', 'siswa')->count();
+    $totalGuru = $members->where('role', 'guru')->count();
+
     $info = [
         'nama_perpustakaan' => 'Perpustakaan Digital SDN Pengampon 3',
         'nama_bot' => 'PustakaAI',
         'sekolah' => 'SDN Pengampon 3 Cirebon',
         'kepala_sekolah' => 'Bapak H. Noni Risanto, M.Pd.I.',
         'jam_operasional' => 'Senin - Jumat: 07.30 - 14.00 WIB (Sabtu, Minggu & Hari Libur Nasional Tutup)',
+        'statistik_perpustakaan' => [
+            'total_buku' => Book::count(),
+            'total_anggota' => $totalAnggota,
+            'total_siswa' => $totalSiswa,
+            'total_guru' => $totalGuru,
+            'buku_sedang_dipinjam' => $totalDipinjam,
+        ],
+        'buku_yang_sedang_dipinjam_saat_ini' => $peminjamanRealtime,
+        'rincian_peminjaman_aktif' => $activeLoans->map(function ($loan) {
+            return [
+                'judul_buku' => $loan->book->title ?? '-',
+                'kode_buku' => $loan->book->code ?? '-',
+                'nama_peminjam' => $loan->user->name ?? '-',
+                'kelas' => $loan->user->class ?? '-',
+                'tanggal_pinjam' => $loan->loan_date,
+                'jatuh_tempo' => $loan->due_date,
+            ];
+        }),
         'aturan_peminjaman' => [
             'syarat' => 'Terdaftar sebagai siswa/guru/staf aktif SDN Pengampon 3.',
             'durasi_peminjaman' => 'Maksimal 7 (tujuh) hari kalender per buku.',
