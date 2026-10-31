@@ -131,6 +131,36 @@ Route::get('/informasi-perpustakaan', function () {
         $html .= "</ol>";
     }
 
+    // Riwayat Transaksi Peminjaman Terbaru
+    $recentLoans = \App\Models\Loan::with(['book', 'user'])
+        ->orderBy('id', 'desc')
+        ->take(10)
+        ->get();
+
+    $html .= "<h2>Riwayat Peminjaman Terbaru di Perpustakaan</h2>";
+    $html .= "<p>Pertanyaan: Tolong tampilkan riwayat peminjaman terbaru di perpustakaan ini / Siapa yang pernah atau terakhir meminjam buku?</p>";
+    if ($recentLoans->isNotEmpty()) {
+        $html .= "<p>Berikut adalah catatan riwayat transaksi peminjaman buku terbaru yang tercatat di Perpustakaan Digital SDN Pengampon 3:</p><ol>";
+        foreach ($recentLoans as $r) {
+            $judul = $r->book->title ?? 'Buku';
+            $peminjam = $r->user->name ?? 'Anggota';
+            $kelas = $r->user->class ? " (Kelas {$r->user->class})" : "";
+            $tglPinjam = \Carbon\Carbon::parse($r->loan_date)->translatedFormat('d M Y');
+            $statusText = match($r->status) {
+                'dipinjam' => 'Sedang Dipinjam',
+                'kembali' => 'Sudah Dikembalikan',
+                'menunggu' => 'Menunggu Persetujuan',
+                'ditolak' => 'Ditolak',
+                default => ucfirst($r->status),
+            };
+            $tglKembali = $r->return_date ? " (dikembalikan pada " . \Carbon\Carbon::parse($r->return_date)->translatedFormat('d M Y') . ")" : "";
+            $html .= "<li>Buku <strong>'{$judul}'</strong> dipinjam oleh <strong>{$peminjam}{$kelas}</strong> pada tanggal {$tglPinjam}. Status: <strong>{$statusText}</strong>{$tglKembali}.</li>";
+        }
+        $html .= "</ol>";
+    } else {
+        $html .= "<p>Belum ada catatan riwayat peminjaman buku di sistem.</p>";
+    }
+
     $html .= "<h2>Daftar Anggota Perpustakaan SDN Pengampon 3</h2>";
     $html .= "<p>Total anggota perpustakaan yang terdaftar berjumlah {$totalAnggota} orang. Berikut daftar nama-nama anggota:</p><ul>";
     foreach ($members as $m) {
@@ -201,7 +231,15 @@ Route::get('/informasi-perpustakaan', function () {
     $html .= "<p>Pertanyaan: Apakah boleh meminjam lebih dari 2 buku? Maksimal berapa buku yang boleh dipinjam? Setiap anggota (siswa) diperbolehkan meminjam maksimal <strong>2 (dua) buku</strong> sekaligus dalam satu waktu. Jika ingin meminjam buku lain, kembalikan buku yang sedang dipinjam terlebih dahulu.</p>";
 
     $html .= "<h2>Sanksi dan Denda Keterlambatan Pengembalian Buku</h2>";
-    $html .= "<p>Pertanyaan: Berapa denda jika terlambat mengembalikan buku? Denda keterlambatan pengembalian buku di Perpustakaan SDN Pengampon 3 adalah sebesar <strong>Rp 1.000,- (seribu rupiah) per hari</strong> untuk setiap buku yang terlambat dikembalikan. Contoh jika terlambat 3 hari, maka dendanya adalah Rp 3.000,-.</p>";
+    $html .= "<p>Pertanyaan: Berapa denda jika terlambat mengembalikan buku? Denda keterlambatan pengembalian buku di Perpustakaan SDN Pengampon 3 adalah sebesar <strong>Rp 1.000,- (seribu rupiah) per hari</strong> untuk setiap buku yang terlambat dikembalikan pada hari operasional sekolah. Contoh jika terlambat 3 hari, maka dendanya adalah Rp 3.000,-.</p>";
+
+    $html .= "<h2>Pengembalian Buku Pada Hari Libur Nasional dan Tanggal Merah (Bebas Denda)</h2>";
+    $html .= "<p>Pertanyaan: Saya lupa hari ini hari libur nasional, jadi tidak bisa mengembalikan buku tepat waktu. Apakah denda tetap berjalan?<br>";
+    $html .= "Jawaban Resmi: <strong>TIDAK ADA DENDA (denda TIDAK berjalan)</strong>. Jika hari jatuh tempo pengembalian buku bertepatan dengan <strong>hari libur nasional, tanggal merah, cuti bersama, atau akhir pekan (Sabtu & Minggu)</strong> saat perpustakaan sekolah tutup, siswa <strong>TIDAK dikenakan denda</strong> keterlambatan. Peminjam diberikan dispensasi penuh untuk mengembalikan buku pada <strong>hari kerja pertama berikutnya</strong> saat perpustakaan buka kembali tanpa denda sepeser pun.</p>";
+
+    $html .= "<h2>Ketentuan Peminjaman Berdasarkan Jenjang Kelas Siswa</h2>";
+    $html .= "<p>Pertanyaan: Apakah siswa kelas rendah (misal kelas 1 SD) boleh meminjam buku pelajaran kelas tinggi (misal Matematika Kelas 6)?<br>";
+    $html .= "Jawaban: <strong>Boleh</strong>. Seluruh siswa aktif SDN Pengampon 3 dari kelas 1 sampai 6 diperbolehkan meminjam buku apa saja yang berstatus tersedia di perpustakaan (maksimal 2 buku). Untuk buku pelajaran tingkat kelas di atasnya, siswa sangat disarankan didampingi oleh guru atau orang tua saat mempelajarinya.</p>";
 
     $html .= "<h2>Prosedur dan Langkah-Langkah Meminjam Buku</h2>";
     $html .= "<p>Pertanyaan: Bagaimana cara meminjam buku di perpustakaan ini?<br>";
@@ -218,8 +256,33 @@ Route::get('/informasi-perpustakaan', function () {
     $html .= "<h2>Kehilangan atau Kerusakan Buku</h2>";
     $html .= "<p>Pertanyaan: Bagaimana jika buku pinjaman hilang atau rusak? Peminjam wajib segera melapor kepada Petugas Perpustakaan. Peminjam bertanggung jawab mengganti buku dengan judul dan edisi yang sama, atau mengganti biaya buku sesuai ketentuan perpustakaan.</p>";
 
-    $html .= "<h2>Keanggotaan Perpustakaan</h2>";
-    $html .= "<p>Pertanyaan: Bagaimana cara mendaftar anggota perpustakaan? Seluruh siswa dan guru di SDN Pengampon 3 otomatis terdaftar sebagai anggota perpustakaan dan memiliki akun resmi berdasarkan NISN (siswa) atau NIP (guru). Tamu dari luar sekolah hanya diperkenankan membaca buku di tempat dan tidak dapat meminjam buku pulang.</p>";
+    $html .= "<h2>Panduan Fitur-Fitur Lengkap Aplikasi Perpustakaan Digital SDN Pengampon 3</h2>";
+    $html .= "<p>Pertanyaan: Fitur apa saja yang ada di aplikasi perpustakaan ini? Bagaimana cara kerja dan menggunakan menu-menunya?</p>";
+    $html .= "<p>Aplikasi Perpustakaan Digital SDN Pengampon 3 memiliki fitur lengkap yang disesuaikan dengan peran pengguna:</p>";
+    
+    $html .= "<h3>1. Fitur untuk Petugas / Administrator:</h3><ul>";
+    $html .= "<li><strong>Dashboard Petugas:</strong> Menampilkan ringkasan statistik real-time (Total Buku, Total Anggota, Buku Sedang Dipinjam) serta grafik interaktif peminjaman buku 7 hari terakhir.</li>";
+    $html .= "<li><strong>Daftar Buku / Kelola Buku:</strong> Melihat katalog buku lengkap dengan cover, kode buku, kategori, penerbit, tahun terbit, dan stok. Petugas dapat menambah judul baru, mengedit data buku/stok, dan menghapus buku.</li>";
+    $html .= "<li><strong>Kategori Buku:</strong> Menambah, mengubah, dan menghapus kategori buku (seperti Cerita Rakyat, Matematika, IPA, Pelajaran / Bahasa) agar buku terorganisir rapi.</li>";
+    $html .= "<li><strong>Sirkulasi Peminjaman:</strong> Pusat monitoring sirkulasi. Petugas dapat menyetujui (ACC) permohonan pinjam siswa, menolak permohonan, memproses buku yang dikembalikan (kembalikan), serta memberikan dispensasi lewat fitur 'Bebaskan Denda'.</li>";
+    $html .= "<li><strong>Data Anggota:</strong> Mengelola seluruh anggota perpustakaan (siswa dan guru), menambahkan anggota baru dengan NISN/NIP, mengedit kelas siswa, dan menghapus anggota non-aktif.</li>";
+    $html .= "<li><strong>Scan QR:</strong> Memindai kode QR buku dan anggota menggunakan kamera perangkat untuk mempercepat proses peminjaman dan pengembalian tanpa input manual.</li>";
+    $html .= "<li><strong>Profil Saya:</strong> Mengubah nama, email, foto profil, dan kata sandi akun petugas.</li>";
+    $html .= "</ul>";
+
+    $html .= "<h3>2. Fitur untuk Siswa & Guru (Peminjam):</h3><ul>";
+    $html .= "<li><strong>Katalog Buku:</strong> Menjelajahi seluruh koleksi buku, mencari buku berdasarkan judul/penulis, memfilter buku berdasarkan kategori, dan mengecek stok ketersediaan secara langsung.</li>";
+    $html .= "<li><strong>Detail Buku & Pinjam Mandiri:</strong> Membaca sinopsis buku dan mengajukan peminjaman buku langsung dari HP/komputer dengan mengklik tombol 'Pinjam Buku Ini' (maksimal 2 buku).</li>";
+    $html .= "<li><strong>Riwayat Peminjaman:</strong> Memantau status buku yang diajukan (Menunggu), buku yang sedang dipinjam beserta tanggal jatuh tempo batas pengembalian (7 hari), serta riwayat buku yang sudah selesai dikembalikan.</li>";
+    $html .= "<li><strong>Buku Tamu / Kunjungan:</strong> Presensi kehadiran digital saat membaca atau berkunjung ke ruang perpustakaan.</li>";
+    $html .= "<li><strong>Notifikasi Otomatis:</strong> Menerima pemberitahuan langsung saat pinjaman buku disetujui petugas atau saat batas pengembalian mendekat.</li>";
+    $html .= "<li><strong>Profil Saya:</strong> Mengubah data akun, foto profil, dan kata sandi.</li>";
+    $html .= "</ul>";
+
+    $html .= "<h3>3. Fitur untuk Kepala Sekolah:</h3><ul>";
+    $html .= "<li><strong>Laporan Sirkulasi & Statistik:</strong> Memantau grafik aktivitas peminjaman, buku terfavorit yang sering dipinjam siswa, dan perkembangan minat baca sekolah.</li>";
+    $html .= "<li><strong>Cetak Laporan PDF:</strong> Mengunduh dan mencetak rekapitulasi laporan resmi perpustakaan dalam bentuk dokumen PDF untuk arsip dan evaluasi sekolah.</li>";
+    $html .= "</ul>";
 
     $html .= "</body></html>";
 

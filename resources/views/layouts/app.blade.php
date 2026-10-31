@@ -146,6 +146,9 @@
     // Buku Berdasarkan Tahun Terbit
     $bukuTahun2020Summary = "Buku terbit tahun 2020 ke atas (4 buku): 1. Matematika Kelas VI (2020, stok 10), 2. Bahasa Indonesia: Aku Bisa! Kelas 1 (2022, stok 10), 3. Matematika Kelas 4 SD (2022, stok 10), 4. IPAS Kelas 5 SD (2022, stok 7). Buku terbit sebelum tahun 2020 (3 buku): Sains untuk SD (2019, stok 8), Cerita Rakyat Nusantara (2018, stok 6), Laskar Sipitung (2005, stok 5).";
 
+    // Aturan Denda Hari Libur Nasional & Akhir Pekan
+    $aturanDendaLibur = "Jika hari jatuh tempo pengembalian buku bertepatan dengan hari libur nasional, tanggal merah, atau akhir pekan (Sabtu-Minggu), TIDAK ADA DENDA (denda TIDAK berjalan). Buku dapat dikembalikan pada hari kerja pertama berikutnya tanpa denda.";
+
     // Buku Paling Favorit & Sering Dipinjam
     $popularLoansList = \App\Models\Loan::select('book_id', \Illuminate\Support\Facades\DB::raw('count(*) as total_dipinjam'))
         ->groupBy('book_id')
@@ -158,6 +161,30 @@
         $t = $p->book->title ?? 'Buku';
         return "{$no}. '{$t}' (dipinjam {$p->total_dipinjam} kali)";
     })->implode(', ');
+    // Riwayat Peminjaman Terbaru
+    $recentLoansList = \App\Models\Loan::with(['book', 'user'])
+        ->orderBy('id', 'desc')
+        ->take(5)
+        ->get();
+    $riwayatTerbaruSummary = $recentLoansList->isNotEmpty() 
+        ? $recentLoansList->map(function($r, $i) {
+            $no = $i + 1;
+            $title = $r->book->title ?? 'Buku';
+            $user = $r->user->name ?? 'Anggota';
+            $kelas = $r->user->class ? " (Kelas {$r->user->class})" : "";
+            $status = match($r->status) {
+                'dipinjam' => 'Sedang Dipinjam',
+                'kembali' => 'Sudah Dikembalikan',
+                'menunggu' => 'Menunggu Persetujuan',
+                'ditolak' => 'Ditolak',
+                default => ucfirst($r->status),
+            };
+            return "{$no}. '{$title}' oleh {$user}{$kelas} [Status: {$status}]";
+        })->implode(', ')
+        : 'Belum ada transaksi peminjaman';
+
+    // Panduan Fitur Aplikasi Perpustakaan SDN Pengampon 3
+    $fiturAplikasiSummary = "Fitur Aplikasi Perpustakaan: Dashboard (statistik real-time & grafik sirkulasi), Daftar Buku (CRUD koleksi buku & stok), Kategori Buku (CRUD kategori), Sirkulasi (ACC/Tolak peminjaman, proses kembalikan, bebas denda), Data Anggota (manajemen siswa & guru), Scan QR (kamera scanner buku/anggota), Katalog Buku (pencarian buku & pinjam mandiri maks 2 buku), Riwayat Peminjaman (pantau status Menunggu/Dipinjam & jatuh tempo 7 hari), Laporan & Cetak PDF (Kepala Sekolah), dan Profil Saya.";
 @endphp
 
 <script>
@@ -178,10 +205,13 @@
                     stokBuku: @json($stokBukuList),
                     bukuTahunTerbit: @json($bukuTahun2020Summary),
                     bukuPalingFavorit: @json($bukuFavoritSummary),
-                    statusPerpustakaan: @json("Statistik Realtime: {$totalBukuCount} total judul buku, {$totalAnggotaCount} anggota terdaftar, {$totalDipinjamCount} buku sedang dipinjam saat ini. {$bukuTahun2020Summary}. Buku paling favorit: {$bukuFavoritSummary}. Peminjaman:\n{$peminjamanRealtimeText}"),
+                    riwayatPeminjamanTerbaru: @json($riwayatTerbaruSummary),
+                    fiturAplikasi: @json($fiturAplikasiSummary),
+                    aturanDendaHariLibur: @json($aturanDendaLibur),
+                    statusPerpustakaan: @json("Statistik Realtime: {$totalBukuCount} total judul buku, {$totalAnggotaCount} anggota terdaftar, {$totalDipinjamCount} buku sedang dipinjam saat ini. Riwayat transaksi terbaru: {$riwayatTerbaruSummary}. {$bukuTahun2020Summary}. Aturan Denda: {$aturanDendaLibur}. Buku paling favorit: {$bukuFavoritSummary}. Peminjaman:\n{$peminjamanRealtimeText}"),
                 }
             });
-            console.log("✅ Data user, sirkulasi & buku tahun terbit berhasil disinkronkan ke Botpress:", @json($userName));
+            console.log("✅ Data user, fitur & riwayat berhasil disinkronkan ke Botpress:", @json($userName));
         }
     };
 

@@ -263,15 +263,29 @@ Route::get('/library-info', function () {
                 'jatuh_tempo' => $loan->due_date,
             ];
         }),
-        'koleksi_buku_dan_tahun_terbit' => Book::all()->map(function($b) {
-            return "Buku '{$b->title}', Penulis: {$b->author}, Penerbit: " . ($b->publisher ?? '-') . ", Tahun Terbit: {$b->year}, Kategori: " . ($b->category->name ?? 'Umum') . ", Stok: {$b->stock_available} dari total {$b->stock_total}";
+        'riwayat_peminjaman_terbaru' => Loan::with(['book', 'user'])->orderBy('id', 'desc')->take(5)->get()->map(function ($r) {
+            $statusText = match($r->status) {
+                'dipinjam' => 'Sedang Dipinjam',
+                'kembali' => 'Sudah Dikembalikan',
+                'menunggu' => 'Menunggu Persetujuan',
+                'ditolak' => 'Ditolak',
+                default => ucfirst($r->status),
+            };
+            return "Buku '{$r->book->title}' dipinjam oleh {$r->user->name} (" . ($r->user->class ? "Kelas {$r->user->class}" : "Anggota") . ") pada tanggal {$r->loan_date}, Status: {$statusText}" . ($r->return_date ? " (Dikembalikan: {$r->return_date})" : "");
         }),
+        'panduan_fitur_aplikasi' => [
+            'petugas' => 'Fitur Petugas: Dashboard (statistik real-time & grafik peminjaman), Daftar Buku (CRUD koleksi buku, cover, tahun, stok), Kategori Buku (CRUD kategori), Sirkulasi (ACC pinjaman, tolak pinjaman, proses pengembalian, bebas denda), Data Anggota (manajemen siswa & guru), Scan QR (kamera scanner buku/anggota), Profil Saya.',
+            'siswa_guru' => 'Fitur Siswa & Guru: Katalog Buku (cari buku judul/penulis, filter kategori, cek stok), Detail Buku & Pinjam Mandiri (baca sinopsis, klik Pinjam Buku Ini maks 2 buku), Riwayat Peminjaman (pantau status Menunggu, Dipinjam, tanggal jatuh tempo 7 hari, info denda), Buku Tamu/Kunjungan Digital, Notifikasi Otomatis, Profil Saya.',
+            'kepala_sekolah' => 'Fitur Kepala Sekolah: Laporan Perpustakaan (grafik sirkulasi, buku favorit, statistik pengunjung) dan Cetak Laporan PDF resmi untuk arsip/evaluasi sekolah.',
+        ],
         'buku_terbit_2020_ke_atas' => "Buku yang diterbitkan pada tahun 2020 atau di atasnya (2020 ke atas) adalah: 1. Matematika Kelas VI (Tahun 2020), 2. Bahasa Indonesia: Aku Bisa! Kelas 1 (Tahun 2022), 3. Matematika Kelas 4 SD (Tahun 2022), dan 4. IPAS Kelas 5 SD (Tahun 2022). Sedangkan buku yang terbit sebelum 2020 adalah: Laskar Sipitung (2005), Cerita Rakyat Nusantara (2018), dan Sains untuk SD (2019).",
         'aturan_peminjaman' => [
             'syarat' => 'Terdaftar sebagai siswa/guru/staf aktif SDN Pengampon 3.',
             'durasi_peminjaman' => 'Maksimal 7 (tujuh) hari kalender per buku.',
             'maksimal_buku' => 'Siswa dapat meminjam maksimal 2 (dua) buku sekaligus dalam satu waktu.',
-            'denda_keterlambatan' => 'Denda keterlambatan adalah Rp 1.000,- (seribu rupiah) per hari untuk setiap buku yang terlambat.',
+            'denda_keterlambatan' => 'Denda keterlambatan adalah Rp 1.000,- (seribu rupiah) per hari untuk setiap buku yang terlambat dikembalikan pada hari sekolah buka.',
+            'denda_hari_libur_nasional' => 'Jika tanggal jatuh tempo bertepatan dengan hari libur nasional, tanggal merah, atau akhir pekan (Sabtu & Minggu) saat perpustakaan tutup, TIDAK ADA DENDA (denda TIDAK berjalan). Siswa dapat mengembalikan buku pada hari kerja pertama berikutnya saat perpustakaan buka kembali tanpa denda.',
+            'aturan_jenjang_kelas' => 'Siswa kelas berapa pun (kelas 1-6) bebas meminjam koleksi buku apa saja yang tersedia (misal siswa kelas 1 meminjam buku kelas 6). Disarankan didampingi guru/orang tua jika materinya lebih tinggi.',
             'sanksi_kehilangan_atau_kerusakan' => 'Wajib segera melapor ke petugas perpustakaan dan mengganti buku dengan judul yang sama atau membayar biaya penggantian buku.',
             'pengembalian' => 'Pengembalian buku diserahkan kepada petugas perpustakaan untuk diverifikasi / scan QR.',
             'langkah_meminjam_di_aplikasi' => [
