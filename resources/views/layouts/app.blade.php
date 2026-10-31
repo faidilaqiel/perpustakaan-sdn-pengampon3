@@ -185,6 +185,10 @@
 
     // Panduan Fitur Aplikasi Perpustakaan SDN Pengampon 3
     $fiturAplikasiSummary = "Fitur Aplikasi Perpustakaan: Dashboard (statistik real-time & grafik sirkulasi), Daftar Buku (CRUD koleksi buku & stok), Kategori Buku (CRUD kategori), Sirkulasi (ACC/Tolak peminjaman, proses kembalikan, bebas denda), Data Anggota (manajemen siswa & guru), Scan QR (kamera scanner buku/anggota), Katalog Buku (pencarian buku & pinjam mandiri maks 2 buku), Riwayat Peminjaman (pantau status Menunggu/Dipinjam & jatuh tempo 7 hari), Laporan & Cetak PDF (Kepala Sekolah), dan Profil Saya.";
+
+    // Rincian Siswa Per Kelas & 10 Guru Anggota
+    $rincianSiswaPerKelasSummary = "Rincian 17 Siswa Per Kelas: Kelas 1 (2 siswa: Aiman Nabiel Alfariski, Candra Wijaya), Kelas 2A (2 siswa: Dewi Sartika, Eko Prasetyo), Kelas 2B (2 siswa: Fitri Handayani, Gilang Ramadhan), Kelas 3 (3 siswa: Hesti Purwanti, Indra Kusuma, Jihan Aulia), Kelas 4 (2 siswa: Kiki Saputra, Lestari Ningsih), Kelas 5 (2 siswa: Muhammad Rizky, Nabila Syafira), Kelas 6 (4 siswa: Faidil Aqiel, Oscar Pratama, Putri Ayu, Qori Amanda - INGAT: Kelas 6 hanya ada 4 siswa, bukan 5).";
+    $daftarGuruSummary = "Daftar 10 Guru Anggota: 1. Ahmad, S.Pd., 2. Anis Khairunisah, S.Pd., 3. Elis Susilawati, S.Pd., 4. Fitrias Hermawati, S.Pd., 5. Gina Rahmania Sari, S.Pd., 6. Helderia Sianturi, S.Th, 7. Nana Setiana, S.Pd., 8. Rizky Yulianti, S.Pd.SD., 9. Septi Nurjanah, S.Pd., 10. Sri Yulinawati, S.Pd.";
 @endphp
 
 <script>
@@ -207,11 +211,13 @@
                     bukuPalingFavorit: @json($bukuFavoritSummary),
                     riwayatPeminjamanTerbaru: @json($riwayatTerbaruSummary),
                     fiturAplikasi: @json($fiturAplikasiSummary),
+                    rincianSiswaPerKelas: @json($rincianSiswaPerKelasSummary),
+                    daftarGuru: @json($daftarGuruSummary),
                     aturanDendaHariLibur: @json($aturanDendaLibur),
-                    statusPerpustakaan: @json("Statistik Realtime: {$totalBukuCount} total judul buku, {$totalAnggotaCount} anggota terdaftar, {$totalDipinjamCount} buku sedang dipinjam saat ini. Riwayat transaksi terbaru: {$riwayatTerbaruSummary}. {$bukuTahun2020Summary}. Aturan Denda: {$aturanDendaLibur}. Buku paling favorit: {$bukuFavoritSummary}. Peminjaman:\n{$peminjamanRealtimeText}"),
+                    statusPerpustakaan: @json("Statistik Realtime: {$totalBukuCount} total judul buku, {$totalAnggotaCount} anggota terdaftar (17 siswa & 10 guru). {$rincianSiswaPerKelasSummary}. {$daftarGuruSummary}. Riwayat transaksi terbaru: {$riwayatTerbaruSummary}. {$bukuTahun2020Summary}. Aturan Denda: {$aturanDendaLibur}. Buku paling favorit: {$bukuFavoritSummary}. Peminjaman:\n{$peminjamanRealtimeText}"),
                 }
             });
-            console.log("✅ Data user, fitur & riwayat berhasil disinkronkan ke Botpress:", @json($userName));
+            console.log("✅ Data user, anggota & fitur berhasil disinkronkan ke Botpress:", @json($userName));
         }
     };
 

@@ -19,7 +19,7 @@ class GuruSeeder extends Seeder
             ['nip' => '199602222022212001', 'name' => 'Fitrias Hermawati, S.Pd.', 'gender' => 'P'],
             ['nip' => '197507172023212001', 'name' => 'Iin Asminah, S.Pd.', 'gender' => 'P'],
             ['nip' => '199002132023212004', 'name' => 'Ahmad, S.Pd.', 'gender' => 'L'],
-            ['nip' => '198902072024212008', 'name' => 'Aris Kharurisah, S.Pd.I.', 'gender' => 'P'],
+            ['nip' => '198902072024212008', 'name' => 'Anis Khairunisah, S.Pd.', 'gender' => 'P'],
             ['nip' => '198903302024211008', 'name' => 'Nana Setiana, S.Pd.', 'gender' => 'L'],
             ['nip' => '7238770671130023', 'name' => 'Septi Nurjanah, S.Pd.', 'gender' => 'P'],
         ];

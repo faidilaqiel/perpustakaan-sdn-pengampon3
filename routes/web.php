@@ -161,8 +161,47 @@ Route::get('/informasi-perpustakaan', function () {
         $html .= "<p>Belum ada catatan riwayat peminjaman buku di sistem.</p>";
     }
 
-    $html .= "<h2>Daftar Anggota Perpustakaan SDN Pengampon 3</h2>";
-    $html .= "<p>Total anggota perpustakaan yang terdaftar berjumlah {$totalAnggota} orang. Berikut daftar nama-nama anggota:</p><ul>";
+    // Koreksi nama guru jika masih ada data lama
+    \App\Models\User::where('nip', '198902072024212008')
+        ->orWhere('name', 'like', '%Aris%Khar%')
+        ->orWhere('name', 'like', '%Khairunisah%')
+        ->update(['name' => 'Anis Khairunisah, S.Pd.']);
+
+    // Ambil ulang data anggota setelah koreksi
+    $members = \App\Models\User::whereIn('role', ['siswa', 'guru'])->orderBy('role', 'asc')->orderBy('name', 'asc')->get();
+    $totalAnggota = $members->count();
+    $totalSiswa = $members->where('role', 'siswa')->count();
+    $totalGuru = $members->where('role', 'guru')->count();
+
+    $html .= "<h2>Rincian Jumlah Siswa Anggota Perpustakaan Berdasarkan Kelas</h2>";
+    $html .= "<p>Pertanyaan: Ada berapa banyak siswa setiap kelasnya yang menjadi anggota perpustakaan? Ada berapa banyak siswa kelas 6 yang terdaftar sebagai anggota perpustakaan?</p>";
+    $html .= "<p>Total siswa yang terdaftar sebagai anggota perpustakaan berjumlah <strong>17 siswa</strong>. Rincian jumlah dan nama siswa di setiap kelas adalah sebagai berikut:</p><ul>";
+    $html .= "<li><strong>Kelas 1:</strong> <strong>2 siswa</strong>, yaitu: Aiman Nabiel Alfariski dan Candra Wijaya.</li>";
+    $html .= "<li><strong>Kelas 2A:</strong> <strong>2 siswa</strong>, yaitu: Dewi Sartika dan Eko Prasetyo.</li>";
+    $html .= "<li><strong>Kelas 2B:</strong> <strong>2 siswa</strong>, yaitu: Fitri Handayani dan Gilang Ramadhan.</li>";
+    $html .= "<li><strong>Kelas 3:</strong> <strong>3 siswa</strong>, yaitu: Hesti Purwanti, Indra Kusuma, dan Jihan Aulia.</li>";
+    $html .= "<li><strong>Kelas 4:</strong> <strong>2 siswa</strong>, yaitu: Kiki Saputra dan Lestari Ningsih.</li>";
+    $html .= "<li><strong>Kelas 5:</strong> <strong>2 siswa</strong>, yaitu: Muhammad Rizky dan Nabila Syafira.</li>";
+    $html .= "<li><strong>Kelas 6:</strong> <strong>4 siswa</strong> (BUKAN 5 siswa), yaitu: 1. Faidil Aqiel, 2. Oscar Pratama, 3. Putri Ayu, dan 4. Qori Amanda. Tidak ada nama siswa kelima.</li>";
+    $html .= "</ul>";
+
+    $html .= "<h2>Daftar 10 Guru yang Terdaftar Sebagai Anggota Perpustakaan</h2>";
+    $html .= "<p>Pertanyaan: Siapa saja guru yang terdaftar sebagai anggota perpustakaan?</p>";
+    $html .= "<p>Berikut adalah 10 guru SDN Pengampon 3 yang terdaftar sebagai anggota resmi perpustakaan:</p><ol>";
+    $html .= "<li><strong>Ahmad, S.Pd.</strong></li>";
+    $html .= "<li><strong>Anis Khairunisah, S.Pd.</strong> (Guru)</li>";
+    $html .= "<li><strong>Elis Susilawati, S.Pd.</strong></li>";
+    $html .= "<li><strong>Fitrias Hermawati, S.Pd.</strong></li>";
+    $html .= "<li><strong>Gina Rahmania Sari, S.Pd.</strong></li>";
+    $html .= "<li><strong>Helderia Sianturi, S.Th</strong></li>";
+    $html .= "<li><strong>Nana Setiana, S.Pd.</strong></li>";
+    $html .= "<li><strong>Rizky Yulianti, S.Pd.SD.</strong></li>";
+    $html .= "<li><strong>Septi Nurjanah, S.Pd.</strong></li>";
+    $html .= "<li><strong>Sri Yulinawati, S.Pd.</strong></li>";
+    $html .= "</ol>";
+
+    $html .= "<h2>Daftar Seluruh Anggota Perpustakaan SDN Pengampon 3 (Alfabetis)</h2>";
+    $html .= "<p>Total anggota perpustakaan yang terdaftar berjumlah {$totalAnggota} orang. Berikut daftar lengkap nama-nama anggota:</p><ul>";
     foreach ($members as $m) {
         $roleInfo = $m->role === 'siswa' && $m->class ? "Siswa Kelas {$m->class}" : ucfirst($m->role);
         $html .= "<li>{$m->name} ({$roleInfo})</li>";
