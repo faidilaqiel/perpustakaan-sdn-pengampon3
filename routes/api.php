@@ -133,6 +133,67 @@ Route::get('/members', function () {
       ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 });
 
+// Endpoint riwayat peminjaman per anggota (siswa & guru)
+Route::get('/member-loans', function () {
+    $members = User::whereIn('role', ['siswa', 'guru'])
+        ->with(['loans' => function($q) {
+            $q->with('book')->orderBy('id', 'desc');
+        }])
+        ->orderBy('role', 'asc')
+        ->orderBy('class', 'asc')
+        ->orderBy('name', 'asc')
+        ->get();
+
+    $data = $members->map(function ($m) {
+        $lastLoan = $m->loans->first();
+        $activeLoans = $m->loans->where('status', 'dipinjam');
+        return [
+            'id' => $m->id,
+            'nama' => $m->name,
+            'role' => $m->role,
+            'kelas' => $m->class,
+            'total_pernah_pinjam' => $m->loans->count(),
+            'tanggungan_aktif' => $activeLoans->count(),
+            'buku_terakhir_dipinjam' => $lastLoan ? [
+                'judul' => $lastLoan->book->title ?? '-',
+                'status' => $lastLoan->status,
+                'tanggal_pinjam' => $lastLoan->loan_date,
+                'tanggal_kembali' => $lastLoan->return_date,
+                'jatuh_tempo' => $lastLoan->due_date,
+            ] : null,
+            'semua_riwayat' => $m->loans->map(function ($l) {
+                return [
+                    'buku' => $l->book->title ?? '-',
+                    'status' => $l->status,
+                    'tanggal_pinjam' => $l->loan_date,
+                    'tanggal_kembali' => $l->return_date,
+                ];
+            }),
+        ];
+    });
+
+    $allLoans = Loan::with(['book', 'user'])->orderBy('id', 'desc')->get()->map(function ($l) {
+        return [
+            'id' => $l->id,
+            'user' => $l->user->name ?? '-',
+            'role' => $l->user->role ?? '-',
+            'class' => $l->user->class ?? '-',
+            'book' => $l->book->title ?? '-',
+            'status' => $l->status,
+            'loan_date' => $l->loan_date,
+            'return_date' => $l->return_date,
+        ];
+    });
+
+    return response()->json([
+        'status' => 'success',
+        'members_loan_history' => $data,
+        'all_loans' => $allLoans,
+    ])->header('Access-Control-Allow-Origin', '*')
+      ->header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+      ->header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+});
+
 // Endpoint data statistik lengkap perpustakaan
 Route::get('/statistics', function () {
     $totalBuku = Book::count();
@@ -277,6 +338,7 @@ Route::get('/library-info', function () {
             'petugas' => 'Fitur Petugas: Dashboard (statistik real-time & grafik peminjaman), Daftar Buku (CRUD koleksi buku, cover, tahun, stok), Kategori Buku (CRUD kategori), Sirkulasi (ACC pinjaman, tolak pinjaman, proses pengembalian, bebas denda), Data Anggota (manajemen siswa & guru), Scan QR (kamera scanner buku/anggota), Profil Saya.',
             'siswa_guru' => 'Fitur Siswa & Guru: Katalog Buku (cari buku judul/penulis, filter kategori, cek stok), Detail Buku & Pinjam Mandiri (baca sinopsis, klik Pinjam Buku Ini maks 2 buku), Riwayat Peminjaman (pantau status Menunggu, Dipinjam, tanggal jatuh tempo 7 hari, info denda), Buku Tamu/Kunjungan Digital, Notifikasi Otomatis, Profil Saya.',
             'kepala_sekolah' => 'Fitur Kepala Sekolah: Laporan Perpustakaan (grafik sirkulasi, buku favorit, statistik pengunjung) dan Cetak Laporan PDF resmi untuk arsip/evaluasi sekolah.',
+        ],
         'rincian_siswa_per_kelas' => [
             'total_siswa' => 17,
             'kelas_1' => '2 siswa (Aiman Nabiel Alfariski, Candra Wijaya)',
