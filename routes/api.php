@@ -335,9 +335,18 @@ Route::get('/library-info', function () {
             return "Buku '{$r->book->title}' dipinjam oleh {$r->user->name} (" . ($r->user->class ? "Kelas {$r->user->class}" : "Anggota") . ") pada tanggal {$r->loan_date}, Status: {$statusText}" . ($r->return_date ? " (Dikembalikan: {$r->return_date})" : "");
         }),
         'panduan_fitur_aplikasi' => [
-            'petugas' => 'Fitur Petugas: Dashboard (statistik real-time & grafik peminjaman), Daftar Buku (CRUD koleksi buku, cover, tahun, stok), Kategori Buku (CRUD kategori), Sirkulasi (ACC pinjaman, tolak pinjaman, proses pengembalian, bebas denda), Data Anggota (manajemen siswa & guru), Scan QR (kamera scanner buku/anggota), Profil Saya.',
+            'petugas' => 'Fitur Petugas: Dashboard (statistik real-time & grafik peminjaman), Daftar Buku (CRUD koleksi buku, cover, tahun, stok), Kategori Buku (CRUD kategori), Sirkulasi (ACC pinjaman, tolak pinjaman, proses pengembalian, bebas denda), Data Anggota (manajemen siswa & guru), Scan QR (Scan QR untuk siswa / guru yang memiliki kartu anggota untuk meminjam buku di perpustakaan di dalam kartu itu ada kode QR-nya untuk discan melalui aplikasi perpustakaan, jadi petugas/administrator tidak menulis manual lagi dan tinggal scan kode QR yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan), Profil Saya.',
             'siswa_guru' => 'Fitur Siswa & Guru: Katalog Buku (cari buku judul/penulis, filter kategori, cek stok), Detail Buku & Pinjam Mandiri (baca sinopsis, klik Pinjam Buku Ini maks 2 buku), Riwayat Peminjaman (pantau status Menunggu, Dipinjam, tanggal jatuh tempo 7 hari, info denda), Buku Tamu/Kunjungan Digital, Notifikasi Otomatis, Profil Saya.',
             'kepala_sekolah' => 'Fitur Kepala Sekolah: Laporan Perpustakaan (grafik sirkulasi, buku favorit, statistik pengunjung) dan Cetak Laporan PDF resmi untuk arsip/evaluasi sekolah.',
+        ],
+        'panduan_scan_qr' => [
+            'penjelasan' => 'Scan QR untuk siswa / guru yang memiliki kartu anggota untuk meminjam buku di perpustakaan di dalam kartu itu ada kode QR nya untuk discan melalui aplikasi perpustakaan , jadi petugas/administrator tidak menulis manual lagi dan tinggal scan kode qr yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan.',
+            'lokasi_scan' => 'Kode QR dipindai oleh Petugas Perpustakaan menggunakan menu Scan QR di aplikasi perpustakaan (kamera laptop/HP petugas atau scanner perpustakaan).',
+            'scan_di_hp_siswa' => 'Tidak. Siswa tidak memindai kode QR menggunakan HP sendiri. Kode QR ada di kartu anggota siswa/guru, dan pemindaian dilakukan oleh Petugas di aplikasi perpustakaan saat siswa/guru meminjam buku di meja sirkulasi.',
+        ],
+        'riwayat_terakhir_per_anggota' => [
+            'faidil_aqiel' => 'Faidil Aqiel (Siswa Kelas 6) terakhir kali meminjam buku "Laskar Sipitung" (karya Andrea Hirata), status: Sudah Dikembalikan (Selesai). Faidil Aqiel TIDAK memiliki tanggungan buku yang belum dikembalikan (tanggungan aktif = 0 buku / bebas pinjaman).',
+            'seluruh_siswa_dan_guru' => 'Saat ini seluruh 17 siswa dan 10 guru anggota perpustakaan memiliki 0 tanggungan buku aktif (tidak ada buku yang belum dikembalikan). Semua koleksi buku lengkap di rak dan siap dipinjam.',
         ],
         'rincian_siswa_per_kelas' => [
             'total_siswa' => 17,

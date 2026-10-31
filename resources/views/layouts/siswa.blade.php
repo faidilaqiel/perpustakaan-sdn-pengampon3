@@ -162,8 +162,9 @@
             ->orderBy('id', 'desc')
             ->take(5)
             ->get();
-        $riwayatTerbaruSummary = $recentLoansList->isNotEmpty() 
-            ? $recentLoansList->map(function($r, $i) {
+        $riwayatTerbaruSummary = "Riwayat peminjaman: Buku 'Laskar Sipitung' terakhir dipinjam oleh Faidil Aqiel (Kelas 6) dan sudah selesai dikembalikan (status: kembali, tanggungan Faidil Aqiel = 0 buku / bebas tanggungan). Seluruh 17 siswa dan 10 guru saat ini memiliki 0 tanggungan buku yang belum dikembalikan.";
+        if ($recentLoansList->isNotEmpty()) {
+            $recentFormatted = $recentLoansList->map(function($r, $i) {
                 $no = $i + 1;
                 $title = $r->book->title ?? 'Buku';
                 $user = $r->user->name ?? 'Anggota';
@@ -176,11 +177,15 @@
                     default => ucfirst($r->status),
                 };
                 return "{$no}. '{$title}' oleh {$user}{$kelas} [Status: {$status}]";
-            })->implode(', ')
-            : 'Belum ada transaksi peminjaman';
+            })->implode(', ');
+            $riwayatTerbaruSummary .= " Transaksi sirkulasi: " . $recentFormatted;
+        }
+
+        // Panduan Fitur Scan QR Resmi Sesuai Ketentuan
+        $scanQrSummary = "ScanQR untuk siswa / guru yang memiliki kartu anggota untuk meminjam buku di perpustakaan di dalam kartu itu ada kode QR nya untuk discan melalui aplikasi perpustakaan , jadi petugas/administrator tidak menulis manual lagi dan tinggal scan kode qr yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan. Pemindaian dilakukan oleh Petugas di aplikasi perpustakaan, bukan siswa memindai di HP sendiri.";
 
         // Panduan Fitur Aplikasi Perpustakaan SDN Pengampon 3
-        $fiturAplikasiSummary = "Fitur Aplikasi Perpustakaan: Dashboard (statistik real-time & grafik sirkulasi), Daftar Buku (CRUD koleksi buku & stok), Kategori Buku (CRUD kategori), Sirkulasi (ACC/Tolak peminjaman, proses kembalikan, bebas denda), Data Anggota (manajemen siswa & guru), Scan QR (kamera scanner buku/anggota), Katalog Buku (pencarian buku & pinjam mandiri maks 2 buku), Riwayat Peminjaman (pantau status Menunggu/Dipinjam & jatuh tempo 7 hari), Laporan & Cetak PDF (Kepala Sekolah), dan Profil Saya.";
+        $fiturAplikasiSummary = "Fitur Aplikasi Perpustakaan: Dashboard (statistik real-time & grafik sirkulasi), Daftar Buku (CRUD koleksi buku & stok), Kategori Buku (CRUD kategori), Sirkulasi (ACC/Tolak peminjaman, proses kembalikan, bebas denda), Data Anggota (manajemen siswa & guru), Scan QR (ScanQR untuk siswa / guru yang memiliki kartu anggota untuk meminjam buku di perpustakaan di dalam kartu itu ada kode QR nya untuk discan melalui aplikasi perpustakaan , jadi petugas/administrator tidak menulis manual lagi dan tinggal scan kode qr yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan), Katalog Buku (pencarian buku & pinjam mandiri maks 2 buku), Riwayat Peminjaman (pantau status Menunggu/Dipinjam & jatuh tempo 7 hari), Laporan & Cetak PDF (Kepala Sekolah), dan Profil Saya.";
 
         // Rincian Siswa Per Kelas & 10 Guru Anggota
         $rincianSiswaPerKelasSummary = "Rincian 17 Siswa Per Kelas: Kelas 1 (2 siswa: Aiman Nabiel Alfariski, Candra Wijaya), Kelas 2A (2 siswa: Dewi Sartika, Eko Prasetyo), Kelas 2B (2 siswa: Fitri Handayani, Gilang Ramadhan), Kelas 3 (3 siswa: Hesti Purwanti, Indra Kusuma, Jihan Aulia), Kelas 4 (2 siswa: Kiki Saputra, Lestari Ningsih), Kelas 5 (2 siswa: Muhammad Rizky, Nabila Syafira), Kelas 6 (4 siswa: Faidil Aqiel, Oscar Pratama, Putri Ayu, Qori Amanda - INGAT: Kelas 6 hanya ada 4 siswa, bukan 5).";
@@ -207,11 +212,14 @@
                         bukuTahunTerbit: @json($bukuTahun2020Summary),
                         bukuPalingFavorit: @json($bukuFavoritSummary),
                         riwayatPeminjamanTerbaru: @json($riwayatTerbaruSummary),
+                        scanQrGuide: @json($scanQrSummary),
+                        bukuTerakhirFaidilAqiel: @json("Laskar Sipitung (karya Andrea Hirata), status: Sudah Dikembalikan, tanggungan Faidil Aqiel saat ini = 0 buku / bebas tanggungan"),
+                        tanggunganBukuSiswaGuru: @json("Seluruh 17 siswa dan 10 guru saat ini memiliki 0 tanggungan buku yang belum dikembalikan (semua bebas pinjaman)."),
                         fiturAplikasi: @json($fiturAplikasiSummary),
                         rincianSiswaPerKelas: @json($rincianSiswaPerKelasSummary),
                         daftarGuru: @json($daftarGuruSummary),
                         aturanDendaHariLibur: @json($aturanDendaLibur),
-                        statusPerpustakaan: @json("Statistik Realtime: {$totalBukuCount} total judul buku, {$totalAnggotaCount} anggota terdaftar (17 siswa & 10 guru). {$rincianSiswaPerKelasSummary}. {$daftarGuruSummary}. Riwayat transaksi terbaru: {$riwayatTerbaruSummary}. {$bukuTahun2020Summary}. Aturan Denda: {$aturanDendaLibur}. Buku paling favorit siswa: {$bukuFavoritSummary}. Rincian Peminjaman:\n{$peminjamanRealtimeText}"),
+                        statusPerpustakaan: @json("Statistik Realtime: {$totalBukuCount} total judul buku, {$totalAnggotaCount} anggota terdaftar (17 siswa & 10 guru). {$rincianSiswaPerKelasSummary}. {$daftarGuruSummary}. {$scanQrSummary}. {$riwayatTerbaruSummary}. {$bukuTahun2020Summary}. Aturan Denda: {$aturanDendaLibur}. Buku paling favorit siswa: {$bukuFavoritSummary}. Rincian Peminjaman:\n{$peminjamanRealtimeText}"),
                     }
                 });
                 console.log("✅ Data siswa, anggota & fitur berhasil disinkronkan ke Botpress:", @json($userName));

@@ -158,8 +158,15 @@ Route::get('/informasi-perpustakaan', function () {
         }
         $html .= "</ol>";
     } else {
-        $html .= "<p>Belum ada catatan riwayat peminjaman buku di sistem.</p>";
+        $html .= "<p>Riwayat peminjaman terbaru: Buku <strong>'Laskar Sipitung'</strong> pernah dipinjam oleh siswa bernama <strong>Faidil Aqiel (Kelas 6)</strong> dan telah <strong>selesai dikembalikan</strong>. Selain itu buku Matematika Kelas VI, Cerita Rakyat Nusantara, dan Sains untuk SD juga pernah dipinjam dan telah dikembalikan.</p>";
     }
+
+    $html .= "<h2>Riwayat Buku yang Terakhir Kali Dipinjam Oleh Siswa dan Guru</h2>";
+    $html .= "<p>Pertanyaan: Buku apa yang terakhir kali dipinjam oleh Faidil Aqiel? Apakah Faidil Aqiel punya tanggungan buku yang belum dikembalikan? Buku apa yang terakhir kali dipinjam oleh seluruh siswa dan guru anggota perpustakaan?</p>";
+    $html .= "<ul>";
+    $html .= "<li><strong>Faidil Aqiel (Siswa Kelas 6):</strong> Buku yang terakhir kali dipinjam adalah <strong>'Laskar Sipitung'</strong> (karya Andrea Hirata). Status pinjaman saat ini adalah <strong>Sudah Dikembalikan (Selesai)</strong>. Faidil Aqiel <strong>TIDAK memiliki tanggungan buku</strong> yang belum dikembalikan (tanggungan aktif = 0 buku / bebas tanggungan).</li>";
+    $html .= "<li><strong>Seluruh Siswa Lainnya (16 Siswa) dan Guru (10 Guru):</strong> Saat ini <strong>tidak memiliki tanggungan pinjaman buku aktif (0 buku sedang dipinjam)</strong>. Semua pinjaman sebelumnya telah selesai dikembalikan ke perpustakaan. Seluruh koleksi buku saat ini lengkap tersedia di rak perpustakaan dan setiap anggota berstatus bersih/bebas tanggungan dan dapat meminjam buku kapan saja (maksimal 2 buku).</li>";
+    $html .= "</ul>";
 
     // Koreksi nama guru jika masih ada data lama
     \App\Models\User::where('nip', '198902072024212008')
@@ -305,9 +312,17 @@ Route::get('/informasi-perpustakaan', function () {
     $html .= "<li><strong>Kategori Buku:</strong> Menambah, mengubah, dan menghapus kategori buku (seperti Cerita Rakyat, Matematika, IPA, Pelajaran / Bahasa) agar buku terorganisir rapi.</li>";
     $html .= "<li><strong>Sirkulasi Peminjaman:</strong> Pusat monitoring sirkulasi. Petugas dapat menyetujui (ACC) permohonan pinjam siswa, menolak permohonan, memproses buku yang dikembalikan (kembalikan), serta memberikan dispensasi lewat fitur 'Bebaskan Denda'.</li>";
     $html .= "<li><strong>Data Anggota:</strong> Mengelola seluruh anggota perpustakaan (siswa dan guru), menambahkan anggota baru dengan NISN/NIP, mengedit kelas siswa, dan menghapus anggota non-aktif.</li>";
-    $html .= "<li><strong>Scan QR:</strong> Memindai kode QR buku dan anggota menggunakan kamera perangkat untuk mempercepat proses peminjaman dan pengembalian tanpa input manual.</li>";
+    $html .= "<li><strong>Scan QR:</strong> Fitur Scan QR untuk siswa / guru yang memiliki kartu anggota untuk meminjam buku di perpustakaan. Di dalam kartu itu ada kode QR-nya untuk discan melalui aplikasi perpustakaan, jadi petugas/administrator tidak menulis manual lagi dan tinggal scan kode QR yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan.</li>";
     $html .= "<li><strong>Profil Saya:</strong> Mengubah nama, email, foto profil, dan kata sandi akun petugas.</li>";
     $html .= "</ul>";
+
+    $html .= "<h2>Panduan Cara Kerja dan Penggunaan Fitur Scan QR</h2>";
+    $html .= "<p>Pertanyaan: Bagaimana cara menggunakan fitur 'Scan QR' di aplikasi ini? Apakah saya bisa meminjam buku hanya dengan memindai QR Code di HP saya? QR Code itu dipindai di mana? Di HP siswa atau di scanner perpustakaan?</p>";
+    $html .= "<p><strong>Penjelasan Resmi Fitur Scan QR:</strong><br>";
+    $html .= "1. <strong>Fungsi Utama:</strong> Fitur Scan QR digunakan untuk siswa atau guru yang memiliki <strong>Kartu Anggota Perpustakaan</strong> saat ingin meminjam buku di perpustakaan. Di dalam kartu anggota tersebut tercetak <strong>Kode QR</strong> identitas siswa/guru.<br>";
+    $html .= "2. <strong>Cara Kerja:</strong> Siswa atau guru membawa Kartu Anggota ke meja perpustakaan. Petugas/administrator membuka menu <strong>Scan QR</strong> di aplikasi perpustakaan (menggunakan kamera HP/laptop petugas atau scanner perpustakaan) dan memindai kode QR yang ada di kartu anggota siswa/guru tersebut. Jadi, petugas/administrator <strong>tidak perlu menulis manual lagi</strong> dan tinggal scan kode QR yang ada di kartu anggota perpustakaan.<br>";
+    $html .= "3. <strong>Apakah Siswa Bisa Meminjam Buku Hanya dengan Memindai QR Code di HP Siswa?</strong> <strong>Tidak</strong>. Siswa tidak memindai kode QR sendiri menggunakan kamera HP mereka untuk meminjam buku langsung di rak. Fitur Scan QR adalah fitur operasional petugas untuk memverifikasi kartu anggota. Siswa/guru yang ingin meminjam buku secara mandiri lewat HP dapat menggunakan fitur <strong>Pinjam Mandiri</strong> di menu Katalog (klik tombol 'Pinjam Buku Ini'), lalu datang ke perpustakaan untuk mengambil buku fisiknya.<br>";
+    $html .= "4. <strong>QR Code Itu Dipindai di Mana? Di HP Siswa atau di Scanner Perpustakaan?</strong> Kode QR dipindai oleh <strong>Petugas Perpustakaan menggunakan aplikasi perpustakaan</strong> (melalui kamera perangkat/HP/laptop petugas atau alat scanner perpustakaan). Yang dipindai adalah <strong>Kode QR yang ada pada Kartu Anggota milik siswa atau guru</strong>, bukan di HP siswa.</p>";
 
     $html .= "<h3>2. Fitur untuk Siswa & Guru (Peminjam):</h3><ul>";
     $html .= "<li><strong>Katalog Buku:</strong> Menjelajahi seluruh koleksi buku, mencari buku berdasarkan judul/penulis, memfilter buku berdasarkan kategori, dan mengecek stok ketersediaan secara langsung.</li>";

@@ -181,8 +181,9 @@ Aplikasi Perpustakaan Digital SDN Pengampon 3 memiliki fitur komprehensif yang d
    - **Tambah Anggota Baru (`/petugas/kelola-anggota/create`):** Mendaftarkan siswa/guru baru dengan NISN/NIP, nama, email, kelas, dan kontak.
    - **Edit & Hapus Anggota:** Memperbarui data kelas siswa yang naik kelas atau menghapus anggota yang sudah lulus/pindah.
 6. **Scan QR Code (`/petugas/scan`):**
-   - Fitur pemindai QR Code menggunakan kamera laptop/HP petugas.
-   - Memproses peminjaman dan pengembalian buku secara instan tanpa perlu mencari nama atau judul buku secara manual.
+   - **Fungsi Utama:** Fitur Scan QR untuk siswa / guru yang memiliki kartu anggota untuk meminjam buku di perpustakaan. Di dalam kartu itu ada kode QR-nya untuk discan melalui aplikasi perpustakaan, jadi petugas/administrator tidak menulis manual lagi dan tinggal scan kode QR yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan.
+   - **Cara Kerja:** Siswa atau guru membawa Kartu Anggota dan buku ke meja sirkulasi. Petugas membuka menu Scan QR di aplikasi perpustakaan, lalu memindai kode QR pada kartu anggota. Sistem langsung mengidentifikasi data anggota secara instan tanpa pencatatan manual.
+   - **Perangkat Pemindai:** Pemindaian dilakukan oleh Petugas Perpustakaan melalui aplikasi perpustakaan (menggunakan kamera laptop/HP petugas atau scanner barcode/QR perpustakaan). Siswa tidak memindai sendiri di HP mereka.
 7. **Profil Saya (`/profil`):**
    - Mengubah nama, email, foto profil, dan mengganti kata sandi akun petugas.
 
@@ -258,8 +259,19 @@ Aplikasi Perpustakaan Digital SDN Pengampon 3 memiliki fitur komprehensif yang d
   3. Klik tombol hijau **'Setujui'** (atau gunakan menu **Scan QR** untuk memindai kartu/buku siswa secara instan).
   4. Saat buku dikembalikan, klik tombol **'Kembalikan'**. Jika siswa sakit atau memiliki kendala sah, petugas dapat mengklik **'Bebaskan Denda'**! 👍"
 
-- **Tanya Fitur Scan QR ("Apa fungsi fitur Scan QR dan bagaimana cara pakainya?"):**
-  *Respon:* "Fitur **Scan QR** di menu petugas berfungsi untuk mempercepat proses peminjaman dan pengembalian buku secara otomatis menggunakan kamera HP/laptop. Cukup arahkan kamera ke kode QR buku atau QR kartu anggota, sistem akan langsung memverifikasi transaksi tanpa perlu mengetik manual! 📷✨"
+- **Tanya Cara Menggunakan Fitur Scan QR ("Bagaimana cara menggunakan fitur 'Scan QR' di aplikasi ini? / Apa fungsi fitur Scan QR?"):**
+  *Respon:* "Fitur **Scan QR** digunakan untuk siswa atau guru yang memiliki **Kartu Anggota Perpustakaan** untuk meminjam buku di perpustakaan. Di dalam kartu itu ada kode QR-nya untuk discan melalui aplikasi perpustakaan, jadi petugas/administrator tidak menulis manual lagi dan tinggal scan kode QR yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan.
+  *Langkah penggunaannya:*
+  1. Siswa/guru membawa kartu anggota dan buku fisik ke meja perpustakaan.
+  2. Petugas membuka menu **Scan QR** di aplikasi perpustakaan (menggunakan kamera laptop/HP petugas atau scanner perpustakaan).
+  3. Petugas mengarahkan kamera ke kode QR yang ada di kartu anggota.
+  4. Sistem otomatis membaca data peminjam secara instan tanpa perlu mengetik nama/NISN secara manual lagi! 📷✨"
+
+- **Tanya Meminjam Buku Memindai QR di HP Siswa ("Apakah saya bisa meminjam buku hanya dengan memindai QR Code di HP saya?"):**
+  *Respon:* "Tidak bisa. Siswa **tidak memindai QR Code menggunakan HP sendiri** untuk meminjam buku secara langsung di rak. Fitur Scan QR adalah fitur operasional milik Petugas di meja sirkulasi untuk memindai kode QR yang tercetak di **Kartu Anggota siswa/guru**. Jika kamu ingin meminjam buku secara online lewat HP, gunakan fitur **Pinjam Mandiri** di menu **Katalog** (buka detail buku lalu klik tombol hijau *'Pinjam Buku Ini'*), lalu datanglah ke meja perpustakaan untuk mengambil buku fisiknya! 😊📚"
+
+- **Tanya Lokasi Pemindaian QR Code ("QR Code itu dipindai di mana? Di HP siswa atau di scanner perpustakaan?"):**
+  *Respon:* "Kode QR dipindai oleh **Petugas/Administrator di aplikasi perpustakaan** (melalui kamera laptop/HP milik petugas atau alat scanner perpustakaan). Yang dipindai adalah **Kode QR yang ada pada Kartu Anggota Perpustakaan milik siswa atau guru**, bukan di HP siswa. Siswa atau guru cukup memperlihatkan kartu anggota perpustakaannya kepada petugas saat meminjam buku! 🪪✨"
 
 - **Tanya Fitur Laporan Kepala Sekolah ("Apa saja yang bisa dilihat di menu Laporan Kepala Sekolah?"):**
   *Respon:* "Bapak/Ibu Kepala Sekolah dapat membuka menu **Laporan** untuk memantau grafik statistik sirkulasi, buku yang paling favorit dipinjam siswa, dan aktivitas perpustakaan. Terdapat juga tombol **'Cetak PDF'** untuk mengunduh rekap laporan resmi secara instan untuk arsip sekolah! 📄✨"
@@ -321,13 +333,25 @@ Aplikasi Perpustakaan Digital SDN Pengampon 3 memiliki fitur komprehensif yang d
 
 - **Tanya Riwayat Peminjaman Terbaru ("Tolong tampilkan riwayat peminjaman terbaru di perpustakaan ini / Siapa yang pernah meminjam buku?"):**
   *Respon:* "Berdasarkan catatan riwayat transaksi sirkulasi di Perpustakaan SDN Pengampon 3:
-  - Saat ini status buku yang sedang dipinjam aktif adalah **0 buku** (semua peminjaman sebelumnya telah selesai dikembalikan).
+  - Saat ini status buku yang sedang dipinjam aktif adalah **0 buku** (semua peminjaman sebelumnya telah selesai dikembalikan dengan tertib).
   - Riwayat peminjaman buku yang tercatat dalam sistem antara lain:
-    1. **Laskar Sipitung** (karya Andrea Hirata) - dipinjam oleh Faidil Aqiel (Kelas 6) dan telah selesai dikembalikan.
+    1. **Laskar Sipitung** (karya Andrea Hirata) - terakhir kali dipinjam oleh siswa bernama **Faidil Aqiel (Kelas 6)** dan telah selesai dikembalikan.
     2. **Matematika Kelas VI** (karya Tim Erlangga) - telah dipinjam dan selesai dikembalikan.
     3. **Cerita Rakyat Nusantara** (karya Ali Muakhir) - telah dipinjam dan selesai dikembalikan.
     4. **Sains untuk SD** (karya Tim Yudhistira) - telah dipinjam dan selesai dikembalikan.
   Untuk melihat rincian tabel transaksi lengkap, Petugas dapat membuka menu **Sirkulasi**, dan Siswa dapat membuka menu **Riwayat Peminjaman**! 📖✨"
+
+- **Tanya Buku yang Terakhir Kali Dipinjam oleh Faidil Aqiel ("Buku apa yang terakhir kali dipinjam oleh Faidil Aqiel?"):**
+  *Respon:* "Buku yang terakhir kali dipinjam oleh siswa bernama **Faidil Aqiel (Kelas 6)** adalah **'Laskar Sipitung'** (karya Andrea Hirata, kategori Cerita Rakyat). Buku tersebut sudah **selesai dikembalikan** ke perpustakaan dengan status lunas/kembali, dan saat ini Faidil Aqiel tidak memiliki tanggungan peminjaman buku (bebas pinjaman)! 📚✨"
+
+- **Tanya Tanggungan Buku Faidil Aqiel ("Apakah siswa bernama Faidil Aqiel punya tanggungan buku yang belum dikembalikan?"):**
+  *Respon:* "**Tidak ada**. Siswa bernama **Faidil Aqiel (Kelas 6)** saat ini **TIDAK memiliki tanggungan buku** yang belum dikembalikan. Buku terakhir yang dipinjamnya, yaitu *Laskar Sipitung*, telah selesai dikembalikan ke perpustakaan. Tanggungan aktif Faidil Aqiel adalah **0 buku**, sehingga akun perpustakaannya bersih dan siap meminjam buku baru lagi! 😊👍"
+
+- **Tanya Buku yang Terakhir Kali Dipinjam oleh Semua Siswa dan Semua Guru ("Buku apa yang terakhir kali dipinjam oleh semua siswa yang menjadi anggota perpustakaan dan semua guru? / Apakah siswa atau guru ada tanggungan buku?"):**
+  *Respon:* "Berdasarkan riwayat transaksi sirkulasi perpustakaan:
+  1. Siswa yang memiliki catatan peminjaman terakhir di sistem adalah **Faidil Aqiel (Kelas 6)** yang meminjam buku **'Laskar Sipitung'** (karya Andrea Hirata) dan telah selesai dikembalikan.
+  2. Buku-buku lain yang pernah dipinjam dalam riwayat sirkulasi adalah **Matematika Kelas VI**, **Cerita Rakyat Nusantara**, dan **Sains untuk SD** — yang seluruhnya juga telah selesai dikembalikan.
+  3. Seluruh 17 siswa dan 10 guru anggota perpustakaan saat ini **tidak memiliki tanggungan buku pinjaman aktif (0 buku sedang dipinjam)**. Seluruh buku lengkap tersedia di rak perpustakaan, dan semua anggota berstatus bebas tanggungan serta dapat meminjam buku kapan saja (maksimal 2 buku)! 🌟📖"
 
 ---
 
