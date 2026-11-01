@@ -231,6 +231,47 @@ class WhatsAppService
     }
 
     /**
+     * Notifikasi Pengingat Hari Ini (Hari-H Jatuh Tempo)
+     */
+    public static function sendReminderHariIni(Loan $loan)
+    {
+        $user = $loan->user;
+        $book = $loan->book;
+
+        if (!$user || !$book) {
+            return null;
+        }
+
+        $nama = $user->name;
+        $judul = $book->title;
+        $tglTempo = Carbon::parse($loan->due_date)->locale('id')->translatedFormat('d F Y');
+
+        $pesan = "Halo {$nama},\n"
+            . "Pengingat: Buku \"{$judul}\" yang Anda pinjam akan jatuh tempo Hari Ini ({$tglTempo}). Jangan lupa dikembalikan ya!\n"
+            . "╰┈➤ Tim Perpustakaan SDN Pengampon 3";
+
+        return self::sendMessage($user->phone, $pesan);
+    }
+
+    /**
+     * Dapatkan teks template pengingat Hari Ini
+     */
+    public static function getReminderHariIniText(Loan $loan)
+    {
+        $user = $loan->user;
+        $book = $loan->book;
+        if (!$user || !$book) return '';
+
+        $nama = $user->name;
+        $judul = $book->title;
+        $tglTempo = Carbon::parse($loan->due_date)->locale('id')->translatedFormat('d F Y');
+
+        return "Halo {$nama},\n"
+            . "Pengingat: Buku \"{$judul}\" yang Anda pinjam akan jatuh tempo Hari Ini ({$tglTempo}). Jangan lupa dikembalikan ya!\n"
+            . "╰┈➤ Tim Perpustakaan SDN Pengampon 3";
+    }
+
+    /**
      * 3. Notifikasi Keterlambatan
      */
     public static function sendOverdueWarning(Loan $loan, $daysLate = null, $denda = null)

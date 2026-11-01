@@ -8,4 +8,4 @@ cmds = ["composer install --optimize-autoloader --no-dev", "npm install", "npm r
 cmds = ["php artisan config:cache", "php artisan view:cache"]
 
 [start]
-cmd = "php artisan migrate --force; php artisan serve --host=0.0.0.0 --port=$PORT"
+cmd = "php artisan migrate --force; (php artisan schedule:work &); php artisan serve --host=0.0.0.0 --port=$PORT"

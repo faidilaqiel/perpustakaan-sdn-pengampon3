@@ -68,6 +68,15 @@ class SendWhatsAppReminders extends Command
                 }
             }
 
+            // 2. Cek Pengingat Hari-H (Jatuh tempo hari ini)
+            if (($type === 'all' || $type === 'reminder') && $dueDate->toDateString() === $today->toDateString()) {
+                $this->line("📢 Mengirim Pengingat Hari-H ke {$user->name} ({$user->phone}) untuk buku: {$book->title}");
+                $res = WhatsAppService::sendReminderHariIni($loan);
+                if ($res && ($res['success'] ?? false)) {
+                    $countReminder++;
+                }
+            }
+
             // 2. Cek Keterlambatan (Lewat dari jatuh tempo)
             if (($type === 'all' || $type === 'overdue') && $today->greaterThan($dueDate)) {
                 $daysLate = (int)$dueDate->diffInDays($today);
