@@ -186,16 +186,30 @@ $statusPerpustakaan = "Statistik Terkini: {$totalBukuCount} total buku, {$totalA
     . "Peminjaman Terkini: {$peminjamanRealtimeText}";
 @endphp
 
+@php
+    $botpressUserName = $userName ?? 'Pengguna';
+    if ($isPetugas) {
+        $botpressUserName = ($userName ?? 'Petugas') . ' (Petugas Perpustakaan)';
+    } elseif ($isKepsek) {
+        $botpressUserName = ($userName ?? 'Kepala Sekolah') . ' (Kepala Sekolah)';
+    } elseif ($isGuru) {
+        $botpressUserName = ($userName ?? 'Guru') . ' (Guru)';
+    }
+@endphp
+
 <script>
     const sendUserToBotpress = () => {
         if (window.botpress && typeof window.botpress.updateUser === 'function') {
             window.botpress.updateUser({
-                name: @json($userName ?? 'Pengguna'),
+                name: @json($botpressUserName),
                 data: {
-                    name: @json($userName ?? 'Pengguna'),
+                    name: @json($botpressUserName),
+                    realName: @json($userName ?? 'Pengguna'),
                     role: @json($userRole ?? 'Pengguna'),
                     userName: @json($userName ?? 'Pengguna'),
                     userRole: @json($userRole ?? 'Pengguna'),
+                    peranResmi: @json($isPetugas ? 'Petugas / Administrator Perpustakaan' : ($userRole ?? 'Pengguna')),
+                    bukanSiswa: @json($isPetugas || $isKepsek || $isGuru),
                     userClass: @json($userClass ?? ''),
                     isPetugas: @json($isPetugas ?? false),
                     isKepsek: @json($isKepsek ?? false),
