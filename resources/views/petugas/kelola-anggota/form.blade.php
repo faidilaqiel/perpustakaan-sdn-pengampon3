@@ -56,6 +56,20 @@
                             <option value="P" {{ old('gender', $user->gender ?? '') === 'P' ? 'selected' : '' }}>Perempuan</option>
                         </select>
                     </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-2">
+                            <i class="fab fa-whatsapp text-green-600 mr-1"></i> Nomor WhatsApp <span class="text-xs font-normal text-gray-500">(Notifikasi Otomatis)</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-green-600 font-bold text-sm">
+                                <i class="fab fa-whatsapp"></i>
+                            </span>
+                            <input type="tel" name="phone" value="{{ old('phone', $user->phone ?? '') }}" placeholder="Contoh: 081234567890"
+                                   class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none font-mono text-sm">
+                        </div>
+                        <p class="text-[11px] text-gray-500 mt-1">Pesan peminjaman & pengingat H-1 akan dikirim ke nomor ini.</p>
+                    </div>
                 </div>
 
                 {{-- Kolom Kanan --}}

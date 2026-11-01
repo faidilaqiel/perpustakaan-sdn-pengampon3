@@ -28,16 +28,37 @@ class LoanController extends Controller
         $menunggu = Loan::where('status', 'menunggu')->count();
         
         $data = $loans->map(function($loan) {
+            $user = $loan->user;
+            $book = $loan->book;
+            $dueDate = Carbon::parse($loan->due_date)->startOfDay();
+            $today = Carbon::now()->startOfDay();
+            $isLate = ($loan->status === 'dipinjam' && $today->greaterThan($dueDate));
+            $daysLate = $isLate ? (int)$dueDate->diffInDays($today) : 0;
+            $denda = $daysLate * 1000;
+
+            $waLink = null;
+            if ($user && $user->phone) {
+                if ($isLate) {
+                    $waLink = \App\Services\WhatsAppService::getWaLink($user->phone, \App\Services\WhatsAppService::getOverdueWarningText($loan, $daysLate, $denda));
+                } elseif ($loan->status === 'dipinjam') {
+                    $waLink = \App\Services\WhatsAppService::getWaLink($user->phone, \App\Services\WhatsAppService::getReminderH1Text($loan));
+                }
+            }
+
             return [
                 'id' => $loan->id,
-                'user_name' => $loan->user->name ?? 'User Terhapus',
-                'user_id' => $loan->user->nisn ?? $loan->user->nip ?? '-',
-                'book_title' => $loan->book->title ?? 'Buku Terhapus',
-                'book_code' => $loan->book->code ?? '-',
+                'user_name' => $user->name ?? 'User Terhapus',
+                'user_id' => $user->nisn ?? $user->nip ?? '-',
+                'user_phone' => $user->phone ?? null,
+                'book_title' => $book->title ?? 'Buku Terhapus',
+                'book_code' => $book->code ?? '-',
                 'loan_date' => Carbon::parse($loan->loan_date)->translatedFormat('d M Y'),
                 'due_date' => Carbon::parse($loan->due_date)->translatedFormat('d M Y'),
                 'status' => $loan->status,
-                'is_late' => ($loan->status == 'dipinjam' && Carbon::now()->greaterThan(Carbon::parse($loan->due_date))) ? true : false,
+                'is_late' => $isLate,
+                'days_late' => $daysLate,
+                'denda' => $denda,
+                'wa_link' => $waLink,
             ];
         });
 
@@ -45,6 +66,20 @@ class LoanController extends Controller
             'loans' => $data,
             'menunggu' => $menunggu,
         ]);
+    }
+
+    /**
+     * Jalankan pengecekan dan pengiriman pengingat WhatsApp secara on-demand oleh Petugas
+     */
+    public function sendWaReminders()
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('wa:send-reminders');
+            $output = \Illuminate\Support\Facades\Artisan::output();
+            return back()->with('success', '✅ Notifikasi WhatsApp Otomatis: ' . trim($output));
+        } catch (\Throwable $e) {
+            return back()->with('error', '❌ Gagal memproses notifikasi WhatsApp: ' . $e->getMessage());
+        }
     }
 
     public function riwayat()
@@ -123,7 +158,14 @@ class LoanController extends Controller
                 'notifikasi' => 'disetujui|Buku "' . $book->title . '" berhasil disetujui. Silakan ambil di perpustakaan. Jatuh tempo: ' . Carbon::parse($request->due_date)->translatedFormat('d M Y')
             ]);
 
-            return back()->with('success', '✅ Peminjaman disetujui! Stok buku berkurang 1.');
+            // Kirim Notifikasi WhatsApp Otomatis ke Anggota
+            try {
+                \App\Services\WhatsAppService::sendLoanConfirmation($loan);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('WA Loan Notification Error: ' . $e->getMessage());
+            }
+
+            return back()->with('success', '✅ Peminjaman disetujui! Notifikasi WhatsApp telah diproses.');
         }
 
         return back()->with('error', '❌ Gagal menyetujui, stok buku sudah habis.');

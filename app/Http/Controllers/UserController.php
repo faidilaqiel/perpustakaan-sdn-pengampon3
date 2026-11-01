@@ -89,6 +89,7 @@ class UserController extends Controller
             'class' => 'nullable|required_if:role,siswa|max:10',
             'nisn' => 'nullable|required_if:role,siswa|numeric|digits_between:5,10|unique:users,nisn',
             'nip' => 'nullable|required_if:role,guru|numeric|digits_between:5,18|unique:users,nip',
+            'phone' => 'nullable|string|max:25',
             'password' => 'required|min:6',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ], [
@@ -117,6 +118,8 @@ class UserController extends Controller
             $request->file('photo')->move(public_path('photos'), $photoName);
         }
 
+        $cleanPhone = $request->filled('phone') ? \App\Services\WhatsAppService::formatPhone($request->phone) : null;
+
         User::create([
             'role' => $request->role,
             'name' => $request->name,
@@ -124,6 +127,7 @@ class UserController extends Controller
             'class' => $request->role === 'siswa' ? $request->class : null,
             'nisn' => $request->role === 'siswa' ? $request->nisn : null,
             'nip' => $request->role === 'guru' ? $request->nip : null,
+            'phone' => $cleanPhone,
             'password' => Hash::make($request->password),
             'photo' => $photoName,
             'status' => 'aktif',
@@ -171,6 +175,7 @@ class UserController extends Controller
             'class' => 'nullable|required_if:role,siswa|max:10',
             'nisn' => 'nullable|required_if:role,siswa|numeric|digits_between:5,10|unique:users,nisn,' . $id,
             'nip' => 'nullable|required_if:role,guru|numeric|digits_between:5,18|unique:users,nip,' . $id,
+            'phone' => 'nullable|string|max:25',
             'password' => 'nullable|min:6',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ], [
@@ -202,6 +207,8 @@ class UserController extends Controller
             $request->file('photo')->move(public_path('photos'), $photoName);
         }
 
+        $cleanPhone = $request->filled('phone') ? \App\Services\WhatsAppService::formatPhone($request->phone) : null;
+
         $data = [
             'role' => $request->role,
             'name' => $request->name,
@@ -209,6 +216,7 @@ class UserController extends Controller
             'class' => $request->role === 'siswa' ? $request->class : null,
             'nisn' => $request->role === 'siswa' ? $request->nisn : null,
             'nip' => $request->role === 'guru' ? $request->nip : null,
+            'phone' => $cleanPhone,
             'photo' => $photoName,
         ];
 

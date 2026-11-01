@@ -56,6 +56,7 @@ Route::post('/petugas/setujui/{id}', [LoanController::class, 'setujui'])->name('
 Route::post('/petugas/tolak/{id}', [LoanController::class, 'tolak'])->name('petugas.tolak');
 Route::post('/petugas/kembalikan/{id}', [LoanController::class, 'kembalikan'])->name('petugas.kembalikan');
 Route::post('/petugas/bebaskan-denda/{id}', [LoanController::class, 'bebaskanDenda'])->name('petugas.bebaskanDenda');
+Route::post('/petugas/wa/send-reminders', [LoanController::class, 'sendWaReminders'])->name('petugas.wa.sendReminders');
 
 // Kelola Buku (CRUD)
 Route::get('/petugas/kelola-buku', [BookController::class, 'kelola'])->name('petugas.kelolaBuku');
@@ -312,4 +313,20 @@ Route::get('/informasi-perpustakaan', function () {
     $html .= "</body></html>";
 
     return response($html)->header('Content-Type', 'text/html');
+});
+
+// Auto migration route
+Route::get('/run-migration-auto', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return response()->json([
+            'status' => 'success',
+            'output' => \Illuminate\Support\Facades\Artisan::output(),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
 });

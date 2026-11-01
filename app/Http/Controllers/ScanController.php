@@ -208,6 +208,14 @@ class ScanController extends Controller
             'status' => 'dipinjam',
         ]);
 
+        // Kirim Notifikasi WhatsApp Otomatis ke Anggota
+        $waResult = null;
+        try {
+            $waResult = \App\Services\WhatsAppService::sendLoanConfirmation($loan);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('WA Loan Notification Error: ' . $e->getMessage());
+        }
+
         // Catat/update kunjungan
         Kunjungan::firstOrCreate([
             'user_id' => $user->id,
@@ -230,7 +238,10 @@ class ScanController extends Controller
                 'message' => $popupMessage,
                 'book_title' => $book->title,
                 'user_name' => $user->name,
+                'user_phone' => $user->phone,
                 'due_date' => Carbon::parse($dueDate)->translatedFormat('d F Y'),
+                'wa_sent' => $waResult['success'] ?? false,
+                'wa_link' => $waResult['wa_link'] ?? \App\Services\WhatsAppService::getWaLink($user->phone, \App\Services\WhatsAppService::getLoanConfirmationText($loan)),
             ]);
         }
 
@@ -238,7 +249,10 @@ class ScanController extends Controller
             'loan_success' => true,
             'loan_book_title' => $book->title,
             'loan_user_name' => $user->name,
+            'loan_user_phone' => $user->phone,
             'loan_due_date' => Carbon::parse($dueDate)->translatedFormat('d F Y'),
+            'wa_sent' => $waResult['success'] ?? false,
+            'wa_link' => $waResult['wa_link'] ?? \App\Services\WhatsAppService::getWaLink($user->phone, \App\Services\WhatsAppService::getLoanConfirmationText($loan)),
             'success' => $popupMessage,
         ]);
     }

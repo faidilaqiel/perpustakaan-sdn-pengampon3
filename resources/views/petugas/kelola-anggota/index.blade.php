@@ -148,6 +148,13 @@
                                     <span class="text-xs text-gray-500 font-mono">
                                         @if($user->role === 'siswa') NISN: {{ $user->nisn }} @else NIP: {{ $user->nip }} @endif
                                     </span>
+                                    @if($user->phone)
+                                        <a href="https://wa.me/{{ \App\Services\WhatsAppService::formatPhone($user->phone) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] text-green-600 hover:text-green-700 font-mono mt-0.5 font-medium" title="Kirim Pesan WhatsApp">
+                                            <i class="fab fa-whatsapp"></i> {{ $user->phone }}
+                                        </a>
+                                    @else
+                                        <span class="text-[10px] text-gray-400 block italic">WA belum diisi</span>
+                                    @endif
                                 </td>
                                 <td class="p-4">
                                     @if($user->role === 'siswa')
@@ -199,6 +206,11 @@
                                 <span class="text-xs text-gray-500 font-mono">
                                     @if($user->role === 'siswa') NISN: {{ $user->nisn }} @else NIP: {{ $user->nip }} @endif
                                 </span>
+                                @if($user->phone)
+                                    <a href="https://wa.me/{{ \App\Services\WhatsAppService::formatPhone($user->phone) }}" target="_blank" class="inline-flex items-center gap-1 text-[11px] text-green-600 hover:text-green-700 font-mono mt-0.5 font-medium">
+                                        <i class="fab fa-whatsapp"></i> {{ $user->phone }}
+                                    </a>
+                                @endif
                             </div>
                         </div>
                         <div class="grid grid-cols-2 text-xs text-gray-600 mb-3 gap-2">

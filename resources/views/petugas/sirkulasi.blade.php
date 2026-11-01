@@ -4,11 +4,24 @@
 
 @section('content')
     {{-- Header Halaman --}}
-    <div class="bg-white rounded-xl shadow-sm p-5 mb-6 border border-gray-100 flex items-center gap-3">
-        <h2 class="text-xl font-bold text-gray-800">Sirkulasi Peminjaman</h2>
-        <span id="badge-notif" class="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full animate-pulse {{ $jumlahPengajuan > 0 ? '' : 'hidden' }}">
-            {{ $jumlahPengajuan }} Baru
-        </span>
+    <div class="bg-white rounded-xl shadow-sm p-5 mb-6 border border-gray-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <h2 class="text-xl font-bold text-gray-800">Sirkulasi Peminjaman</h2>
+            <span id="badge-notif" class="bg-red-500 text-white text-xs font-bold px-2.5 py-1 rounded-full animate-pulse {{ $jumlahPengajuan > 0 ? '' : 'hidden' }}">
+                {{ $jumlahPengajuan }} Baru
+            </span>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <form method="POST" action="{{ route('petugas.wa.sendReminders') }}" onsubmit="return confirm('Kirim notifikasi pengingat H-1 dan peringatan keterlambatan WhatsApp ke seluruh anggota sekarang?')" class="flex-1 sm:flex-none">
+                @csrf
+                <button type="submit" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition" title="Jalankan pengecekan WA pengingat H-1 dan denda keterlambatan">
+                    <i class="fab fa-whatsapp text-sm"></i> Kirim Pengingat WA
+                </button>
+            </form>
+            <a href="{{ route('petugas.scan') }}" class="flex-1 sm:flex-none bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-2 rounded-lg font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm transition">
+                <i class="fas fa-qrcode"></i> Scan QR Pinjam
+            </a>
+        </div>
     </div>
 
     {{-- Notifikasi --}}
@@ -41,8 +54,9 @@
 
     {{-- Daftar Peminjaman --}}
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="p-4 border-b border-gray-100 bg-gray-50">
+        <div class="p-4 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
             <h3 class="font-bold text-gray-800">Daftar Peminjaman</h3>
+            <span class="text-xs text-gray-500">Auto-refresh aktif</span>
         </div>
         
         {{-- Tabel Desktop --}}
@@ -91,6 +105,17 @@
                 else if (loan.status === 'dikembalikan') statusBadge = `<span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-semibold">✅ Dikembalikan</span>`;
                 else statusBadge = `<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-semibold">❌ Ditolak</span>`;
 
+                let waButton = '';
+                if (loan.wa_link) {
+                    const waTitle = loan.is_late ? 'Kirim Peringatan Terlambat via WA' : 'Kirim Pengingat via WA';
+                    const waBadge = loan.is_late ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200';
+                    waButton = `
+                        <a href="${loan.wa_link}" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 rounded border ${waBadge} hover:opacity-80 transition text-[11px] font-semibold mt-1" title="${waTitle}">
+                            <i class="fab fa-whatsapp"></i> Chat WA
+                        </a>
+                    `;
+                }
+
                 let aksi = '';
                 if (loan.status === 'menunggu') {
                     // FORM INPUT TANGGAL MANUAL
@@ -114,21 +139,34 @@
                         </form>`;
                 } else if (loan.status === 'dipinjam') {
                     aksi = `
-                        <form method="POST" action="/petugas/kembalikan/${loan.id}" class="w-full md:w-auto text-center">
-                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-semibold shadow">Kembalikan</button>
-                        </form>`;
+                        <div class="flex flex-col items-center gap-1.5">
+                            <form method="POST" action="/petugas/kembalikan/${loan.id}" class="w-full text-center">
+                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 text-white px-3 py-1.5 rounded text-xs font-semibold shadow">Kembalikan</button>
+                            </form>
+                            ${waButton}
+                        </div>`;
                 } else {
                     aksi = '<span class="text-gray-400 text-xs text-center block">-</span>';
                 }
 
-                let lateLabel = loan.is_late ? `<br><span class="text-xs text-red-600 font-bold">⚠️ TERLAMBAT!</span>` : '';
+                let lateLabel = '';
+                if (loan.is_late) {
+                    const formattedDenda = new Intl.NumberFormat('id-ID').format(loan.denda || 0);
+                    lateLabel = `<br><span class="text-xs text-red-600 font-bold">⚠️ Terlambat ${loan.days_late} Hari<br>(Denda: Rp ${formattedDenda})</span>`;
+                }
+
+                let phoneInfo = loan.user_phone ? `<span class="text-[11px] text-gray-500 block"><i class="fab fa-whatsapp text-green-600"></i> ${loan.user_phone}</span>` : '';
 
                 // Desktop
                 tbodyDesktop.innerHTML += `
                     <tr class="border-b border-gray-100 hover:bg-gray-50 transition text-sm">
                         <td class="p-4 text-gray-500">${index + 1}</td>
-                        <td class="p-4"><strong class="text-gray-800">${loan.user_name}</strong><br><span class="text-xs text-gray-500 font-mono">${loan.user_id}</span></td>
+                        <td class="p-4">
+                            <strong class="text-gray-800">${loan.user_name}</strong>
+                            <br><span class="text-xs text-gray-500 font-mono">${loan.user_id}</span>
+                            ${phoneInfo}
+                        </td>
                         <td class="p-4"><strong class="text-gray-800">${loan.book_title}</strong><br><span class="text-xs text-gray-500 font-mono">${loan.book_code}</span></td>
                         <td class="p-4 text-gray-600">${loan.loan_date}</td>
                         <td class="p-4 text-gray-600">${loan.due_date} ${lateLabel}</td>
@@ -144,6 +182,7 @@
                             <div>
                                 <strong class="text-gray-800 text-sm block">${loan.user_name}</strong>
                                 <span class="text-xs text-gray-500 font-mono">${loan.user_id}</span>
+                                ${phoneInfo}
                             </div>
                             <div>${statusBadge}</div>
                         </div>
@@ -156,7 +195,7 @@
                             <span>Pinjam: ${loan.loan_date}</span>
                             <span>Tempo: ${loan.due_date}</span>
                         </div>
-                        ${lateLabel ? `<div class="text-xs text-red-600 font-bold mb-3">⚠️ TERLAMBAT!</div>` : ''}
+                        ${lateLabel ? `<div class="text-xs text-red-600 font-bold mb-3">${lateLabel.replace('<br>', '')}</div>` : ''}
                         <div class="mt-2 pt-3 border-t border-gray-200">${aksi}</div>
                     </div>
                 `;

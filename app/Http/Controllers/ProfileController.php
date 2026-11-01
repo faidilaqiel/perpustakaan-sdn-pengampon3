@@ -20,11 +20,15 @@ class ProfileController extends Controller
         
         $request->validate([
             'name' => 'required|max:100',
+            'phone' => 'nullable|string|max:25',
             'password' => 'nullable|min:6',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
         ]);
 
-        $data = ['name' => $request->name];
+        $data = [
+            'name' => $request->name,
+            'phone' => $request->filled('phone') ? \App\Services\WhatsAppService::formatPhone($request->phone) : null,
+        ];
 
         // Jika ganti password
         if ($request->filled('password')) {

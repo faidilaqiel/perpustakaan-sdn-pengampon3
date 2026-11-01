@@ -251,7 +251,7 @@
         <p class="text-xs text-gray-400 uppercase tracking-widest font-bold mb-5">Sirkulasi Perpustakaan Digital</p>
 
         {{-- Pesan Spesifik Sesuai Permintaan User --}}
-        <div class="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-2xl p-5 mb-6 text-left">
+        <div class="bg-gradient-to-br from-emerald-50 to-green-50 border border-emerald-200 rounded-2xl p-5 mb-5 text-left">
             <p class="text-base font-medium text-gray-800 leading-relaxed">
                 Buku <strong class="text-emerald-700 font-extrabold text-lg" id="modal-book-title">{{ session('loan_book_title') ?? 'Buku' }}</strong> 
                 berhasil dipinjamkan kepada 
@@ -264,6 +264,21 @@
                     {{ session('loan_due_date') ?? \Carbon\Carbon::now()->addDays(7)->translatedFormat('d F Y') }}
                 </span>
             </div>
+
+            {{-- Status WhatsApp --}}
+            @if(session('loan_user_phone') || session('wa_link'))
+                <div class="mt-3 p-3 bg-white/90 rounded-xl border border-emerald-200 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
+                    <div class="flex items-center gap-2 text-emerald-800 font-medium">
+                        <i class="fab fa-whatsapp text-lg text-emerald-600"></i>
+                        <span>Notifikasi WA dikirim ke: <strong>{{ session('loan_user_phone') ?? 'Anggota' }}</strong></span>
+                    </div>
+                    @if(session('wa_link'))
+                        <a href="{{ session('wa_link') }}" target="_blank" class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-bold text-[11px] flex items-center justify-center gap-1.5 shadow-sm transition">
+                            <i class="fab fa-whatsapp"></i> Buka Chat WA
+                        </a>
+                    @endif
+                </div>
+            @endif
         </div>
 
         <div class="space-y-2">

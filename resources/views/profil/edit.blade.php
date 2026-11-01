@@ -58,6 +58,20 @@
                     <input type="text" name="name" value="{{ old('name', $user->name) }}" required class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none">
                 </div>
 
+                {{-- Nomor WhatsApp --}}
+                <div>
+                    <label class="block text-sm font-bold text-gray-700 mb-2">
+                        <i class="fab fa-whatsapp text-green-600 mr-1"></i> Nomor WhatsApp
+                    </label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-green-600 font-bold text-sm">
+                            <i class="fab fa-whatsapp"></i>
+                        </span>
+                        <input type="tel" name="phone" value="{{ old('phone', $user->phone) }}" placeholder="Contoh: 081234567890" class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none font-mono text-sm">
+                    </div>
+                    <p class="text-xs text-gray-400 mt-1">Digunakan untuk menerima notifikasi otomatis peminjaman dan pengingat jatuh tempo H-1.</p>
+                </div>
+
                 {{-- Info Role & ID --}}
                 <div class="grid grid-cols-2 gap-4">
                     <div>
