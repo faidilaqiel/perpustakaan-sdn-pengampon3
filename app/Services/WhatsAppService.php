@@ -62,7 +62,7 @@ class WhatsAppService
         }
 
         $provider = env('WA_GATEWAY_PROVIDER', 'fonnte');
-        $token = env('WA_API_TOKEN');
+        $token = env('WA_API_TOKEN', 'b9UZBMFepfWR2P5neAAK');
         $apiUrl = env('WA_API_URL');
 
         // Jika belum ada token API, jalankan dalam mode simulasi aman & log
