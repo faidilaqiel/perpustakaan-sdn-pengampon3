@@ -344,35 +344,44 @@ Route::get('/library-info', function () {
             'lokasi_scan' => 'Kode QR dipindai oleh Petugas Perpustakaan menggunakan menu Scan QR di aplikasi perpustakaan (kamera laptop/HP petugas atau scanner perpustakaan).',
             'scan_di_hp_siswa' => 'Tidak. Siswa tidak memindai kode QR menggunakan HP sendiri. Kode QR ada di kartu anggota siswa/guru, dan pemindaian dilakukan oleh Petugas di aplikasi perpustakaan saat siswa/guru meminjam buku di meja sirkulasi.',
         ],
-        'riwayat_terakhir_per_anggota' => [
-            'faidil_aqiel' => 'Faidil Aqiel (Siswa Kelas 6) terakhir kali meminjam buku "Laskar Sipitung" (karya Andrea Hirata), status: Sudah Dikembalikan (Selesai). Faidil Aqiel TIDAK memiliki tanggungan buku yang belum dikembalikan (tanggungan aktif = 0 buku / bebas pinjaman).',
-            'seluruh_siswa_dan_guru' => 'Saat ini seluruh 17 siswa dan 10 guru anggota perpustakaan memiliki 0 tanggungan buku aktif (tidak ada buku yang belum dikembalikan). Semua koleksi buku lengkap di rak dan siap dipinjam.',
-        ],
-        'rincian_siswa_per_kelas' => [
-            'total_siswa' => 17,
-            'kelas_1' => '2 siswa (Aiman Nabiel Alfariski, Candra Wijaya)',
-            'kelas_2A' => '2 siswa (Dewi Sartika, Eko Prasetyo)',
-            'kelas_2B' => '2 siswa (Fitri Handayani, Gilang Ramadhan)',
-            'kelas_3' => '3 siswa (Hesti Purwanti, Indra Kusuma, Jihan Aulia)',
-            'kelas_4' => '2 siswa (Kiki Saputra, Lestari Ningsih)',
-            'kelas_5' => '2 siswa (Muhammad Rizky, Nabila Syafira)',
-            'kelas_6' => '4 siswa (Faidil Aqiel, Oscar Pratama, Putri Ayu, Qori Amanda)',
-            'catatan_kelas_6' => 'Kelas 6 hanya memiliki 4 siswa terdaftar, bukan 5.',
-        ],
+        'riwayat_terakhir_per_anggota' => (function() use ($members) {
+            $res = [];
+            foreach ($members as $m) {
+                $last = Loan::with('book')->where('user_id', $m->id)->orderBy('id', 'desc')->first();
+                $active = Loan::where('user_id', $m->id)->where('status', 'dipinjam')->count();
+                $key = \Illuminate\Support\Str::slug($m->name, '_');
+                $roleDesc = $m->role === 'siswa' ? "Siswa Kelas {$m->class}" : "Guru";
+                if ($last) {
+                    $status = match($last->status) {
+                        'dipinjam' => 'Sedang Dipinjam',
+                        'kembali'  => 'Sudah Dikembalikan',
+                        'menunggu' => 'Menunggu Persetujuan',
+                        'ditolak'  => 'Ditolak',
+                        default    => ucfirst($last->status)
+                    };
+                    $res[$key] = "{$m->name} ({$roleDesc}) terakhir meminjam buku '{$last->book->title}' [status: {$status}]. Tanggungan aktif: {$active} buku.";
+                } else {
+                    $res[$key] = "{$m->name} ({$roleDesc}) belum pernah meminjam buku. Tanggungan aktif: 0 buku.";
+                }
+            }
+            return $res;
+        })(),
+        'rincian_siswa_per_kelas' => (function() use ($totalSiswa) {
+            $siswaPerKelas = User::where('role', 'siswa')->orderBy('class')->orderBy('name')->get()->groupBy('class');
+            $res = ['total_siswa' => $totalSiswa];
+            foreach ($siswaPerKelas as $kls => $list) {
+                $kKey = 'kelas_' . ($kls ?: 'tanpa_kelas');
+                $res[$kKey] = $list->count() . ' siswa (' . $list->pluck('name')->implode(', ') . ')';
+            }
+            return $res;
+        })(),
         'daftar_guru_anggota' => [
-            'total_guru' => 10,
-            'daftar_nama' => [
-                'Ahmad, S.Pd.',
-                'Anis Khairunisah, S.Pd.',
-                'Elis Susilawati, S.Pd.',
-                'Fitrias Hermawati, S.Pd.',
-                'Gina Rahmania Sari, S.Pd.',
-                'Helderia Sianturi, S.Th',
-                'Nana Setiana, S.Pd.',
-                'Rizky Yulianti, S.Pd.SD.',
-                'Septi Nurjanah, S.Pd.',
-                'Sri Yulinawati, S.Pd.',
-            ],
+            'total_guru' => $totalGuru,
+            'daftar_nama' => User::where('role', 'guru')->orderBy('name')->pluck('name')->toArray(),
+        ],
+        'daftar_seluruh_anggota' => [
+            'total' => $totalAnggota,
+            'daftar' => $members->map(fn($m) => $m->name . ' (' . ($m->role === 'siswa' ? ('Siswa Kelas ' . ($m->class ?? '-')) : 'Guru') . ')')->toArray(),
         ],
         'buku_terbit_2020_ke_atas' => "Buku yang diterbitkan pada tahun 2020 atau di atasnya (2020 ke atas) adalah: 1. Matematika Kelas VI (Tahun 2020), 2. Bahasa Indonesia: Aku Bisa! Kelas 1 (Tahun 2022), 3. Matematika Kelas 4 SD (Tahun 2022), dan 4. IPAS Kelas 5 SD (Tahun 2022). Sedangkan buku yang terbit sebelum 2020 adalah: Laskar Sipitung (2005), Cerita Rakyat Nusantara (2018), dan Sains untuk SD (2019).",
         'aturan_peminjaman' => [

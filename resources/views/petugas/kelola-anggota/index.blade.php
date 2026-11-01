@@ -26,20 +26,52 @@
         </div>
     @endif
 
-    {{-- Statistik --}}
+    {{-- Statistik (Dapat Diklik untuk Memfilter) --}}
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div class="bg-blue-50 border border-blue-200 p-4 rounded-xl shadow-sm">
-            <p class="text-blue-800 font-semibold text-sm">👥 Total Anggota</p>
-            <p class="text-3xl font-bold text-blue-900 mt-1">{{ $totalAnggota }}</p>
-        </div>
-        <div class="bg-green-50 border border-green-200 p-4 rounded-xl shadow-sm">
-            <p class="text-green-800 font-semibold text-sm">🎓 Total Siswa</p>
-            <p class="text-3xl font-bold text-green-900 mt-1">{{ $totalSiswa }}</p>
-        </div>
-        <div class="bg-purple-50 border border-purple-200 p-4 rounded-xl shadow-sm">
-            <p class="text-purple-800 font-semibold text-sm">👨‍🏫 Total Guru</p>
-            <p class="text-3xl font-bold text-purple-900 mt-1">{{ $totalGuru }}</p>
-        </div>
+        {{-- Card Total Anggota --}}
+        <a href="{{ route('petugas.kelolaAnggota') }}" 
+           class="block p-4 rounded-xl shadow-sm transition-all transform hover:-translate-y-0.5 hover:shadow-md cursor-pointer border {{ empty($filterRole) ? 'bg-blue-100/90 border-blue-400 ring-2 ring-blue-400' : 'bg-blue-50 border-blue-200 hover:bg-blue-100/60' }}">
+            <div class="flex items-center justify-between">
+                <p class="text-blue-800 font-bold text-sm">👥 Total Anggota</p>
+                @if(empty($filterRole))
+                    <span class="bg-blue-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">Aktif</span>
+                @endif
+            </div>
+            <p class="text-3xl font-black text-blue-900 mt-1">{{ $totalAnggota }}</p>
+            <p class="text-xs text-blue-600 font-medium mt-2 flex items-center gap-1">
+                <span>Klik untuk tampilkan semua</span> <i class="fas fa-arrow-right text-[10px]"></i>
+            </p>
+        </a>
+
+        {{-- Card Total Siswa --}}
+        <a href="{{ route('petugas.kelolaAnggota', ['role' => 'siswa']) }}" 
+           class="block p-4 rounded-xl shadow-sm transition-all transform hover:-translate-y-0.5 hover:shadow-md cursor-pointer border {{ $filterRole === 'siswa' ? 'bg-green-100/90 border-green-500 ring-2 ring-green-500' : 'bg-green-50 border-green-200 hover:bg-green-100/60' }}">
+            <div class="flex items-center justify-between">
+                <p class="text-green-800 font-bold text-sm">🎓 Total Siswa</p>
+                @if($filterRole === 'siswa')
+                    <span class="bg-green-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">Aktif</span>
+                @endif
+            </div>
+            <p class="text-3xl font-black text-green-900 mt-1">{{ $totalSiswa }}</p>
+            <p class="text-xs text-green-600 font-medium mt-2 flex items-center gap-1">
+                <span>Klik untuk tampilkan siswa</span> <i class="fas fa-arrow-right text-[10px]"></i>
+            </p>
+        </a>
+
+        {{-- Card Total Guru --}}
+        <a href="{{ route('petugas.kelolaAnggota', ['role' => 'guru']) }}" 
+           class="block p-4 rounded-xl shadow-sm transition-all transform hover:-translate-y-0.5 hover:shadow-md cursor-pointer border {{ $filterRole === 'guru' ? 'bg-purple-100/90 border-purple-500 ring-2 ring-purple-500' : 'bg-purple-50 border-purple-200 hover:bg-purple-100/60' }}">
+            <div class="flex items-center justify-between">
+                <p class="text-purple-800 font-bold text-sm">👨‍🏫 Total Guru</p>
+                @if($filterRole === 'guru')
+                    <span class="bg-purple-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">Aktif</span>
+                @endif
+            </div>
+            <p class="text-3xl font-black text-purple-900 mt-1">{{ $totalGuru }}</p>
+            <p class="text-xs text-purple-600 font-medium mt-2 flex items-center gap-1">
+                <span>Klik untuk tampilkan guru</span> <i class="fas fa-arrow-right text-[10px]"></i>
+            </p>
+        </a>
     </div>
 
     {{-- Filter & Pencarian --}}

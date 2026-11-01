@@ -86,6 +86,8 @@ Route::resource('/petugas/kategori', CategoryController::class)->names([
 // Scan QR
 Route::get('/petugas/scan', [ScanController::class, 'index'])->name('petugas.scan');
 Route::post('/petugas/scan', [ScanController::class, 'hasil'])->name('petugas.scan.hasil');
+Route::post('/petugas/scan/pinjam', [ScanController::class, 'pinjamBuku'])->name('petugas.scan.pinjam');
+Route::post('/petugas/scan/cek-anggota', [ScanController::class, 'cekAnggota'])->name('petugas.scan.cekAnggota');
 Route::get('/petugas/scan/qr-code/{id}', [ScanController::class, 'qrCode'])->name('petugas.scan.qrCode');
 
 // ===== HALAMAN KEPSEK =====
@@ -94,249 +96,218 @@ Route::get('/kepsek/laporan/cetak-pdf', [ReportController::class, 'cetakPdf'])->
 Route::post('/api/chatbot', [App\Http\Controllers\ChatbotController::class, 'chat'])->name('api.chatbot');
 
 // ===== HALAMAN DATA PUBLIK UNTUK KNOWLEDGE BASE BOTPRESS =====
+// ⚡ FULLY DYNAMIC: Semua data diambil LANGSUNG dari database secara real-time.
+// Tidak ada data yang di-hardcode. Setiap perubahan data anggota/buku
+// akan langsung tercermin di sini saat Botpress mengakses URL ini.
 Route::get('/informasi-perpustakaan', function () {
-    $totalBuku = \App\Models\Book::count();
-    $members = \App\Models\User::whereIn('role', ['siswa', 'guru'])->orderBy('role', 'asc')->orderBy('name', 'asc')->get();
-    $totalAnggota = $members->count();
-    $totalSiswa = $members->where('role', 'siswa')->count();
-    $totalGuru = $members->where('role', 'guru')->count();
 
-    $activeLoans = \App\Models\Loan::with(['book', 'user'])->where('status', 'dipinjam')->get();
+    // ── Data dasar ──────────────────────────────────────────────────────────
+    $totalBuku     = \App\Models\Book::count();
+    $members       = \App\Models\User::whereIn('role', ['siswa', 'guru'])->orderBy('role')->orderBy('name')->get();
+    $totalAnggota  = $members->count();
+    $totalSiswa    = $members->where('role', 'siswa')->count();
+    $totalGuru     = $members->where('role', 'guru')->count();
+    $activeLoans   = \App\Models\Loan::with(['book', 'user'])->where('status', 'dipinjam')->get();
     $totalDipinjam = $activeLoans->count();
 
-    $html = "<!DOCTYPE html><html lang='id'><head><meta charset='UTF-8'><title>Informasi Publik Perpustakaan SDN Pengampon 3</title></head><body>";
+    $html  = "<!DOCTYPE html><html lang='id'><head><meta charset='UTF-8'>";
+    $html .= "<title>Informasi Perpustakaan SDN Pengampon 3</title></head><body>";
     $html .= "<h1>Informasi Resmi Perpustakaan Digital SDN Pengampon 3 Cirebon</h1>";
-    $html .= "<p>Layanan informasi resmi perpustakaan sekolah SDN Pengampon 3 Kota Cirebon. Kepala Sekolah: Bapak H. Noni Risanto, M.Pd.I. Jam buka: Senin - Jumat pukul 07.30 - 14.00 WIB.</p>";
+    $html .= "<p>Layanan informasi resmi perpustakaan sekolah SDN Pengampon 3 Kota Cirebon. ";
+    $html .= "Kepala Sekolah: Bapak H. Noni Risanto, M.Pd.I. Jam buka: Senin-Jumat pukul 07.30-14.00 WIB.</p>";
+    $html .= "<p><em>⚡ Data pada halaman ini diperbarui secara REAL-TIME langsung dari database perpustakaan.</em></p>";
 
-    $html .= "<h2>Statistik Terkini Perpustakaan</h2>";
-    $html .= "<ul>";
+    // ── Statistik ───────────────────────────────────────────────────────────
+    $html .= "<h2>Statistik Terkini Perpustakaan</h2><ul>";
     $html .= "<li><strong>Total Buku:</strong> {$totalBuku} judul buku.</li>";
-    $html .= "<li><strong>Total Anggota:</strong> {$totalAnggota} orang (terdiri dari {$totalSiswa} siswa dan {$totalGuru} guru).</li>";
+    $html .= "<li><strong>Total Anggota:</strong> {$totalAnggota} orang ({$totalSiswa} siswa dan {$totalGuru} guru).</li>";
     $html .= "<li><strong>Buku Sedang Dipinjam:</strong> {$totalDipinjam} buku.</li>";
     $html .= "</ul>";
 
+    // ── Status Buku Dipinjam ─────────────────────────────────────────────────
     $html .= "<h2>Status Buku yang Sedang Dipinjam</h2>";
     if ($totalDipinjam === 0) {
-        $html .= "<p>Saat ini tidak ada buku yang sedang dipinjam (0 buku). Semua koleksi buku di perpustakaan dalam status tersedia dan siap dipinjam oleh siswa maupun guru.</p>";
+        $html .= "<p>Saat ini tidak ada buku yang sedang dipinjam (0 buku). Semua koleksi tersedia dan siap dipinjam.</p>";
     } else {
         $html .= "<p>Saat ini terdapat {$totalDipinjam} buku yang sedang dipinjam:</p><ol>";
         foreach ($activeLoans as $loan) {
-            $judul = $loan->book->title ?? 'Buku';
-            $peminjam = $loan->user->name ?? 'Anggota';
-            $kelas = $loan->user->class ? " (Kelas {$loan->user->class})" : "";
-            $tgl = \Carbon\Carbon::parse($loan->loan_date)->translatedFormat('d M Y');
-            $tempo = \Carbon\Carbon::parse($loan->due_date)->translatedFormat('d M Y');
-            $html .= "<li>Buku '{$judul}' dipinjam oleh {$peminjam}{$kelas}. Dipinjam tanggal {$tgl}, batas pengembalian {$tempo}.</li>";
+            $judul    = $loan->book->title ?? 'Buku';
+            $peminjam = $loan->user->name  ?? 'Anggota';
+            $kelas    = $loan->user->class  ? " (Kelas {$loan->user->class})" : "";
+            $tgl      = \Carbon\Carbon::parse($loan->loan_date)->translatedFormat('d M Y');
+            $tempo    = \Carbon\Carbon::parse($loan->due_date)->translatedFormat('d M Y');
+            $html    .= "<li>Buku '{$judul}' dipinjam oleh {$peminjam}{$kelas}. Dipinjam: {$tgl}, jatuh tempo: {$tempo}.</li>";
         }
         $html .= "</ol>";
     }
 
-    // Riwayat Transaksi Peminjaman Terbaru
-    $recentLoans = \App\Models\Loan::with(['book', 'user'])
-        ->orderBy('id', 'desc')
-        ->take(10)
-        ->get();
-
+    // ── Riwayat Peminjaman Terbaru ───────────────────────────────────────────
+    $recentLoans = \App\Models\Loan::with(['book', 'user'])->orderBy('id', 'desc')->take(20)->get();
     $html .= "<h2>Riwayat Peminjaman Terbaru di Perpustakaan</h2>";
-    $html .= "<p>Pertanyaan: Tolong tampilkan riwayat peminjaman terbaru di perpustakaan ini / Siapa yang pernah atau terakhir meminjam buku?</p>";
+    $html .= "<p>Pertanyaan: Siapa yang pernah atau terakhir meminjam buku?</p>";
     if ($recentLoans->isNotEmpty()) {
-        $html .= "<p>Berikut adalah catatan riwayat transaksi peminjaman buku terbaru yang tercatat di Perpustakaan Digital SDN Pengampon 3:</p><ol>";
+        $html .= "<ol>";
         foreach ($recentLoans as $r) {
-            $judul = $r->book->title ?? 'Buku';
-            $peminjam = $r->user->name ?? 'Anggota';
-            $kelas = $r->user->class ? " (Kelas {$r->user->class})" : "";
-            $tglPinjam = \Carbon\Carbon::parse($r->loan_date)->translatedFormat('d M Y');
+            $judul      = $r->book->title ?? 'Buku';
+            $peminjam   = $r->user->name  ?? 'Anggota';
+            $kelas      = $r->user->class  ? " (Kelas {$r->user->class})" : "";
+            $tglPinjam  = \Carbon\Carbon::parse($r->loan_date)->translatedFormat('d M Y');
             $statusText = match($r->status) {
                 'dipinjam' => 'Sedang Dipinjam',
-                'kembali' => 'Sudah Dikembalikan',
+                'kembali'  => 'Sudah Dikembalikan',
                 'menunggu' => 'Menunggu Persetujuan',
-                'ditolak' => 'Ditolak',
-                default => ucfirst($r->status),
+                'ditolak'  => 'Ditolak',
+                default    => ucfirst($r->status),
             };
-            $tglKembali = $r->return_date ? " (dikembalikan pada " . \Carbon\Carbon::parse($r->return_date)->translatedFormat('d M Y') . ")" : "";
-            $html .= "<li>Buku <strong>'{$judul}'</strong> dipinjam oleh <strong>{$peminjam}{$kelas}</strong> pada tanggal {$tglPinjam}. Status: <strong>{$statusText}</strong>{$tglKembali}.</li>";
+            $tglKembali = $r->return_date
+                ? " (dikembalikan: " . \Carbon\Carbon::parse($r->return_date)->translatedFormat('d M Y') . ")"
+                : "";
+            $html .= "<li>Buku <strong>'{$judul}'</strong> dipinjam oleh <strong>{$peminjam}{$kelas}</strong> pada {$tglPinjam}. Status: <strong>{$statusText}</strong>{$tglKembali}.</li>";
         }
         $html .= "</ol>";
     } else {
-        $html .= "<p>Riwayat peminjaman terbaru: Buku <strong>'Laskar Sipitung'</strong> pernah dipinjam oleh siswa bernama <strong>Faidil Aqiel (Kelas 6)</strong> dan telah <strong>selesai dikembalikan</strong>. Selain itu buku Matematika Kelas VI, Cerita Rakyat Nusantara, dan Sains untuk SD juga pernah dipinjam dan telah dikembalikan.</p>";
+        $html .= "<p>Belum ada riwayat peminjaman.</p>";
     }
 
-    $html .= "<h2>Riwayat Buku yang Terakhir Kali Dipinjam Oleh Siswa dan Guru</h2>";
-    $html .= "<p>Pertanyaan: Buku apa yang terakhir kali dipinjam oleh Faidil Aqiel? Apakah Faidil Aqiel punya tanggungan buku yang belum dikembalikan? Buku apa yang terakhir kali dipinjam oleh seluruh siswa dan guru anggota perpustakaan?</p>";
-    $html .= "<ul>";
-    $html .= "<li><strong>Faidil Aqiel (Siswa Kelas 6):</strong> Buku yang terakhir kali dipinjam adalah <strong>'Laskar Sipitung'</strong> (karya Andrea Hirata). Status pinjaman saat ini adalah <strong>Sudah Dikembalikan (Selesai)</strong>. Faidil Aqiel <strong>TIDAK memiliki tanggungan buku</strong> yang belum dikembalikan (tanggungan aktif = 0 buku / bebas tanggungan).</li>";
-    $html .= "<li><strong>Seluruh Siswa Lainnya (16 Siswa) dan Guru (10 Guru):</strong> Saat ini <strong>tidak memiliki tanggungan pinjaman buku aktif (0 buku sedang dipinjam)</strong>. Semua pinjaman sebelumnya telah selesai dikembalikan ke perpustakaan. Seluruh koleksi buku saat ini lengkap tersedia di rak perpustakaan dan setiap anggota berstatus bersih/bebas tanggungan dan dapat meminjam buku kapan saja (maksimal 2 buku).</li>";
+    // ── Riwayat & Tanggungan Per Anggota (DYNAMIC) ──────────────────────────
+    $html .= "<h2>Riwayat dan Status Tanggungan Pinjaman Per Anggota</h2>";
+    $html .= "<p>Pertanyaan: Apakah [nama] punya tanggungan buku? Buku apa yang terakhir dipinjam [nama]?</p><ul>";
+    $semuaAnggota = \App\Models\User::whereIn('role', ['siswa', 'guru'])->orderBy('name')->get();
+    foreach ($semuaAnggota as $anggota) {
+        $pinjamAktif    = \App\Models\Loan::where('user_id', $anggota->id)->where('status', 'dipinjam')->count();
+        $pinjamTerakhir = \App\Models\Loan::with('book')->where('user_id', $anggota->id)->orderBy('id', 'desc')->first();
+        $kelasInfo      = $anggota->class ? " (Kelas {$anggota->class})" : "";
+        $roleInfo       = $anggota->role === 'siswa' ? 'Siswa' : 'Guru';
+        if ($pinjamTerakhir) {
+            $judulTerakhir  = $pinjamTerakhir->book->title ?? 'Tidak diketahui';
+            $statusTerakhir = match($pinjamTerakhir->status) {
+                'dipinjam' => 'Sedang Dipinjam / BELUM DIKEMBALIKAN',
+                'kembali'  => 'Sudah Dikembalikan',
+                'menunggu' => 'Menunggu Persetujuan',
+                'ditolak'  => 'Ditolak',
+                default    => ucfirst($pinjamTerakhir->status),
+            };
+            $tanggungan = $pinjamAktif > 0
+                ? "MEMILIKI TANGGUNGAN {$pinjamAktif} buku yang belum dikembalikan"
+                : "Bebas tanggungan (0 buku aktif)";
+            $html .= "<li><strong>{$anggota->name} ({$roleInfo}{$kelasInfo}):</strong> Buku terakhir: '{$judulTerakhir}', status: {$statusTerakhir}. Tanggungan: {$tanggungan}.</li>";
+        } else {
+            $html .= "<li><strong>{$anggota->name} ({$roleInfo}{$kelasInfo}):</strong> Belum pernah meminjam buku. Bebas tanggungan.</li>";
+        }
+    }
     $html .= "</ul>";
 
-    // Koreksi nama guru jika masih ada data lama
-    \App\Models\User::where('nip', '198902072024212008')
-        ->orWhere('name', 'like', '%Aris%Khar%')
-        ->orWhere('name', 'like', '%Khairunisah%')
-        ->update(['name' => 'Anis Khairunisah, S.Pd.']);
-
-    // Ambil ulang data anggota setelah koreksi
-    $members = \App\Models\User::whereIn('role', ['siswa', 'guru'])->orderBy('role', 'asc')->orderBy('name', 'asc')->get();
-    $totalAnggota = $members->count();
-    $totalSiswa = $members->where('role', 'siswa')->count();
-    $totalGuru = $members->where('role', 'guru')->count();
-
-    $html .= "<h2>Rincian Jumlah Siswa Anggota Perpustakaan Berdasarkan Kelas</h2>";
-    $html .= "<p>Pertanyaan: Ada berapa banyak siswa setiap kelasnya yang menjadi anggota perpustakaan? Ada berapa banyak siswa kelas 6 yang terdaftar sebagai anggota perpustakaan?</p>";
-    $html .= "<p>Total siswa yang terdaftar sebagai anggota perpustakaan berjumlah <strong>17 siswa</strong>. Rincian jumlah dan nama siswa di setiap kelas adalah sebagai berikut:</p><ul>";
-    $html .= "<li><strong>Kelas 1:</strong> <strong>2 siswa</strong>, yaitu: Aiman Nabiel Alfariski dan Candra Wijaya.</li>";
-    $html .= "<li><strong>Kelas 2A:</strong> <strong>2 siswa</strong>, yaitu: Dewi Sartika dan Eko Prasetyo.</li>";
-    $html .= "<li><strong>Kelas 2B:</strong> <strong>2 siswa</strong>, yaitu: Fitri Handayani dan Gilang Ramadhan.</li>";
-    $html .= "<li><strong>Kelas 3:</strong> <strong>3 siswa</strong>, yaitu: Hesti Purwanti, Indra Kusuma, dan Jihan Aulia.</li>";
-    $html .= "<li><strong>Kelas 4:</strong> <strong>2 siswa</strong>, yaitu: Kiki Saputra dan Lestari Ningsih.</li>";
-    $html .= "<li><strong>Kelas 5:</strong> <strong>2 siswa</strong>, yaitu: Muhammad Rizky dan Nabila Syafira.</li>";
-    $html .= "<li><strong>Kelas 6:</strong> <strong>4 siswa</strong> (BUKAN 5 siswa), yaitu: 1. Faidil Aqiel, 2. Oscar Pratama, 3. Putri Ayu, dan 4. Qori Amanda. Tidak ada nama siswa kelima.</li>";
+    // ── Rincian Siswa Per Kelas (DYNAMIC) ───────────────────────────────────
+    $html .= "<h2>Rincian Jumlah Siswa Per Kelas (Real-Time dari Database)</h2>";
+    $html .= "<p>Pertanyaan: Ada berapa banyak siswa setiap kelasnya? Siapa saja siswa kelas [X]? Apakah ada siswa bernama [nama]?</p>";
+    $html .= "<p>Total siswa terdaftar: <strong>{$totalSiswa} siswa</strong>.</p><ul>";
+    $siswaPerKelas = \App\Models\User::where('role', 'siswa')
+        ->orderBy('class')->orderBy('name')->get()->groupBy('class');
+    foreach ($siswaPerKelas as $kelas => $listSiswa) {
+        $namaList   = $listSiswa->pluck('name')->join(', ');
+        $jumlah     = $listSiswa->count();
+        $kelasLabel = $kelas ? "Kelas {$kelas}" : "Kelas tidak diketahui";
+        $html .= "<li><strong>{$kelasLabel}:</strong> {$jumlah} siswa, yaitu: {$namaList}.</li>";
+    }
     $html .= "</ul>";
 
-    $html .= "<h2>Daftar 10 Guru yang Terdaftar Sebagai Anggota Perpustakaan</h2>";
-    $html .= "<p>Pertanyaan: Siapa saja guru yang terdaftar sebagai anggota perpustakaan?</p>";
-    $html .= "<p>Berikut adalah 10 guru SDN Pengampon 3 yang terdaftar sebagai anggota resmi perpustakaan:</p><ol>";
-    $html .= "<li><strong>Ahmad, S.Pd.</strong></li>";
-    $html .= "<li><strong>Anis Khairunisah, S.Pd.</strong> (Guru)</li>";
-    $html .= "<li><strong>Elis Susilawati, S.Pd.</strong></li>";
-    $html .= "<li><strong>Fitrias Hermawati, S.Pd.</strong></li>";
-    $html .= "<li><strong>Gina Rahmania Sari, S.Pd.</strong></li>";
-    $html .= "<li><strong>Helderia Sianturi, S.Th</strong></li>";
-    $html .= "<li><strong>Nana Setiana, S.Pd.</strong></li>";
-    $html .= "<li><strong>Rizky Yulianti, S.Pd.SD.</strong></li>";
-    $html .= "<li><strong>Septi Nurjanah, S.Pd.</strong></li>";
-    $html .= "<li><strong>Sri Yulinawati, S.Pd.</strong></li>";
+    // ── Daftar Guru (DYNAMIC) ────────────────────────────────────────────────
+    $html .= "<h2>Daftar Guru Anggota Perpustakaan (Real-Time dari Database)</h2>";
+    $html .= "<p>Pertanyaan: Siapa saja guru yang terdaftar sebagai anggota perpustakaan? Apakah ada guru bernama [nama]?</p>";
+    $guruList = \App\Models\User::where('role', 'guru')->orderBy('name')->get();
+    $html .= "<p>Terdapat {$totalGuru} guru yang terdaftar:</p><ol>";
+    foreach ($guruList as $guru) {
+        $html .= "<li><strong>{$guru->name}</strong></li>";
+    }
     $html .= "</ol>";
 
-    $html .= "<h2>Daftar Seluruh Anggota Perpustakaan SDN Pengampon 3 (Alfabetis)</h2>";
-    $html .= "<p>Total anggota perpustakaan yang terdaftar berjumlah {$totalAnggota} orang. Berikut daftar lengkap nama-nama anggota:</p><ul>";
+    // ── Daftar Seluruh Anggota (DYNAMIC) ────────────────────────────────────
+    $html .= "<h2>Daftar Seluruh Anggota Perpustakaan (Alfabetis, Real-Time)</h2>";
+    $html .= "<p>Pertanyaan: Apakah ada anggota bernama [nama]? Siapa saja anggota perpustakaan?</p>";
+    $html .= "<p>Total: {$totalAnggota} anggota.</p><ul>";
     foreach ($members as $m) {
-        $roleInfo = $m->role === 'siswa' && $m->class ? "Siswa Kelas {$m->class}" : ucfirst($m->role);
+        $roleInfo = ($m->role === 'siswa' && $m->class) ? "Siswa Kelas {$m->class}" : ucfirst($m->role);
         $html .= "<li>{$m->name} ({$roleInfo})</li>";
     }
     $html .= "</ul>";
 
-    // Buku Paling Favorit dan Sering Dipinjam Siswa (Berdasarkan Data Sirkulasi)
+    // ── Buku Terpopuler (DYNAMIC) ────────────────────────────────────────────
     $popularLoans = \App\Models\Loan::select('book_id', \Illuminate\Support\Facades\DB::raw('count(*) as total_dipinjam'))
-        ->groupBy('book_id')
-        ->orderByDesc('total_dipinjam')
-        ->with(['book.category'])
-        ->get();
-
-    $html .= "<h2>Buku Paling Favorit dan Paling Sering Dipinjam Siswa</h2>";
-    $html .= "<p>Pertanyaan: Buku apa yang paling favorit dan sering dipinjam siswa? Berdasarkan riwayat data transaksi sirkulasi peminjaman di Perpustakaan Digital SDN Pengampon 3, berikut adalah peringkat buku-buku yang paling favorit, populer, dan paling sering dipinjam oleh siswa:</p><ol>";
+        ->groupBy('book_id')->orderByDesc('total_dipinjam')->with(['book.category'])->get();
+    $html .= "<h2>Buku Paling Sering Dipinjam</h2><ol>";
     if ($popularLoans->isNotEmpty()) {
         foreach ($popularLoans as $p) {
             $buku = $p->book;
             if ($buku) {
-                $kat = $buku->category ? $buku->category->name : 'Umum';
-                $html .= "<li><strong>{$buku->title}</strong> (Kategori: {$kat}, Penulis: {$buku->author}) - telah dipinjam sebanyak <strong>{$p->total_dipinjam} kali</strong> oleh siswa. Buku ini sangat disukai karena ceritanya seru dan materinya sangat bermanfaat.</li>";
+                $kat   = $buku->category ? $buku->category->name : 'Umum';
+                $html .= "<li><strong>{$buku->title}</strong> (Kategori: {$kat}, Penulis: {$buku->author}) - dipinjam <strong>{$p->total_dipinjam} kali</strong>.</li>";
             }
         }
     } else {
-        $html .= "<li><strong>Laskar Sipitung</strong> (Cerita Rakyat karya Andrea Hirata) - Buku cerita rakyat paling favorit di kalangan siswa.</li>";
-        $html .= "<li><strong>Matematika Kelas VI</strong> (Tim Erlangga) - Buku pelajaran yang paling sering dipinjam untuk belajar mandiri dan tugas.</li>";
-        $html .= "<li><strong>Sains untuk SD</strong> (Tim Yudhistira) - Ensiklopedia IPA yang sangat diminati siswa pencinta sains.</li>";
+        $html .= "<li>Belum ada data peminjaman.</li>";
     }
     $html .= "</ol>";
 
+    // ── Koleksi Buku Lengkap (DYNAMIC) ──────────────────────────────────────
     $html .= "<h2>Daftar Seluruh Koleksi Buku dan Stok Tersedia</h2>";
-    $html .= "<p>Berikut adalah rincian lengkap seluruh koleksi buku, penulis, kategori, dan jumlah stok tersedia di Perpustakaan Digital SDN Pengampon 3:</p><ol>";
-    $allBooks = \App\Models\Book::with('category')->get();
+    $html .= "<p>Berikut adalah rincian lengkap seluruh koleksi buku di Perpustakaan SDN Pengampon 3:</p><ol>";
+    $allBooks = \App\Models\Book::with('category')->orderBy('title')->get();
     foreach ($allBooks as $book) {
-        $kategori = $book->category ? $book->category->name : 'Umum';
-        $statusStok = $book->stock_available > 0 
-            ? "Tersedia ({$book->stock_available} eksemplar siap dipinjam)" 
+        $kategori   = $book->category ? $book->category->name : 'Umum';
+        $statusStok = $book->stock_available > 0
+            ? "Tersedia ({$book->stock_available} eksemplar siap dipinjam)"
             : "Sedang habis dipinjam";
-        $html .= "<li><strong>{$book->title}</strong> (Kode Buku: {$book->code})<br>";
-        $html .= "- Penulis: {$book->author}<br>";
-        $html .= "- Kategori: {$kategori}<br>";
-        $html .= "- Penerbit: " . ($book->publisher ?? '-') . " (Tahun {$book->year})<br>";
-        $html .= "- Jumlah Stok Tersedia: <strong>{$book->stock_available} buku</strong> (dari total {$book->stock_total} buku)<br>";
-        $html .= "- Status: {$statusStok}</li>";
+        $html .= "<li><strong>{$book->title}</strong> (Kode: {$book->code}) — Penulis: {$book->author}, Kategori: {$kategori}, Penerbit: " . ($book->publisher ?? '-') . " ({$book->year}), Stok: {$book->stock_available}/{$book->stock_total}, Status: {$statusStok}.</li>";
     }
     $html .= "</ol>";
 
-    $html .= "<h2>Daftar Buku Berdasarkan Tahun Terbit (Tahun 2020 ke Atas dan Sebelum 2020)</h2>";
-    $html .= "<p>Pertanyaan: Buku apa saja yang diterbitkan pada tahun 2020 atau di atasnya?</p>";
-    $html .= "<p>Di Perpustakaan Digital SDN Pengampon 3, terdapat <strong>4 (empat) judul buku</strong> yang diterbitkan pada tahun 2020 atau setelahnya (tahun 2020 ke atas):</p><ol>";
-    $html .= "<li><strong>Matematika Kelas VI</strong> - Tahun Terbit: <strong>2020</strong> (Penulis: Tim Erlangga, Penerbit: Erlangga, Kategori: Matematika, Stok Tersedia: 10 eksemplar)</li>";
-    $html .= "<li><strong>Bahasa Indonesia: Aku Bisa! Kelas 1</strong> - Tahun Terbit: <strong>2022</strong> (Penulis: Kemendikbudristek, Penerbit: Pusat Kurikulum, Kategori: Pelajaran / Bahasa, Stok Tersedia: 10 eksemplar)</li>";
-    $html .= "<li><strong>Matematika Kelas 4 SD</strong> - Tahun Terbit: <strong>2022</strong> (Penulis: Kemendikbudristek, Penerbit: Pusat Kurikulum, Kategori: Matematika, Stok Tersedia: 10 eksemplar)</li>";
-    $html .= "<li><strong>IPAS Kelas 5 SD</strong> - Tahun Terbit: <strong>2022</strong> (Penulis: Kemendikbudristek, Penerbit: Pusat Kurikulum, Kategori: IPA, Stok Tersedia: 7 eksemplar)</li>";
+    // ── Buku per Tahun Terbit (DYNAMIC) ─────────────────────────────────────
+    $html .= "<h2>Buku Berdasarkan Tahun Terbit</h2>";
+    $bukuTahunBaru = \App\Models\Book::with('category')->where('year', '>=', 2020)->orderBy('year')->get();
+    $bukuTahunLama = \App\Models\Book::with('category')->where('year', '<', 2020)->orderByDesc('year')->get();
+    $html .= "<p>Buku terbitan tahun 2020 ke atas ({$bukuTahunBaru->count()} judul):</p><ol>";
+    foreach ($bukuTahunBaru as $b) {
+        $kat  = $b->category ? $b->category->name : 'Umum';
+        $html .= "<li><strong>{$b->title}</strong> — Tahun: {$b->year}, Penulis: {$b->author}, Kategori: {$kat}, Stok: {$b->stock_available} eksemplar.</li>";
+    }
     $html .= "</ol>";
-    $html .= "<p>Sedangkan 3 (tiga) judul buku lainnya diterbitkan sebelum tahun 2020:</p><ul>";
-    $html .= "<li><strong>Sains untuk SD</strong> - Tahun Terbit: <strong>2019</strong> (Penulis: Tim Yudhistira, Penerbit: Yudhistira, Stok Tersedia: 8 eksemplar)</li>";
-    $html .= "<li><strong>Cerita Rakyat Nusantara</strong> - Tahun Terbit: <strong>2018</strong> (Penulis: Ali Muakhir, Penerbit: Dar! Mizan, Stok Tersedia: 6 eksemplar)</li>";
-    $html .= "<li><strong>Laskar Sipitung</strong> - Tahun Terbit: <strong>2005</strong> (Penulis: Andrea Hirata, Penerbit: Bentang Pustaka, Stok Tersedia: 5 eksemplar)</li>";
-    $html .= "</ul>";
+    if ($bukuTahunLama->isNotEmpty()) {
+        $html .= "<p>Buku terbitan sebelum 2020 ({$bukuTahunLama->count()} judul):</p><ul>";
+        foreach ($bukuTahunLama as $b) {
+            $html .= "<li><strong>{$b->title}</strong> — Tahun: {$b->year}, Penulis: {$b->author}, Stok: {$b->stock_available} eksemplar.</li>";
+        }
+        $html .= "</ul>";
+    }
 
+    // ── Kebijakan & Panduan Umum ─────────────────────────────────────────────
     $html .= "<h2>Durasi dan Batas Waktu Peminjaman Buku</h2>";
-    $html .= "<p>Pertanyaan: Berapa lama saya boleh meminjam buku? Batas waktu peminjaman buku di Perpustakaan Digital SDN Pengampon 3 adalah maksimal <strong>7 (tujuh) hari kalender</strong> terhitung sejak disetujui petugas. Anggota dapat melihat tanggal jatuh tempo pengembalian di menu Riwayat.</p>";
+    $html .= "<p>Batas waktu peminjaman: maksimal <strong>7 (tujuh) hari kalender</strong> sejak disetujui petugas. Cek jatuh tempo di menu Riwayat.</p>";
 
     $html .= "<h2>Jumlah Maksimal Buku yang Boleh Dipinjam</h2>";
-    $html .= "<p>Pertanyaan: Apakah boleh meminjam lebih dari 2 buku? Maksimal berapa buku yang boleh dipinjam? Setiap anggota (siswa) diperbolehkan meminjam maksimal <strong>2 (dua) buku</strong> sekaligus dalam satu waktu. Jika ingin meminjam buku lain, kembalikan buku yang sedang dipinjam terlebih dahulu.</p>";
+    $html .= "<p>Setiap anggota diperbolehkan meminjam maksimal <strong>2 (dua) buku</strong> sekaligus.</p>";
 
     $html .= "<h2>Sanksi dan Denda Keterlambatan Pengembalian Buku</h2>";
-    $html .= "<p>Pertanyaan: Berapa denda jika terlambat mengembalikan buku? Denda keterlambatan pengembalian buku di Perpustakaan SDN Pengampon 3 adalah sebesar <strong>Rp 1.000,- (seribu rupiah) per hari</strong> untuk setiap buku yang terlambat dikembalikan pada hari operasional sekolah. Contoh jika terlambat 3 hari, maka dendanya adalah Rp 3.000,-.</p>";
+    $html .= "<p>Denda keterlambatan: <strong>Rp 1.000,- per hari</strong> per buku yang terlambat pada hari operasional sekolah.</p>";
 
-    $html .= "<h2>Pengembalian Buku Pada Hari Libur Nasional dan Tanggal Merah (Bebas Denda)</h2>";
-    $html .= "<p>Pertanyaan: Saya lupa hari ini hari libur nasional, jadi tidak bisa mengembalikan buku tepat waktu. Apakah denda tetap berjalan?<br>";
-    $html .= "Jawaban Resmi: <strong>TIDAK ADA DENDA (denda TIDAK berjalan)</strong>. Jika hari jatuh tempo pengembalian buku bertepatan dengan <strong>hari libur nasional, tanggal merah, cuti bersama, atau akhir pekan (Sabtu & Minggu)</strong> saat perpustakaan sekolah tutup, siswa <strong>TIDAK dikenakan denda</strong> keterlambatan. Peminjam diberikan dispensasi penuh untuk mengembalikan buku pada <strong>hari kerja pertama berikutnya</strong> saat perpustakaan buka kembali tanpa denda sepeser pun.</p>";
+    $html .= "<h2>Pengembalian Buku Pada Hari Libur Nasional (Bebas Denda)</h2>";
+    $html .= "<p>Jika jatuh tempo bertepatan dengan hari libur nasional, tanggal merah, cuti bersama, atau akhir pekan (Sabtu-Minggu), <strong>TIDAK ADA DENDA</strong>. Pengembalian dilakukan pada hari kerja pertama berikutnya tanpa denda.</p>";
 
-    $html .= "<h2>Ketentuan Peminjaman Berdasarkan Jenjang Kelas Siswa</h2>";
-    $html .= "<p>Pertanyaan: Apakah siswa kelas rendah (misal kelas 1 SD) boleh meminjam buku pelajaran kelas tinggi (misal Matematika Kelas 6)?<br>";
-    $html .= "Jawaban: <strong>Boleh</strong>. Seluruh siswa aktif SDN Pengampon 3 dari kelas 1 sampai 6 diperbolehkan meminjam buku apa saja yang berstatus tersedia di perpustakaan (maksimal 2 buku). Untuk buku pelajaran tingkat kelas di atasnya, siswa sangat disarankan didampingi oleh guru atau orang tua saat mempelajarinya.</p>";
+    $html .= "<h2>Ketentuan Peminjaman Berdasarkan Jenjang Kelas</h2>";
+    $html .= "<p>Seluruh siswa dari kelas 1 sampai 6 boleh meminjam buku apa saja yang tersedia (maksimal 2 buku).</p>";
 
-    $html .= "<h2>Prosedur dan Langkah-Langkah Meminjam Buku</h2>";
-    $html .= "<p>Pertanyaan: Bagaimana cara meminjam buku di perpustakaan ini?<br>";
-    $html .= "1. Buka menu Katalog di aplikasi web perpustakaan.<br>";
-    $html .= "2. Cari buku yang diinginkan dan pastikan stoknya berstatus 'Tersedia'.<br>";
-    $html .= "3. Klik tombol hijau 'Pinjam Buku Ini' untuk mengajukan peminjaman.<br>";
-    $html .= "4. Status peminjaman akan menjadi 'Menunggu'.<br>";
-    $html .= "5. Datanglah ke meja Petugas Perpustakaan untuk verifikasi/scan QR dan mengambil buku fisik.<br>";
-    $html .= "6. Setelah disetujui Petugas, buku resmi dipinjam dan batas waktu pengembalian dapat dicek di menu Riwayat.</p>";
+    $html .= "<h2>Prosedur Meminjam Buku</h2>";
+    $html .= "<p>1. Buka menu Katalog → cari buku → klik 'Pinjam Buku Ini'.<br>";
+    $html .= "2. Status jadi 'Menunggu'. 3. Datang ke petugas untuk verifikasi/scan QR dan ambil buku fisik.<br>";
+    $html .= "4. Setelah disetujui, buku resmi dipinjam (cek jatuh tempo di menu Riwayat).</p>";
 
     $html .= "<h2>Jam Operasional dan Hari Buka Perpustakaan</h2>";
-    $html .= "<p>Pertanyaan: Jam berapa perpustakaan buka dan tutup? Perpustakaan buka setiap hari <strong>Senin sampai Jumat pukul 07.30 - 14.00 WIB</strong>. Pada hari Sabtu, Minggu, dan hari libur nasional, perpustakaan tutup.</p>";
+    $html .= "<p>Perpustakaan buka <strong>Senin-Jumat, pukul 07.30-14.00 WIB</strong>. Tutup pada Sabtu, Minggu, dan hari libur nasional.</p>";
 
     $html .= "<h2>Kehilangan atau Kerusakan Buku</h2>";
-    $html .= "<p>Pertanyaan: Bagaimana jika buku pinjaman hilang atau rusak? Peminjam wajib segera melapor kepada Petugas Perpustakaan. Peminjam bertanggung jawab mengganti buku dengan judul dan edisi yang sama, atau mengganti biaya buku sesuai ketentuan perpustakaan.</p>";
+    $html .= "<p>Peminjam wajib melapor ke petugas dan bertanggung jawab mengganti buku dengan judul/edisi yang sama.</p>";
 
-    $html .= "<h2>Panduan Fitur-Fitur Lengkap Aplikasi Perpustakaan Digital SDN Pengampon 3</h2>";
-    $html .= "<p>Pertanyaan: Fitur apa saja yang ada di aplikasi perpustakaan ini? Bagaimana cara kerja dan menggunakan menu-menunya?</p>";
-    $html .= "<p>Aplikasi Perpustakaan Digital SDN Pengampon 3 memiliki fitur lengkap yang disesuaikan dengan peran pengguna:</p>";
-    
-    $html .= "<h3>1. Fitur untuk Petugas / Administrator:</h3><ul>";
-    $html .= "<li><strong>Dashboard Petugas:</strong> Menampilkan ringkasan statistik real-time (Total Buku, Total Anggota, Buku Sedang Dipinjam) serta grafik interaktif peminjaman buku 7 hari terakhir.</li>";
-    $html .= "<li><strong>Daftar Buku / Kelola Buku:</strong> Melihat katalog buku lengkap dengan cover, kode buku, kategori, penerbit, tahun terbit, dan stok. Petugas dapat menambah judul baru, mengedit data buku/stok, dan menghapus buku.</li>";
-    $html .= "<li><strong>Kategori Buku:</strong> Menambah, mengubah, dan menghapus kategori buku (seperti Cerita Rakyat, Matematika, IPA, Pelajaran / Bahasa) agar buku terorganisir rapi.</li>";
-    $html .= "<li><strong>Sirkulasi Peminjaman:</strong> Pusat monitoring sirkulasi. Petugas dapat menyetujui (ACC) permohonan pinjam siswa, menolak permohonan, memproses buku yang dikembalikan (kembalikan), serta memberikan dispensasi lewat fitur 'Bebaskan Denda'.</li>";
-    $html .= "<li><strong>Data Anggota:</strong> Mengelola seluruh anggota perpustakaan (siswa dan guru), menambahkan anggota baru dengan NISN/NIP, mengedit kelas siswa, dan menghapus anggota non-aktif.</li>";
-    $html .= "<li><strong>Scan QR:</strong> Fitur Scan QR untuk siswa / guru yang memiliki kartu anggota untuk meminjam buku di perpustakaan. Di dalam kartu itu ada kode QR-nya untuk discan melalui aplikasi perpustakaan, jadi petugas/administrator tidak menulis manual lagi dan tinggal scan kode QR yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan.</li>";
-    $html .= "<li><strong>Profil Saya:</strong> Mengubah nama, email, foto profil, dan kata sandi akun petugas.</li>";
-    $html .= "</ul>";
-
-    $html .= "<h2>Panduan Cara Kerja dan Penggunaan Fitur Scan QR</h2>";
-    $html .= "<p>Pertanyaan: Bagaimana cara menggunakan fitur 'Scan QR' di aplikasi ini? Apakah saya bisa meminjam buku hanya dengan memindai QR Code di HP saya? QR Code itu dipindai di mana? Di HP siswa atau di scanner perpustakaan?</p>";
-    $html .= "<p><strong>Penjelasan Resmi Fitur Scan QR:</strong><br>";
-    $html .= "1. <strong>Fungsi Utama:</strong> Fitur Scan QR digunakan untuk siswa atau guru yang memiliki <strong>Kartu Anggota Perpustakaan</strong> saat ingin meminjam buku di perpustakaan. Di dalam kartu anggota tersebut tercetak <strong>Kode QR</strong> identitas siswa/guru.<br>";
-    $html .= "2. <strong>Cara Kerja:</strong> Siswa atau guru membawa Kartu Anggota ke meja perpustakaan. Petugas/administrator membuka menu <strong>Scan QR</strong> di aplikasi perpustakaan (menggunakan kamera HP/laptop petugas atau scanner perpustakaan) dan memindai kode QR yang ada di kartu anggota siswa/guru tersebut. Jadi, petugas/administrator <strong>tidak perlu menulis manual lagi</strong> dan tinggal scan kode QR yang ada di kartu anggota perpustakaan.<br>";
-    $html .= "3. <strong>Apakah Siswa Bisa Meminjam Buku Hanya dengan Memindai QR Code di HP Siswa?</strong> <strong>Tidak</strong>. Siswa tidak memindai kode QR sendiri menggunakan kamera HP mereka untuk meminjam buku langsung di rak. Fitur Scan QR adalah fitur operasional petugas untuk memverifikasi kartu anggota. Siswa/guru yang ingin meminjam buku secara mandiri lewat HP dapat menggunakan fitur <strong>Pinjam Mandiri</strong> di menu Katalog (klik tombol 'Pinjam Buku Ini'), lalu datang ke perpustakaan untuk mengambil buku fisiknya.<br>";
-    $html .= "4. <strong>QR Code Itu Dipindai di Mana? Di HP Siswa atau di Scanner Perpustakaan?</strong> Kode QR dipindai oleh <strong>Petugas Perpustakaan menggunakan aplikasi perpustakaan</strong> (melalui kamera perangkat/HP/laptop petugas atau alat scanner perpustakaan). Yang dipindai adalah <strong>Kode QR yang ada pada Kartu Anggota milik siswa atau guru</strong>, bukan di HP siswa.</p>";
-
-    $html .= "<h3>2. Fitur untuk Siswa & Guru (Peminjam):</h3><ul>";
-    $html .= "<li><strong>Katalog Buku:</strong> Menjelajahi seluruh koleksi buku, mencari buku berdasarkan judul/penulis, memfilter buku berdasarkan kategori, dan mengecek stok ketersediaan secara langsung.</li>";
-    $html .= "<li><strong>Detail Buku & Pinjam Mandiri:</strong> Membaca sinopsis buku dan mengajukan peminjaman buku langsung dari HP/komputer dengan mengklik tombol 'Pinjam Buku Ini' (maksimal 2 buku).</li>";
-    $html .= "<li><strong>Riwayat Peminjaman:</strong> Memantau status buku yang diajukan (Menunggu), buku yang sedang dipinjam beserta tanggal jatuh tempo batas pengembalian (7 hari), serta riwayat buku yang sudah selesai dikembalikan.</li>";
-    $html .= "<li><strong>Buku Tamu / Kunjungan:</strong> Presensi kehadiran digital saat membaca atau berkunjung ke ruang perpustakaan.</li>";
-    $html .= "<li><strong>Notifikasi Otomatis:</strong> Menerima pemberitahuan langsung saat pinjaman buku disetujui petugas atau saat batas pengembalian mendekat.</li>";
-    $html .= "<li><strong>Profil Saya:</strong> Mengubah data akun, foto profil, dan kata sandi.</li>";
-    $html .= "</ul>";
-
-    $html .= "<h3>3. Fitur untuk Kepala Sekolah:</h3><ul>";
-    $html .= "<li><strong>Laporan Sirkulasi & Statistik:</strong> Memantau grafik aktivitas peminjaman, buku terfavorit yang sering dipinjam siswa, dan perkembangan minat baca sekolah.</li>";
-    $html .= "<li><strong>Cetak Laporan PDF:</strong> Mengunduh dan mencetak rekapitulasi laporan resmi perpustakaan dalam bentuk dokumen PDF untuk arsip dan evaluasi sekolah.</li>";
-    $html .= "</ul>";
+    $html .= "<h2>Panduan Fitur Scan QR</h2>";
+    $html .= "<p>Fitur Scan QR digunakan petugas untuk memverifikasi kartu anggota. QR Code dipindai oleh petugas menggunakan kamera HP/laptop petugas atau scanner perpustakaan. Siswa/guru cukup menunjukkan kartu anggota mereka ke petugas. Siswa tidak memindai QR sendiri dari HP mereka.</p>";
 
     $html .= "</body></html>";
 

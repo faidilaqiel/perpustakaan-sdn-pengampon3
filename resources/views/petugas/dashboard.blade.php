@@ -15,22 +15,22 @@
 
     {{-- Statistik --}}
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+        <a href="{{ route('petugas.kelolaBuku') }}" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md hover:border-green-200 transition cursor-pointer">
             <div class="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center text-2xl"><i class="fas fa-book"></i></div>
             <div><p class="text-xs text-gray-500 font-medium">Total Buku</p><p class="text-2xl font-bold text-gray-800">{{ $totalBuku }}</p></div>
-        </div>
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+        </a>
+        <a href="{{ route('petugas.kelolaAnggota') }}" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md hover:border-blue-200 transition cursor-pointer">
             <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-2xl"><i class="fas fa-users"></i></div>
             <div><p class="text-xs text-gray-500 font-medium">Anggota</p><p class="text-2xl font-bold text-gray-800">{{ $totalAnggota }}</p></div>
-        </div>
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+        </a>
+        <a href="{{ route('petugas.sirkulasi') }}" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md hover:border-yellow-200 transition cursor-pointer">
             <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-lg flex items-center justify-center text-2xl"><i class="fas fa-book-reader"></i></div>
             <div><p class="text-xs text-gray-500 font-medium">Sedang Dipinjam</p><p class="text-2xl font-bold text-gray-800">{{ $sedangDipinjam }}</p></div>
-        </div>
-        <div class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+        </a>
+        <a href="{{ route('petugas.sirkulasi') }}" class="bg-white p-5 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md hover:border-red-200 transition cursor-pointer">
             <div class="w-12 h-12 bg-red-100 text-red-600 rounded-lg flex items-center justify-center text-2xl"><i class="fas fa-exclamation-triangle"></i></div>
             <div><p class="text-xs text-gray-500 font-medium">Terlambat</p><p class="text-2xl font-bold text-red-600">{{ $terlambat }}</p></div>
-        </div>
+        </a>
     </div>
 
     {{-- Grafik & Peminjaman Terbaru --}}

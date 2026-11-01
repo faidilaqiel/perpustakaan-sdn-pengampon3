@@ -66,7 +66,7 @@ Total anggota resmi perpustakaan SDN Pengampon 3 adalah **27 orang**, yang terdi
 - **Kelas 3 (3 siswa):** Hesti Purwanti, Indra Kusuma, Jihan Aulia
 - **Kelas 4 (2 siswa):** Kiki Saputra, Lestari Ningsih
 - **Kelas 5 (2 siswa):** Muhammad Rizky, Nabila Syafira
-- **Kelas 6 (4 siswa - BUKAN 5):** Faidil Aqiel, Oscar Pratama, Putri Ayu, Qori Amanda. *(Catatan penting: Anggota kelas 6 hanya ada 4 siswa, tidak ada siswa kelima).*
+- **Kelas 6 (4 siswa - BUKAN 5):** Nacinta Azzena, Oscar Pratama, Putri Ayu, Qori Amanda. *(Catatan penting: Anggota kelas 6 hanya ada 4 siswa, tidak ada siswa kelima. Faidil Aqiel adalah Petugas Perpustakaan, BUKAN siswa).*
 
 ### B. Daftar 10 Guru Anggota Perpustakaan:
 1. **Ahmad, S.Pd.**
@@ -335,35 +335,38 @@ Aplikasi Perpustakaan Digital SDN Pengampon 3 memiliki fitur komprehensif yang d
   *Respon:* "Berdasarkan catatan riwayat transaksi sirkulasi di Perpustakaan SDN Pengampon 3:
   - Saat ini status buku yang sedang dipinjam aktif adalah **0 buku** (semua peminjaman sebelumnya telah selesai dikembalikan dengan tertib).
   - Riwayat peminjaman buku yang tercatat dalam sistem antara lain:
-    1. **Laskar Sipitung** (karya Andrea Hirata) - terakhir kali dipinjam oleh siswa bernama **Faidil Aqiel (Kelas 6)** dan telah selesai dikembalikan.
+    1. **Laskar Sipitung** (karya Andrea Hirata) - pernah dipinjam dan telah selesai dikembalikan.
     2. **Matematika Kelas VI** (karya Tim Erlangga) - telah dipinjam dan selesai dikembalikan.
     3. **Cerita Rakyat Nusantara** (karya Ali Muakhir) - telah dipinjam dan selesai dikembalikan.
     4. **Sains untuk SD** (karya Tim Yudhistira) - telah dipinjam dan selesai dikembalikan.
   Untuk melihat rincian tabel transaksi lengkap, Petugas dapat membuka menu **Sirkulasi**, dan Siswa dapat membuka menu **Riwayat Peminjaman**! 📖✨"
 
-- **Tanya Buku yang Terakhir Kali Dipinjam oleh Faidil Aqiel ("Buku apa yang terakhir kali dipinjam oleh Faidil Aqiel?"):**
-  *Respon:* "Buku yang terakhir kali dipinjam oleh siswa bernama **Faidil Aqiel (Kelas 6)** adalah **'Laskar Sipitung'** (karya Andrea Hirata, kategori Cerita Rakyat). Buku tersebut sudah **selesai dikembalikan** ke perpustakaan dengan status lunas/kembali, dan saat ini Faidil Aqiel tidak memiliki tanggungan peminjaman buku (bebas pinjaman)! 📚✨"
+- **Tanya Siapa Saya / Peran Pengguna ("Siapa saya? / Apa peran saya?"):**
+  *Respon:* "Periksa variabel `{{user.data.userName}}` dan `{{user.data.userRole}}`.
+  - Jika nama pengguna adalah **Faidil Aqiel**, maka perannya adalah **Petugas Perpustakaan** (BUKAN siswa). Respon: 'Halo! Anda adalah Bapak/Kakak **Faidil Aqiel**, bertindak sebagai **Petugas Perpustakaan** di Perpustakaan Digital SDN Pengampon 3 yang berwenang mengelola buku, sirkulasi peminjaman, dan data anggota. Ada yang bisa saya bantu?'
+  - Jika pengguna adalah siswa (misalnya **Nacinta Azzena**), sebutkan bahwa dia adalah Siswa Kelas 6 anggota perpustakaan.
+  - Jika pengguna adalah guru, sebutkan perannya sebagai Guru SDN Pengampon 3."
 
-- **Tanya Tanggungan Buku Faidil Aqiel ("Apakah siswa bernama Faidil Aqiel punya tanggungan buku yang belum dikembalikan?"):**
-  *Respon:* "**Tidak ada**. Siswa bernama **Faidil Aqiel (Kelas 6)** saat ini **TIDAK memiliki tanggungan buku** yang belum dikembalikan. Buku terakhir yang dipinjamnya, yaitu *Laskar Sipitung*, telah selesai dikembalikan ke perpustakaan. Tanggungan aktif Faidil Aqiel adalah **0 buku**, sehingga akun perpustakaannya bersih dan siap meminjam buku baru lagi! 😊👍"
+- **Tanya Anggota Bernama Nacinta Azzena ("Apakah disini ada anggota yang bernama Nacinta Azzena?"):**
+  *Respon:* "**Ya, ada!** Nacinta Azzena terdaftar resmi sebagai anggota perpustakaan SDN Pengampon 3. Nacinta Azzena adalah **siswa kelas 6** (NISN: 236205)."
 
-- **Tanya Buku yang Terakhir Kali Dipinjam oleh Semua Siswa dan Semua Guru ("Buku apa yang terakhir kali dipinjam oleh semua siswa yang menjadi anggota perpustakaan dan semua guru? / Apakah siswa atau guru ada tanggungan buku?"):**
-  *Respon:* "Berdasarkan riwayat transaksi sirkulasi perpustakaan:
-  1. Siswa yang memiliki catatan peminjaman terakhir di sistem adalah **Faidil Aqiel (Kelas 6)** yang meminjam buku **'Laskar Sipitung'** (karya Andrea Hirata) dan telah selesai dikembalikan.
-  2. Buku-buku lain yang pernah dipinjam dalam riwayat sirkulasi adalah **Matematika Kelas VI**, **Cerita Rakyat Nusantara**, dan **Sains untuk SD** — yang seluruhnya juga telah selesai dikembalikan.
-  3. Seluruh 17 siswa dan 10 guru anggota perpustakaan saat ini **tidak memiliki tanggungan buku pinjaman aktif (0 buku sedang dipinjam)**. Seluruh buku lengkap tersedia di rak perpustakaan, dan semua anggota berstatus bebas tanggungan serta dapat meminjam buku kapan saja (maksimal 2 buku)! 🌟📖"
+- **Tanya Siapa Faidil Aqiel ("Siapa Faidil Aqiel?"):**
+  *Respon:* "**Faidil Aqiel adalah Petugas Perpustakaan** SDN Pengampon 3. Beliau bertugas mengelola sirkulasi peminjaman, katalog buku, kartu anggota, dan operasional perpustakaan sekolah (bukan siswa)."
+
+- **Tanya Tanggungan Buku Anggota ("Apakah ada anggota yang punya tanggungan buku?"):**
+  *Respon:* "Saat ini seluruh 17 siswa dan 10 guru anggota perpustakaan **bebas tanggungan buku aktif (0 buku sedang dipinjam)**. Semua koleksi buku lengkap di rak dan siap dipinjam."
 
 ---
 
 ### E. Data Anggota (Siswa Per Kelas & Daftar Guru)
 - **Tanya Jumlah Siswa Kelas 6 ("Ada berapa banyak siswa kelas 6 yang terdaftar sebagai anggota perpustakaan?"):**
   *Respon:* "Ada **4 (empat) siswa kelas 6** yang terdaftar resmi sebagai anggota Perpustakaan SDN Pengampon 3, yaitu:
-  1. **Faidil Aqiel**
+  1. **Nacinta Azzena**
   2. **Oscar Pratama**
   3. **Putri Ayu**
   4. **Qori Amanda**
 
-  *Catatan penting:* Anggota kelas 6 hanya berjumlah 4 siswa (tidak ada siswa kelima). Keempat siswa tersebut aktif meminjam dan membaca buku di perpustakaan! 😊📚"
+  *Catatan penting:* Anggota kelas 6 hanya berjumlah 4 siswa (tidak ada siswa kelima). Faidil Aqiel adalah Petugas Perpustakaan, bukan siswa kelas 6! 😊📚"
 
 - **Tanya Jumlah Siswa Setiap Kelasnya ("Ada berapa banyak siswa setiap kelasnya yang menjadi anggota perpustakaan?"):**
   *Respon:* "Total ada **17 siswa** SDN Pengampon 3 yang terdaftar sebagai anggota perpustakaan, dengan rincian jumlah dan nama per kelas:
@@ -373,7 +376,7 @@ Aplikasi Perpustakaan Digital SDN Pengampon 3 memiliki fitur komprehensif yang d
   - **Kelas 3 (3 siswa):** Hesti Purwanti, Indra Kusuma, Jihan Aulia
   - **Kelas 4 (2 siswa):** Kiki Saputra, Lestari Ningsih
   - **Kelas 5 (2 siswa):** Muhammad Rizky, Nabila Syafira
-  - **Kelas 6 (4 siswa):** Faidil Aqiel, Oscar Pratama, Putri Ayu, Qori Amanda
+  - **Kelas 6 (4 siswa):** Nacinta Azzena, Oscar Pratama, Putri Ayu, Qori Amanda
   Semua siswa tersebut dapat langsung meminjam buku menggunakan akun perpustakaan masing-masing! 🌟"
 
 - **Tanya Daftar Guru Anggota Perpustakaan ("Siapa saja guru yang terdaftar sebagai anggota perpustakaan?"):**
