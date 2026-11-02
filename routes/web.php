@@ -352,3 +352,29 @@ Route::get('/run-migration-auto', function () {
         ], 500);
     }
 });
+
+// ===== CRON TRIGGER: Pengingat Jatuh Tempo WA (dipanggil dari cron-job.org setiap jam 08:00 WIB) =====
+// URL: https://perpustakaan-sdn-pengampon3-production.up.railway.app/cron/wa-reminders?key=sdn-pengampon3-cron-2026
+// Daftarkan URL ini di https://cron-job.org dengan schedule: setiap hari jam 08:00 WIB (01:00 UTC)
+Route::get('/cron/wa-reminders', function (\Illuminate\Http\Request $request) {
+    // Proteksi sederhana dengan key
+    if ($request->query('key') !== 'sdn-pengampon3-cron-2026') {
+        return response()->json(['error' => 'Unauthorized'], 403);
+    }
+
+    try {
+        \Illuminate\Support\Facades\Artisan::call('wa:send-reminders');
+        $output = \Illuminate\Support\Facades\Artisan::output();
+
+        return response()->json([
+            'status' => 'success',
+            'timestamp' => now()->timezone('Asia/Jakarta')->format('Y-m-d H:i:s T'),
+            'output' => trim($output),
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+});
