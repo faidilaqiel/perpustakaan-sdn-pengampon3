@@ -58,6 +58,28 @@ Route::post('/petugas/kembalikan/{id}', [LoanController::class, 'kembalikan'])->
 Route::post('/petugas/bebaskan-denda/{id}', [LoanController::class, 'bebaskanDenda'])->name('petugas.bebaskanDenda');
 Route::post('/petugas/wa/send-reminders', [LoanController::class, 'sendWaReminders'])->name('petugas.wa.sendReminders');
 
+// API Notifikasi Petugas (polling)
+Route::get('/petugas/api/cek-notifikasi', function () {
+    $pending = \App\Models\Loan::with(['user', 'book'])
+        ->where('status', 'menunggu')
+        ->orderBy('created_at', 'desc')
+        ->get()
+        ->map(function ($loan) {
+            return [
+                'id' => $loan->id,
+                'user_name' => $loan->user->name ?? 'User',
+                'user_class' => $loan->user->class ?? '',
+                'book_title' => $loan->book->title ?? 'Buku',
+                'created_at' => $loan->created_at->diffForHumans(),
+                'created_at_raw' => $loan->created_at->timestamp,
+            ];
+        });
+    return response()->json([
+        'count' => $pending->count(),
+        'items' => $pending,
+    ]);
+})->name('petugas.api.cekNotifikasi');
+
 // Kelola Buku (CRUD)
 Route::get('/petugas/kelola-buku', [BookController::class, 'kelola'])->name('petugas.kelolaBuku');
 Route::get('/petugas/kelola-buku/create', [BookController::class, 'create'])->name('petugas.buku.create');
