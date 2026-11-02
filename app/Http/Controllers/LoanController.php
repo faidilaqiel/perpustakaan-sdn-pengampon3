@@ -10,22 +10,26 @@ use Carbon\Carbon;
 
 class LoanController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $loans = Loan::with(['user', 'book'])->orderBy('created_at', 'desc')->get();
         
         $menunggu = Loan::where('status', 'menunggu')->count();
         $dipinjam = Loan::where('status', 'dipinjam')->count();
         $dikembalikan = Loan::where('status', 'dikembalikan')->count();
+        $total = $loans->count();
         $jumlahPengajuan = $menunggu;
+        $initialFilter = $request->query('status', 'all');
 
-        return view('petugas.sirkulasi', compact('loans', 'menunggu', 'dipinjam', 'dikembalikan', 'jumlahPengajuan'));
+        return view('petugas.sirkulasi', compact('loans', 'menunggu', 'dipinjam', 'dikembalikan', 'total', 'jumlahPengajuan', 'initialFilter'));
     }
 
     public function getLatestData()
     {
         $loans = Loan::with(['user', 'book'])->orderBy('created_at', 'desc')->get();
         $menunggu = Loan::where('status', 'menunggu')->count();
+        $dipinjam = Loan::where('status', 'dipinjam')->count();
+        $dikembalikan = Loan::where('status', 'dikembalikan')->count();
         
         $data = $loans->map(function($loan) {
             $user = $loan->user;
@@ -65,6 +69,9 @@ class LoanController extends Controller
         return response()->json([
             'loans' => $data,
             'menunggu' => $menunggu,
+            'dipinjam' => $dipinjam,
+            'dikembalikan' => $dikembalikan,
+            'total' => $loans->count(),
         ]);
     }
 
