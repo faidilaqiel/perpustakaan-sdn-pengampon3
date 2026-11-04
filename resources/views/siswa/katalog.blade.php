@@ -156,7 +156,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchKatalog(); 
-            cekNotifikasiBaru(); 
+            // cekNotifikasiBaru handled by layout 
         });
 
         // Jika ada perubahan pada URL (klik kategori), reload katalog tanpa refresh

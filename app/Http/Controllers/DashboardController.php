@@ -43,4 +43,35 @@ class DashboardController extends Controller
             'peminjamanTerbaru'
         ));
     }
+
+    public function apiStats()
+    {
+        $totalBuku = Book::count();
+        $totalAnggota = User::whereIn('role', ['siswa', 'guru'])->count();
+        $sedangDipinjam = Loan::where('status', 'dipinjam')->count();
+        $terlambat = Loan::where('status', 'dipinjam')
+                         ->where('due_date', '<', Carbon::now()->format('Y-m-d'))
+                         ->count();
+
+        $peminjamanTerbaru = Loan::with(['user', 'book'])
+                                 ->orderBy('created_at', 'desc')
+                                 ->limit(5)
+                                 ->get()
+                                 ->map(function ($loan) {
+                                     return [
+                                         'user_name' => $loan->user->name ?? 'User Terhapus',
+                                         'user_photo' => $loan->user->photo ?? null,
+                                         'book_title' => $loan->book->title ?? 'Buku Terhapus',
+                                         'created_at' => Carbon::parse($loan->created_at)->translatedFormat('d M'),
+                                     ];
+                                 });
+
+        return response()->json([
+            'totalBuku' => $totalBuku,
+            'totalAnggota' => $totalAnggota,
+            'sedangDipinjam' => $sedangDipinjam,
+            'terlambat' => $terlambat,
+            'peminjamanTerbaru' => $peminjamanTerbaru,
+        ]);
+    }
 }

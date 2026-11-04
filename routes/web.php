@@ -42,12 +42,14 @@ Route::get('/siswa/api/katalog', [BookController::class, 'getLatestKatalog'])->n
 Route::get('/siswa/buku/{id}', [BookController::class, 'detail'])->name('siswa.detail');
 Route::post('/siswa/pinjam/{id}', [BookController::class, 'pinjam'])->name('siswa.pinjam');
 Route::get('/siswa/riwayat', [LoanController::class, 'riwayat'])->name('siswa.riwayat');
+Route::get('/siswa/api/riwayat', [LoanController::class, 'apiRiwayat'])->name('siswa.api.riwayat');
 
 Route::post('/kunjungan/simpan', [KunjunganController::class, 'simpan'])->name('kunjungan.simpan');
 
 
 // ===== HALAMAN PETUGAS =====
 Route::get('/petugas/dashboard', [App\Http\Controllers\DashboardController::class, 'petugas'])->name('petugas.dashboard');
+Route::get('/petugas/api/dashboard-stats', [App\Http\Controllers\DashboardController::class, 'apiStats'])->name('petugas.api.dashboardStats');
 
 // Sirkulasi
 Route::get('/petugas/sirkulasi', [LoanController::class, 'index'])->name('petugas.sirkulasi');

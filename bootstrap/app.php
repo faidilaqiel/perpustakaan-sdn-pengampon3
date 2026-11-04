@@ -15,5 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Tangani jika token CSRF kadaluwarsa (error 419) agar dialihkan kembali ke login dengan pesan ramah
+        $exceptions->render(function (\Illuminate\Session\TokenMismatchException $e, $request) {
+            return redirect()->route('login')->with('error', 'Sesi login telah kadaluwarsa karena tidak ada aktivitas. Silakan coba masuk kembali.');
+        });
     })->create();

@@ -8,6 +8,7 @@
     <link rel="icon" href="{{ asset('images/logo-perpus.png') }}" type="image/png">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         input { font-size: 16px !important; }
     </style>
@@ -102,6 +103,58 @@
             </a>
         </nav>
     </div>
+
+    {{-- Script Real-Time Notifikasi Siswa/Guru Global --}}
+    <script>
+        let currentSiswaNotif = "{{ Auth::user()->notifikasi ?? '' }}";
+        let isShowingAlert = false;
+
+        function cekNotifikasiSiswaGlobal() {
+            if (isShowingAlert) return;
+            fetch("{{ route('siswa.cekNotif') }}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.notifikasi && data.notifikasi !== currentSiswaNotif) {
+                        currentSiswaNotif = data.notifikasi;
+                        let notif = data.notifikasi.split('|');
+                        let tipe = notif[0];
+                        let pesan = notif.slice(1).join('|').replace(/&quot;/g, '"');
+                        isShowingAlert = true;
+
+                        Swal.fire({
+                            icon: tipe === "disetujui" ? "success" : "error",
+                            title: tipe === "disetujui" ? "Peminjaman Disetujui! ✅" : "Peminjaman Ditolak ❌",
+                            text: pesan,
+                            confirmButtonText: 'Mengerti',
+                            confirmButtonColor: tipe === "disetujui" ? "#16a34a" : "#dc2626",
+                            allowOutsideClick: false
+                        }).then((result) => {
+                            isShowingAlert = false;
+                            if (result.isConfirmed) {
+                                fetch("{{ route('siswa.hapusNotif') }}", {
+                                    method: 'POST',
+                                    headers: {
+                                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                        'Content-Type': 'application/json'
+                                    }
+                                }).then(() => {
+                                    currentSiswaNotif = "";
+                                    if (typeof pollRiwayatSiswa === 'function') {
+                                        pollRiwayatSiswa();
+                                    }
+                                });
+                            }
+                        });
+                    }
+                })
+                .catch(error => console.error('Error cek notifikasi:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            cekNotifikasiSiswaGlobal();
+            setInterval(cekNotifikasiSiswaGlobal, 3000);
+        });
+    </script>
 
     @include('partials.botpress-script')
 </body>

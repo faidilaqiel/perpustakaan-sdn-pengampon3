@@ -99,6 +99,28 @@ class LoanController extends Controller
         return view('siswa.riwayat', compact('loans'));
     }
 
+    public function apiRiwayat()
+    {
+        $loans = Loan::with('book')
+                    ->where('user_id', Auth::id())
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                    ->map(function ($loan) {
+                        return [
+                            'id' => $loan->id,
+                            'title' => $loan->book->title ?? 'Buku Terhapus',
+                            'author' => $loan->book->author ?? '-',
+                            'loan_date' => Carbon::parse($loan->loan_date)->translatedFormat('d M Y'),
+                            'due_date' => Carbon::parse($loan->due_date)->translatedFormat('d M Y'),
+                            'status' => $loan->status,
+                        ];
+                    });
+
+        return response()->json([
+            'loans' => $loans
+        ]);
+    }
+
     public function pinjam($id)
     {
         $book = Book::findOrFail($id);

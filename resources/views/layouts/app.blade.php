@@ -363,7 +363,7 @@
                 .catch(() => {});
         }
         pollPetugasNotif();
-        setInterval(pollPetugasNotif, 15000);
+        setInterval(pollPetugasNotif, 4000);
         @endif
 
         // ══════════════════════════════════════════════
@@ -439,7 +439,7 @@
         };
 
         pollSiswaNotif();
-        setInterval(pollSiswaNotif, 15000);
+        setInterval(pollSiswaNotif, 4000);
         @endif
 
     })();
