@@ -12,6 +12,18 @@ class LoanController extends Controller
 {
     public function index(Request $request)
     {
+        // Jalankan pengecekan pengingat WhatsApp otomatis harian saat halaman sirkulasi pertama kali dibuka hari ini
+        $todayDate = Carbon::now()->toDateString();
+        $cacheKey = 'wa_auto_reminders_sent_' . $todayDate;
+        if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+            try {
+                \Illuminate\Support\Facades\Artisan::call('wa:send-reminders');
+                \Illuminate\Support\Facades\Cache::put($cacheKey, true, now()->endOfDay());
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Auto WA check failed on index: ' . $e->getMessage());
+            }
+        }
+
         $loans = Loan::with(['user', 'book'])->orderBy('created_at', 'desc')->get();
         
         $menunggu = Loan::where('status', 'menunggu')->count();
@@ -87,6 +99,51 @@ class LoanController extends Controller
         } catch (\Throwable $e) {
             return back()->with('error', '❌ Gagal memproses notifikasi WhatsApp: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Kirim peringatan WhatsApp langsung ke 1 murid via API Fonnte
+     */
+    public function sendSingleWa($id)
+    {
+        $loan = Loan::with(['user', 'book'])->findOrFail($id);
+
+        if (!$loan->user || empty($loan->user->phone)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anggota "' . ($loan->user->name ?? 'User') . '" belum memiliki nomor WhatsApp terdaftar. Silakan lengkapi nomor di menu Data Anggota.',
+            ], 422);
+        }
+
+        $dueDate = Carbon::parse($loan->due_date)->startOfDay();
+        $today = Carbon::now()->startOfDay();
+        $isLate = ($loan->status === 'dipinjam' && $today->greaterThan($dueDate));
+        $daysLate = $isLate ? (int)$dueDate->diffInDays($today) : 0;
+        $denda = $daysLate * 1000;
+
+        if ($isLate) {
+            $res = \App\Services\WhatsAppService::sendOverdueWarning($loan, $daysLate, $denda);
+        } elseif ($loan->status === 'dipinjam') {
+            $res = \App\Services\WhatsAppService::sendReminderH1($loan);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pinjaman ini tidak dalam status aktif.',
+            ], 422);
+        }
+
+        if ($res && ($res['success'] ?? false)) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Pesan WhatsApp otomatis berhasil terkirim ke ' . $loan->user->name . ' (' . $loan->user->phone . ').',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Gagal mengirim pesan: ' . ($res['message'] ?? 'Gateway WA bermasalah atau nomor tidak valid.'),
+            'wa_link' => $res['wa_link'] ?? null,
+        ], 500);
     }
 
     public function riwayat()

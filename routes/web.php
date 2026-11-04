@@ -59,6 +59,7 @@ Route::post('/petugas/tolak/{id}', [LoanController::class, 'tolak'])->name('petu
 Route::post('/petugas/kembalikan/{id}', [LoanController::class, 'kembalikan'])->name('petugas.kembalikan');
 Route::post('/petugas/bebaskan-denda/{id}', [LoanController::class, 'bebaskanDenda'])->name('petugas.bebaskanDenda');
 Route::post('/petugas/wa/send-reminders', [LoanController::class, 'sendWaReminders'])->name('petugas.wa.sendReminders');
+Route::post('/petugas/wa/send-single/{id}', [LoanController::class, 'sendSingleWa'])->name('petugas.wa.sendSingle');
 
 // API Notifikasi Petugas (polling)
 Route::get('/petugas/api/cek-notifikasi', function () {

@@ -292,13 +292,26 @@
                 else statusBadge = `<span class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs font-semibold">❌ Ditolak</span>`;
 
                 let waButton = '';
-                if (loan.wa_link) {
-                    const waTitle = loan.is_late ? 'Kirim Peringatan Terlambat via WA' : 'Kirim Pengingat via WA';
-                    const waBadge = loan.is_late ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200';
+                if (loan.user_phone) {
+                    const waTitle = loan.is_late ? 'Kirim Peringatan Terlambat Otomatis via API' : 'Kirim Pengingat Otomatis via API';
+                    const waBadge = loan.is_late ? 'bg-red-50 text-red-700 border-red-300 hover:bg-red-100' : 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100';
                     waButton = `
-                        <a href="${loan.wa_link}" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 rounded border ${waBadge} hover:opacity-80 transition text-[11px] font-semibold mt-1" title="${waTitle}">
-                            <i class="fab fa-whatsapp"></i> Chat WA
-                        </a>
+                        <div class="flex items-center gap-1 mt-1">
+                            <button type="button" onclick="kirimWaOtomatis(${loan.id}, '${loan.user_name}')" class="inline-flex items-center gap-1 px-2 py-1 rounded border ${waBadge} transition text-[11px] font-semibold" title="${waTitle}">
+                                <i class="fab fa-whatsapp"></i> Kirim WA
+                            </button>
+                            ${loan.wa_link ? `
+                                <a href="${loan.wa_link}" target="_blank" class="inline-flex items-center px-1.5 py-1 rounded border border-gray-300 text-gray-500 hover:text-green-600 hover:bg-gray-50 transition text-[11px]" title="Buka di WhatsApp Web">
+                                    <i class="fas fa-external-link-alt"></i>
+                                </a>
+                            ` : ''}
+                        </div>
+                    `;
+                } else if (loan.is_late) {
+                    waButton = `
+                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 text-gray-400 text-[10px] mt-1" title="Nomor WhatsApp belum terdaftar di profil anggota">
+                            <i class="fab fa-whatsapp"></i> No WA Belum Ada
+                        </span>
                     `;
                 }
 
@@ -514,6 +527,29 @@
             if (!isTyping) fetchLatestData();
         }, 3000);
         
+        function kirimWaOtomatis(loanId, userName) {
+            if (!confirm(`Kirim notifikasi pesan WhatsApp otomatis ke ${userName}?`)) return;
+
+            fetch(`/petugas/wa/send-single/${loanId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ ' + data.message);
+                } else {
+                    alert('⚠️ ' + data.message);
+                }
+            })
+            .catch(err => {
+                alert('❌ Terjadi kesalahan saat menghubungi API WhatsApp.');
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             updateFilterUI();
             fetchLatestData();
