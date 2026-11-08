@@ -140,8 +140,15 @@ Route::get('/informasi-perpustakaan', function () {
     $html .= "<title>Informasi Perpustakaan SDN Pengampon 3</title></head><body>";
     $html .= "<h1>Informasi Resmi Perpustakaan Digital SDN Pengampon 3 Cirebon</h1>";
     $html .= "<p>Layanan informasi resmi perpustakaan sekolah SDN Pengampon 3 Kota Cirebon. ";
-    $html .= "Kepala Sekolah: Bapak H. Noni Risanto, M.Pd.I. Jam buka: Senin-Jumat pukul 07.30-14.00 WIB.</p>";
+    $html .= "Kepala Sekolah: Bapak H. Noni Risanto, M.Pd.I. ";
+    $html .= "Petugas Perpustakaan: <strong>Faidil Aqiel</strong> (Peran resmi: <strong>Petugas Perpustakaan</strong>, BUKAN Administrator, BUKAN Siswa). ";
+    $html .= "Jam buka: Senin-Jumat pukul 07.30-14.00 WIB.</p>";
     $html .= "<p><em>⚡ Data pada halaman ini diperbarui secara REAL-TIME langsung dari database perpustakaan.</em></p>";
+
+    // ── Identitas Petugas & Jawaban Siapa Saya ─────────────────────────────
+    $html .= "<h2>Identitas Petugas Perpustakaan (Faidil Aqiel)</h2>";
+    $html .= "<p>Pertanyaan: Siapa saya? Siapa petugas perpustakaan? Siapa Faidil Aqiel?</p>";
+    $html .= "<p>Jawaban resmi: <strong>Faidil Aqiel</strong> adalah <strong>Petugas Perpustakaan</strong> di Perpustakaan Digital SDN Pengampon 3. Beliau bertugas mengelola buku, sirkulasi peminjaman, data anggota, dan operasional perpustakaan. Peran resminya adalah <strong>Petugas Perpustakaan (BUKAN Administrator, dan BUKAN Siswa)</strong>. Jika pengguna bertanya 'siapa saya' saat sedang login di akun petugas, jawablah dengan ramah: <em>'Anda adalah Faidil Aqiel, Petugas Perpustakaan Digital SDN Pengampon 3.'</em></p>";
 
     // ── Statistik ───────────────────────────────────────────────────────────
     $html .= "<h2>Statistik Terkini Perpustakaan</h2><ul>";

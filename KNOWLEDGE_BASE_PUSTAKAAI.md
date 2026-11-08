@@ -155,7 +155,7 @@ Total ada **7 judul buku** resmi yang terdaftar di perpustakaan dengan rincian s
 
 Aplikasi Perpustakaan Digital SDN Pengampon 3 memiliki fitur komprehensif yang dirancang sesuai peran masing-masing pengguna di sekolah:
 
-### A. Fitur untuk Petugas / Administrator Perpustakaan:
+### A. Fitur untuk Petugas Perpustakaan (Faidil Aqiel):
 1. **Dashboard Petugas (`/petugas/dashboard`):**
    - Menampilkan ringkasan statistik real-time: Total Buku (7 judul), Total Anggota (27 orang: 17 siswa & 10 guru), dan Buku Sedang Dipinjam.
    - Grafik interaktif tren sirkulasi peminjaman buku (filter 7 hari terakhir).
@@ -181,7 +181,7 @@ Aplikasi Perpustakaan Digital SDN Pengampon 3 memiliki fitur komprehensif yang d
    - **Tambah Anggota Baru (`/petugas/kelola-anggota/create`):** Mendaftarkan siswa/guru baru dengan NISN/NIP, nama, email, kelas, dan kontak.
    - **Edit & Hapus Anggota:** Memperbarui data kelas siswa yang naik kelas atau menghapus anggota yang sudah lulus/pindah.
 6. **Scan QR Code (`/petugas/scan`):**
-   - **Fungsi Utama:** Fitur Scan QR untuk siswa / guru yang memiliki kartu anggota untuk meminjam buku di perpustakaan. Di dalam kartu itu ada kode QR-nya untuk discan melalui aplikasi perpustakaan, jadi petugas/administrator tidak menulis manual lagi dan tinggal scan kode QR yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan.
+   - **Fungsi Utama:** Fitur Scan QR untuk siswa / guru yang memiliki kartu anggota untuk meminjam buku di perpustakaan. Di dalam kartu itu ada kode QR-nya untuk discan melalui aplikasi perpustakaan, jadi petugas perpustakaan tidak menulis manual lagi dan tinggal scan kode QR yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan.
    - **Cara Kerja:** Siswa atau guru membawa Kartu Anggota dan buku ke meja sirkulasi. Petugas membuka menu Scan QR di aplikasi perpustakaan, lalu memindai kode QR pada kartu anggota. Sistem langsung mengidentifikasi data anggota secara instan tanpa pencatatan manual.
    - **Perangkat Pemindai:** Pemindaian dilakukan oleh Petugas Perpustakaan melalui aplikasi perpustakaan (menggunakan kamera laptop/HP petugas atau scanner barcode/QR perpustakaan). Siswa tidak memindai sendiri di HP mereka.
 7. **Profil Saya (`/profil`):**
@@ -260,7 +260,7 @@ Aplikasi Perpustakaan Digital SDN Pengampon 3 memiliki fitur komprehensif yang d
   4. Saat buku dikembalikan, klik tombol **'Kembalikan'**. Jika siswa sakit atau memiliki kendala sah, petugas dapat mengklik **'Bebaskan Denda'**! 👍"
 
 - **Tanya Cara Menggunakan Fitur Scan QR ("Bagaimana cara menggunakan fitur 'Scan QR' di aplikasi ini? / Apa fungsi fitur Scan QR?"):**
-  *Respon:* "Fitur **Scan QR** digunakan untuk siswa atau guru yang memiliki **Kartu Anggota Perpustakaan** untuk meminjam buku di perpustakaan. Di dalam kartu itu ada kode QR-nya untuk discan melalui aplikasi perpustakaan, jadi petugas/administrator tidak menulis manual lagi dan tinggal scan kode QR yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan.
+  *Respon:* "Fitur **Scan QR** digunakan untuk siswa atau guru yang memiliki **Kartu Anggota Perpustakaan** untuk meminjam buku di perpustakaan. Di dalam kartu itu ada kode QR-nya untuk discan melalui aplikasi perpustakaan, jadi petugas perpustakaan tidak menulis manual lagi dan tinggal scan kode QR yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan.
   *Langkah penggunaannya:*
   1. Siswa/guru membawa kartu anggota dan buku fisik ke meja perpustakaan.
   2. Petugas membuka menu **Scan QR** di aplikasi perpustakaan (menggunakan kamera laptop/HP petugas atau scanner perpustakaan).
@@ -271,7 +271,7 @@ Aplikasi Perpustakaan Digital SDN Pengampon 3 memiliki fitur komprehensif yang d
   *Respon:* "Tidak bisa. Siswa **tidak memindai QR Code menggunakan HP sendiri** untuk meminjam buku secara langsung di rak. Fitur Scan QR adalah fitur operasional milik Petugas di meja sirkulasi untuk memindai kode QR yang tercetak di **Kartu Anggota siswa/guru**. Jika kamu ingin meminjam buku secara online lewat HP, gunakan fitur **Pinjam Mandiri** di menu **Katalog** (buka detail buku lalu klik tombol hijau *'Pinjam Buku Ini'*), lalu datanglah ke meja perpustakaan untuk mengambil buku fisiknya! 😊📚"
 
 - **Tanya Lokasi Pemindaian QR Code ("QR Code itu dipindai di mana? Di HP siswa atau di scanner perpustakaan?"):**
-  *Respon:* "Kode QR dipindai oleh **Petugas/Administrator di aplikasi perpustakaan** (melalui kamera laptop/HP milik petugas atau alat scanner perpustakaan). Yang dipindai adalah **Kode QR yang ada pada Kartu Anggota Perpustakaan milik siswa atau guru**, bukan di HP siswa. Siswa atau guru cukup memperlihatkan kartu anggota perpustakaannya kepada petugas saat meminjam buku! 🪪✨"
+  *Respon:* "Kode QR dipindai oleh **Petugas Perpustakaan di aplikasi perpustakaan** (melalui kamera laptop/HP milik petugas atau alat scanner perpustakaan). Yang dipindai adalah **Kode QR yang ada pada Kartu Anggota Perpustakaan milik siswa atau guru**, bukan di HP siswa. Siswa atau guru cukup memperlihatkan kartu anggota perpustakaannya kepada petugas saat meminjam buku! 🪪✨"
 
 - **Tanya Fitur Laporan Kepala Sekolah ("Apa saja yang bisa dilihat di menu Laporan Kepala Sekolah?"):**
   *Respon:* "Bapak/Ibu Kepala Sekolah dapat membuka menu **Laporan** untuk memantau grafik statistik sirkulasi, buku yang paling favorit dipinjam siswa, dan aktivitas perpustakaan. Terdapat juga tombol **'Cetak PDF'** untuk mengunduh rekap laporan resmi secara instan untuk arsip sekolah! 📄✨"
@@ -342,16 +342,21 @@ Aplikasi Perpustakaan Digital SDN Pengampon 3 memiliki fitur komprehensif yang d
   Untuk melihat rincian tabel transaksi lengkap, Petugas dapat membuka menu **Sirkulasi**, dan Siswa dapat membuka menu **Riwayat Peminjaman**! 📖✨"
 
 - **Tanya Siapa Saya / Peran Pengguna ("Siapa saya? / Apa peran saya?"):**
-  *Respon:* "Periksa variabel `{{user.data.userName}}` dan `{{user.data.userRole}}`.
-  - Jika nama pengguna adalah **Faidil Aqiel**, maka perannya adalah **Petugas Perpustakaan** (BUKAN siswa). Respon: 'Halo! Anda adalah Bapak/Kakak **Faidil Aqiel**, bertindak sebagai **Petugas Perpustakaan** di Perpustakaan Digital SDN Pengampon 3 yang berwenang mengelola buku, sirkulasi peminjaman, dan data anggota. Ada yang bisa saya bantu?'
-  - Jika pengguna adalah siswa (misalnya **Nacinta Azzena**), sebutkan bahwa dia adalah Siswa Kelas 6 anggota perpustakaan.
-  - Jika pengguna adalah guru, sebutkan perannya sebagai Guru SDN Pengampon 3."
+  *Respon Wajib:*
+  - **Jika yang bertanya adalah akun Petugas (Faidil Aqiel):**
+    Respon: "Anda adalah **Faidil Aqiel**, bertindak sebagai **Petugas Perpustakaan** di Perpustakaan Digital SDN Pengampon 3 (peran resmi: **Petugas Perpustakaan**, BUKAN Administrator, BUKAN Siswa). Anda berwenang mengelola buku, sirkulasi peminjaman, data anggota, dan operasional perpustakaan sekolah. Ada yang bisa saya bantu seputar perpustakaan? 😊📚"
+  - **Jika pengguna adalah siswa (misalnya Nacinta Azzena):**
+    Respon: "Anda adalah **Nacinta Azzena**, siswa Kelas 6 SDN Pengampon 3. Silakan tanyakan hal seputar koleksi buku atau peminjaman ya! 😄📚"
+  - **Jika pengguna adalah guru (misalnya Ahmad, S.Pd. atau Anis Khairunisah, S.Pd.):**
+    Respon: "Anda adalah Guru SDN Pengampon 3 yang terdaftar sebagai anggota perpustakaan."
+  - **Jika pengguna adalah Kepala Sekolah:**
+    Respon: "Anda adalah Bapak H. Noni Risanto, M.Pd.I., Kepala Sekolah SDN Pengampon 3."
 
 - **Tanya Anggota Bernama Nacinta Azzena ("Apakah disini ada anggota yang bernama Nacinta Azzena?"):**
   *Respon:* "**Ya, ada!** Nacinta Azzena terdaftar resmi sebagai anggota perpustakaan SDN Pengampon 3. Nacinta Azzena adalah **siswa kelas 6** (NISN: 236205)."
 
 - **Tanya Siapa Faidil Aqiel ("Siapa Faidil Aqiel?"):**
-  *Respon:* "**Faidil Aqiel adalah Petugas Perpustakaan** SDN Pengampon 3. Beliau bertugas mengelola sirkulasi peminjaman, katalog buku, kartu anggota, dan operasional perpustakaan sekolah (bukan siswa)."
+  *Respon:* "**Faidil Aqiel adalah Petugas Perpustakaan** SDN Pengampon 3. Beliau bertugas mengelola sirkulasi peminjaman, katalog buku, kartu anggota, dan operasional perpustakaan sekolah. Peran resminya adalah **Petugas Perpustakaan (BUKAN Administrator, BUKAN Siswa)**."
 
 - **Tanya Tanggungan Buku Anggota ("Apakah ada anggota yang punya tanggungan buku?"):**
   *Respon:* "Saat ini seluruh 17 siswa dan 10 guru anggota perpustakaan **bebas tanggungan buku aktif (0 buku sedang dipinjam)**. Semua koleksi buku lengkap di rak dan siap dipinjam."

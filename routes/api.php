@@ -286,6 +286,8 @@ Route::get('/library-info', function () {
         'nama_bot' => 'PustakaAI',
         'sekolah' => 'SDN Pengampon 3 Cirebon',
         'kepala_sekolah' => 'Bapak H. Noni Risanto, M.Pd.I.',
+        'petugas_perpustakaan' => 'Faidil Aqiel (Peran: Petugas Perpustakaan, BUKAN Administrator, BUKAN Siswa)',
+        'informasi_siapa_saya_petugas' => 'Jika pengguna bertanya "siapa saya" atau "siapa Faidil Aqiel": Jawablah bahwa beliau adalah Faidil Aqiel, Petugas Perpustakaan SDN Pengampon 3 yang berwenang mengelola buku, peminjaman, dan data anggota (peran resminya adalah Petugas Perpustakaan, BUKAN Administrator).',
         'jam_operasional' => 'Senin - Jumat: 07.30 - 14.00 WIB (Sabtu, Minggu & Hari Libur Nasional Tutup)',
         'statistik_perpustakaan' => [
             'total_buku' => Book::count(),
@@ -335,12 +337,12 @@ Route::get('/library-info', function () {
             return "Buku '{$r->book->title}' dipinjam oleh {$r->user->name} (" . ($r->user->class ? "Kelas {$r->user->class}" : "Anggota") . ") pada tanggal {$r->loan_date}, Status: {$statusText}" . ($r->return_date ? " (Dikembalikan: {$r->return_date})" : "");
         }),
         'panduan_fitur_aplikasi' => [
-            'petugas' => 'Fitur Petugas: Dashboard (statistik real-time & grafik peminjaman), Daftar Buku (CRUD koleksi buku, cover, tahun, stok), Kategori Buku (CRUD kategori), Sirkulasi (ACC pinjaman, tolak pinjaman, proses pengembalian, bebas denda), Data Anggota (manajemen siswa & guru), Scan QR (Scan QR untuk siswa / guru yang memiliki kartu anggota untuk meminjam buku di perpustakaan di dalam kartu itu ada kode QR-nya untuk discan melalui aplikasi perpustakaan, jadi petugas/administrator tidak menulis manual lagi dan tinggal scan kode QR yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan), Profil Saya.',
+            'petugas' => 'Fitur Petugas: Dashboard (statistik real-time & grafik peminjaman), Daftar Buku (CRUD koleksi buku, cover, tahun, stok), Kategori Buku (CRUD kategori), Sirkulasi (ACC pinjaman, tolak pinjaman, proses pengembalian, bebas denda), Data Anggota (manajemen siswa & guru), Scan QR (Scan QR untuk siswa / guru yang memiliki kartu anggota untuk meminjam buku di perpustakaan di dalam kartu itu ada kode QR-nya untuk discan melalui aplikasi perpustakaan, jadi petugas perpustakaan tidak menulis manual lagi dan tinggal scan kode QR yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan), Profil Saya.',
             'siswa_guru' => 'Fitur Siswa & Guru: Katalog Buku (cari buku judul/penulis, filter kategori, cek stok), Detail Buku & Pinjam Mandiri (baca sinopsis, klik Pinjam Buku Ini maks 2 buku), Riwayat Peminjaman (pantau status Menunggu, Dipinjam, tanggal jatuh tempo 7 hari, info denda), Buku Tamu/Kunjungan Digital, Notifikasi Otomatis, Profil Saya.',
             'kepala_sekolah' => 'Fitur Kepala Sekolah: Laporan Perpustakaan (grafik sirkulasi, buku favorit, statistik pengunjung) dan Cetak Laporan PDF resmi untuk arsip/evaluasi sekolah.',
         ],
         'panduan_scan_qr' => [
-            'penjelasan' => 'Scan QR untuk siswa / guru yang memiliki kartu anggota untuk meminjam buku di perpustakaan di dalam kartu itu ada kode QR nya untuk discan melalui aplikasi perpustakaan , jadi petugas/administrator tidak menulis manual lagi dan tinggal scan kode qr yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan.',
+            'penjelasan' => 'Scan QR untuk siswa / guru yang memiliki kartu anggota untuk meminjam buku di perpustakaan di dalam kartu itu ada kode QR nya untuk discan melalui aplikasi perpustakaan , jadi petugas perpustakaan tidak menulis manual lagi dan tinggal scan kode qr yang dimiliki siswa/guru yang ada di kartu anggota perpustakaan.',
             'lokasi_scan' => 'Kode QR dipindai oleh Petugas Perpustakaan menggunakan menu Scan QR di aplikasi perpustakaan (kamera laptop/HP petugas atau scanner perpustakaan).',
             'scan_di_hp_siswa' => 'Tidak. Siswa tidak memindai kode QR menggunakan HP sendiri. Kode QR ada di kartu anggota siswa/guru, dan pemindaian dilakukan oleh Petugas di aplikasi perpustakaan saat siswa/guru meminjam buku di meja sirkulasi.',
         ],
