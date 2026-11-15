@@ -161,7 +161,7 @@
             </div>
         </div>
         <div class="text-center mt-1.5 text-[9px] text-gray-400">
-            ⚡ Powered by Google Gemini API & MySQL Real-Time
+            ⚡ Intelligent Library Assistant
         </div>
     </div>
 
