@@ -116,17 +116,49 @@
 
     </div>
 
-    <!-- Kolom Input (Desain Tetap Sama Persis) -->
-    <div class="p-3 bg-white border-t border-gray-100">
+    <!-- Kolom Input (Desain Tetap Sama Persis + Fitur Interaktif) -->
+    <div class="p-3 bg-white border-t border-gray-100 relative">
+        
+        <!-- Emoji Picker Panel (Pop-up Kecil) -->
+        <div id="emoji-panel" class="hidden absolute bottom-24 left-4 z-50 bg-white border border-gray-200 rounded-2xl shadow-xl p-2.5 flex items-center gap-2 select-none animate-fade-in">
+            <button type="button" onclick="sisipkanEmoji('😊')" class="text-xl hover:scale-125 transition transform p-1">😊</button>
+            <button type="button" onclick="sisipkanEmoji('😂')" class="text-xl hover:scale-125 transition transform p-1">😂</button>
+            <button type="button" onclick="sisipkanEmoji('👍')" class="text-xl hover:scale-125 transition transform p-1">👍</button>
+            <button type="button" onclick="sisipkanEmoji('📚')" class="text-xl hover:scale-125 transition transform p-1">📚</button>
+            <button type="button" onclick="sisipkanEmoji('❤️')" class="text-xl hover:scale-125 transition transform p-1">❤️</button>
+            <button type="button" onclick="sisipkanEmoji('✨')" class="text-xl hover:scale-125 transition transform p-1">✨</button>
+            <button type="button" onclick="sisipkanEmoji('📖')" class="text-xl hover:scale-125 transition transform p-1">📖</button>
+        </div>
+
+        <!-- Preview Gambar Terlampir -->
+        <div id="image-preview-container" class="hidden mb-2 relative inline-block">
+            <img id="image-preview" src="" alt="Preview" class="w-16 h-16 object-cover rounded-xl border-2 border-blue-400 shadow-sm">
+            <button type="button" onclick="hapusGambarTerlampir()" class="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] shadow">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Hidden File Input untuk Gambar -->
+        <input type="file" id="chat-file-input" accept="image/*" class="hidden" onchange="handleImageSelected(event)">
+
         <div class="border border-gray-200 rounded-2xl p-2.5 focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500 transition bg-white">
             <input type="text" id="chat-input" placeholder="Tanya PustakaAI di sini..." class="w-full text-xs text-gray-700 outline-none bg-transparent" onkeydown="handleInputEnter(event)">
             <div class="flex items-center justify-between pt-2 mt-1 border-t border-gray-50 text-gray-400">
                 <div class="flex items-center gap-3 text-sm">
-                    <button type="button" class="hover:text-gray-600"><i class="fas fa-paperclip"></i></button>
-                    <button type="button" class="hover:text-gray-600"><i class="far fa-smile"></i></button>
-                    <button type="button" class="hover:text-gray-600"><i class="fas fa-microphone"></i></button>
+                    <!-- Ikon Klip Kertas (Lampiran) -->
+                    <button type="button" onclick="bukaFilePicker()" title="Lampirkan Gambar" class="hover:text-blue-600 transition">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <!-- Ikon Emoji -->
+                    <button type="button" onclick="toggleEmojiPanel()" title="Pilih Emoji" class="hover:text-amber-500 transition">
+                        <i class="far fa-smile"></i>
+                    </button>
+                    <!-- Ikon Mikrofon (Speech-to-Text) -->
+                    <button type="button" id="mic-btn" onclick="toggleVoiceRecording()" title="Bicara (Suara ke Teks)" class="hover:text-red-500 transition">
+                        <i id="mic-icon" class="fas fa-microphone"></i>
+                    </button>
                 </div>
-                <button type="button" onclick="kirimPesan()" class="text-blue-600 hover:text-blue-800 p-1">
+                <button type="button" onclick="kirimPesan()" class="text-blue-600 hover:text-blue-800 p-1 transition transform active:scale-95" title="Kirim">
                     <i class="fas fa-paper-plane text-xs"></i>
                 </button>
             </div>
@@ -147,6 +179,127 @@
     const USER_NAME = @json($userName ?? 'Faidil Aqiel');
     const USER_ROLE = @json($userRole ?? 'Petugas Perpustakaan');
 
+    // Variabel lampiran gambar
+    let selectedImageBase64 = null;
+    let selectedImageMime = null;
+
+    // 1. FITUR LAMPIRAN GAMBAR (Klip Kertas)
+    function bukaFilePicker() {
+        document.getElementById('chat-file-input').click();
+    }
+
+    function handleImageSelected(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert('Hanya file gambar yang diperbolehkan.');
+            return;
+        }
+
+        selectedImageMime = file.type;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            selectedImageBase64 = e.target.result;
+            const previewContainer = document.getElementById('image-preview-container');
+            const previewImg = document.getElementById('image-preview');
+            previewImg.src = selectedImageBase64;
+            previewContainer.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function hapusGambarTerlampir() {
+        selectedImageBase64 = null;
+        selectedImageMime = null;
+        document.getElementById('chat-file-input').value = '';
+        document.getElementById('image-preview-container').classList.add('hidden');
+    }
+
+    // 2. FITUR EMOJI PICKER (Senyum)
+    function toggleEmojiPanel() {
+        const panel = document.getElementById('emoji-panel');
+        panel.classList.toggle('hidden');
+    }
+
+    function sisipkanEmoji(emoji) {
+        const input = document.getElementById('chat-input');
+        input.value += emoji;
+        input.focus();
+        document.getElementById('emoji-panel').classList.add('hidden');
+    }
+
+    // 3. FITUR SPEECH TO TEXT (Mikrofon)
+    let isRecording = false;
+    let recognition = null;
+
+    function initSpeechRecognition() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            alert('Browser Anda belum mendukung fitur Web Speech API. Silakan gunakan Google Chrome atau Microsoft Edge terbaru.');
+            return null;
+        }
+
+        const recognizer = new SpeechRecognition();
+        recognizer.lang = 'id-ID';
+        recognizer.interimResults = false;
+        recognizer.maxAlternatives = 1;
+
+        recognizer.onstart = function() {
+            isRecording = true;
+            updateMicUI(true);
+        };
+
+        recognizer.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            const input = document.getElementById('chat-input');
+            input.value = (input.value ? input.value + ' ' : '') + transcript;
+            input.focus();
+        };
+
+        recognizer.onerror = function(event) {
+            console.warn('Speech recognition error:', event.error);
+            isRecording = false;
+            updateMicUI(false);
+        };
+
+        recognizer.onend = function() {
+            isRecording = false;
+            updateMicUI(false);
+        };
+
+        return recognizer;
+    }
+
+    function toggleVoiceRecording() {
+        if (!recognition) {
+            recognition = initSpeechRecognition();
+        }
+        if (!recognition) return;
+
+        if (!isRecording) {
+            try {
+                recognition.start();
+            } catch (err) {
+                console.warn('Recognition start error:', err);
+            }
+        } else {
+            recognition.stop();
+        }
+    }
+
+    function updateMicUI(recording) {
+        const micIcon = document.getElementById('mic-icon');
+        const micBtn = document.getElementById('mic-btn');
+        if (recording) {
+            micIcon.className = "fas fa-microphone text-red-500 animate-pulse text-base";
+            micBtn.title = "Sedang mendengarkan suara Anda...";
+        } else {
+            micIcon.className = "fas fa-microphone";
+            micBtn.title = "Bicara (Suara ke Teks)";
+        }
+    }
+
     function togglePustakaAIChat() {
         const win = document.getElementById('pustakaai-window');
         win.classList.toggle('hidden');
@@ -161,6 +314,7 @@
 
     function resetPercakapan() {
         document.getElementById('chat-messages').innerHTML = '';
+        hapusGambarTerlampir();
         document.getElementById('welcome-section').classList.remove('hidden');
     }
 
@@ -178,14 +332,23 @@
     async function kirimPesan() {
         const input = document.getElementById('chat-input');
         const pesan = input.value.trim();
-        if (!pesan) return;
+        const hasImage = !!selectedImageBase64;
 
+        if (!pesan && !hasImage) return;
+
+        // Tutup emoji panel jika terbuka
+        document.getElementById('emoji-panel').classList.add('hidden');
         // Sembunyikan welcome screen saat percakapan dimulai
         document.getElementById('welcome-section').classList.add('hidden');
 
-        // 1. Tampilkan Bubble Pesan User di Kanan
-        tampilkanBubbleUser(pesan);
+        // Simpan referensi gambar untuk payload & UI sebelum di-reset
+        const imgToSend = selectedImageBase64;
+        const mimeToSend = selectedImageMime;
+
+        // 1. Tampilkan Bubble Pesan User di Kanan (Termasuk Gambar jika ada)
+        tampilkanBubbleUser(pesan, imgToSend);
         input.value = '';
+        hapusGambarTerlampir();
 
         // 2. Tampilkan Indikator Loading ("Mengetik...")
         const loader = document.getElementById('chat-loading');
@@ -193,12 +356,14 @@
         scrollKeBawah();
 
         try {
-            // 3. Fetch ke Backend Node.js Google Gemini API
+            // 3. Fetch ke Backend Node.js Google Gemini API (Mendukung Teks + Gambar Vision)
             const res = await fetch(CHAT_BACKEND_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     pesan: pesan,
+                    imageBase64: imgToSend,
+                    imageMime: mimeToSend,
                     userName: USER_NAME,
                     userRole: USER_ROLE
                 })
@@ -221,13 +386,22 @@
         scrollKeBawah();
     }
 
-    function tampilkanBubbleUser(teks) {
+    function tampilkanBubbleUser(teks, imageBase64) {
         const container = document.getElementById('chat-messages');
         const bubble = document.createElement('div');
         bubble.className = "flex justify-end";
+
+        let content = '';
+        if (imageBase64) {
+            content += `<div class="mb-1.5"><img src="${imageBase64}" class="w-36 h-auto rounded-xl border border-white/30 shadow-xs"></div>`;
+        }
+        if (teks) {
+            content += `<div>${escapeHtml(teks)}</div>`;
+        }
+
         bubble.innerHTML = `
             <div class="bg-blue-600 text-white text-xs px-4 py-2.5 rounded-2xl rounded-tr-xs max-w-[80%] shadow-xs break-words">
-                ${escapeHtml(teks)}
+                ${content}
             </div>
         `;
         container.appendChild(bubble);

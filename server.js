@@ -276,12 +276,12 @@ const tools = [
 
 // 5. Endpoint POST /api/chat
 app.post('/api/chat', async (req, res) => {
-    console.log("--> Menerima request di POST /api/chat:", req.body);
+    console.log("--> Menerima request di POST /api/chat:", req.body ? { ...req.body, imageBase64: req.body.imageBase64 ? '[IMAGE_BASE64_ATTACHED]' : undefined } : {});
     try {
-        const { pesan, userName, userRole } = req.body;
-        if (!pesan) {
-            console.warn("Pesan kosong diterima di /api/chat");
-            return res.status(400).json({ error: "Pesan wajib diisi." });
+        const { pesan, userName, userRole, imageBase64, imageMime } = req.body;
+        if (!pesan && !imageBase64) {
+            console.warn("Pesan dan gambar kosong diterima di /api/chat");
+            return res.status(400).json({ error: "Pesan atau gambar wajib diisi." });
         }
 
         const systemInstruction = `
@@ -347,8 +347,27 @@ ATURAN MUTLAK PENGGUNAAN DATABASE (TOOLS) VS TEKS BIASA:
         });
 
         const chat = model.startChat();
-        console.log("Mengirim pesan user ke Gemini:", pesan);
-        let result = await chat.sendMessage(pesan);
+        console.log("Mengirim pesan user ke Gemini:", pesan || '[Lampiran Gambar]');
+
+        let messagePayload;
+        if (imageBase64) {
+            // Bersihkan data URL prefix jika ada (misal data:image/jpeg;base64,...)
+            const rawBase64 = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
+            const mimeType = imageMime || 'image/jpeg';
+            messagePayload = [
+                {
+                    inlineData: {
+                        data: rawBase64,
+                        mimeType: mimeType
+                    }
+                },
+                pesan || "Tolong amati dan jelaskan gambar/buku ini sehubungan dengan informasi perpustakaan SDN Pengampon 3."
+            ];
+        } else {
+            messagePayload = pesan;
+        }
+
+        let result = await chat.sendMessage(messagePayload);
         let response = await result.response;
 
         // Tangani Function Calls jika model meminta data database
