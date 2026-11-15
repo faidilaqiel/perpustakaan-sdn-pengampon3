@@ -309,4 +309,37 @@ class LoanController extends Controller
 
         return back()->with('success', $pesan);
     }
+
+    /**
+     * Membebaskan denda keterlambatan (kebijakan khusus Petugas)
+     */
+    public function bebaskanDenda(Request $request, $id)
+    {
+        $loan = Loan::findOrFail($id);
+
+        if ($loan->fine_amount <= 0 && $loan->payment_status === 'lunas') {
+            return back()->with('error', 'Pinjaman ini tidak memiliki tanggungan denda.');
+        }
+
+        $amountWaived = $loan->fine_amount;
+        $reason = $request->input('reason', 'Kebijakan Petugas Perpustakaan (Sakit / Dispensasi Sah)');
+
+        try {
+            \App\Models\FineWaiver::create([
+                'loan_id' => $loan->id,
+                'petugas_id' => Auth::id() ?? 1,
+                'amount_waived' => $amountWaived,
+                'reason' => $reason,
+            ]);
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Gagal mencatat fine waiver: ' . $e->getMessage());
+        }
+
+        $loan->update([
+            'fine_amount' => 0,
+            'payment_status' => 'dibebaskan',
+        ]);
+
+        return back()->with('success', '✅ Denda pinjaman berhasil dibebaskan (Rp ' . number_format($amountWaived, 0, ',', '.') . ').');
+    }
 }

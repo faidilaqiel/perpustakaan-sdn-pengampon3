@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dokumen SDD & Perancangan UML - Perpustakaan Digital SDN Pengampon 3</title>
+    <!-- Mermaid.js untuk diagram vektor UML & Arsitektur -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true, 
+            theme: 'neutral',
+            flowchart: { curve: 'basis', useMaxWidth: true, htmlLabels: true },
+            sequence: { showSequenceNumbers: true, useMaxWidth: true },
+            class: { useMaxWidth: true },
+            er: { useMaxWidth: true }
+        });
+    </script>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #0f766e;
+            --accent: #d97706;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --border: #cbd5e1;
+            --text: #334155;
+            --text-heading: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text);
+            background-color: #e2e8f0;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        /* Container & Print Wrapper */
+        .page-container {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 20px auto;
+            background: #ffffff;
+            padding: 22mm 20mm;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        /* Tombol Aksi Layar */
+        .no-print-toolbar {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            gap: 10px;
+            background: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 9px 18px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: #1e40af;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+        }
+        .btn-secondary:hover {
+            background-color: #115e59;
+        }
+
+        /* Cover Page */
+        .cover-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 250mm;
+            border: 2px solid var(--primary);
+            padding: 30px;
+            background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+            page-break-after: always;
+        }
+
+        .cover-header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 18px;
+        }
+
+        .cover-header h3 {
+            font-size: 15px;
+            color: var(--secondary);
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+
+        .cover-header h4 {
+            font-size: 13px;
+            color: var(--text);
+            font-weight: 600;
+            margin-top: 4px;
+        }
+
+        .cover-body {
+            text-align: center;
+            margin: 40px 0;
+        }
+
+        .cover-badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 11px;
+            padding: 5px 14px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+            border: 1px solid #bfdbfe;
+        }
+
+        .cover-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-heading);
+            line-height: 1.3;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .cover-subtitle {
+            font-size: 15px;
+            color: var(--secondary);
+            font-weight: 600;
+            max-width: 90%;
+            margin: 0 auto 25px auto;
+        }
+
+        .cover-meta-box {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--primary);
+            border-radius: 6px;
+            padding: 16px 20px;
+            text-align: left;
+            max-width: 85%;
+            margin: 0 auto;
+            font-size: 12.5px;
+        }
+
+        .cover-meta-box table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .cover-meta-box td {
+            padding: 4px 8px;
+            vertical-align: top;
+        }
+
+        .cover-meta-box td:first-child {
+            font-weight: 700;
+            width: 38%;
+            color: var(--dark);
+        }
+
+        .cover-footer {
+            text-align: center;
+            border-top: 1px solid var(--border);
+            padding-top: 15px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Typography & Layout */
+        h1, h2, h3, h4, h5 {
+            color: var(--text-heading);
+            font-weight: 700;
+            margin-top: 24px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 20px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 6px;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        h2 {
+            font-size: 16px;
+            color: var(--secondary);
+            border-left: 4px solid var(--secondary);
+            padding-left: 10px;
+            margin-top: 20px;
+        }
+
+        h3 {
+            font-size: 14px;
+            color: var(--dark);
+            margin-top: 16px;
+        }
+
+        p {
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 14px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        /* Table Styling */
+        table.doc-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0 20px 0;
+            font-size: 12px;
+        }
+
+        table.doc-table th, table.doc-table td {
+            border: 1px solid var(--border);
+            padding: 8px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        table.doc-table th {
+            background-color: #f1f5f9;
+            color: var(--text-heading);
+            font-weight: 700;
+        }
+
+        table.doc-table tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 7px;
+            border-radius: 4px;
+            font-size: 10.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-primary { background: #dbeafe; color: #1e40af; }
+        .badge-success { background: #dcfce7; color: #15803d; }
+        .badge-warning { background: #fef3c7; color: #b45309; }
+        .badge-info { background: #e0f2fe; color: #0369a1; }
+
+        /* Scenario Box */
+        .scenario-box {
+            border: 1px solid var(--border);
+            border-left: 4px solid var(--secondary);
+            border-radius: 6px;
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            background: #ffffff;
+            page-break-inside: avoid;
+        }
+
+        .scenario-title {
+            font-weight: 700;
+            color: var(--secondary);
+            font-size: 13px;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Diagram Box */
+        .diagram-container {
+            border: 1px solid var(--border);
+            background: #fafafa;
+            border-radius: 8px;
+            padding: 18px 10px;
+            margin: 18px 0;
+            text-align: center;
+            page-break-inside: avoid;
+            overflow-x: auto;
+        }
+
+        .diagram-caption {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #64748b;
+            margin-top: 10px;
+        }
+
+        .solid-principle {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin: 12px 0;
+            font-size: 12.5px;
+        }
+
+        .solid-principle strong {
+            color: #166534;
+        }
+
+        /* Section divider */
+        .page-break {
+            page-break-after: always;
+        }
+
+        /* Print Media Queries */
+        @media print {
+            body {
+                background: white;
+                color: black;
+            }
+            .page-container {
+                width: 100%;
+                margin: 0;
+                padding: 15mm 15mm;
+                box-shadow: none;
+            }
+            .no-print-toolbar {
+                display: none;
+            }
+            .page-break {
+                page-break-after: always;
+            }
+            a {
+                color: black;
+                text-decoration: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Toolbar (Hanya muncul saat dibuka di browser) -->
+    <div class="no-print-toolbar">
+        <button class="btn" onclick="window.print()">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
+                <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
+            </svg>
+            Cetak ke PDF (Ctrl + P)
+        </button>
+        <a href="#daftar-isi" class="btn btn-secondary">
+            📑 Navigasi Bab
+        </a>
+    </div>
+
+    <div class="page-container">
+
+        <!-- ==================== COVER PAGE ==================== -->
+        <div class="cover-page">
+            <div class="cover-header">
+                <h3>PROGRAM STUDI S1 TEKNIK INFORMATIKA</h3>
+                <h4>STMIK IKMI CIREBON — TAHUN AKADEMIK 2026/2027</h4>
+            </div>
+
+            <div class="cover-body">
+                <div class="cover-badge">DOKUMEN REKAYASA PERANGKAT LUNAK — TAHAP 2 (SDLC)</div>
+                <h1 class="cover-title">SOFTWARE DESIGN DOCUMENT (SDD)<br>& PERANCANGAN PEMODELAN UML SISTEM</h1>
+                <p class="cover-subtitle">
+                    Standar IEEE 1016 / ISO/IEC/IEEE 42010:2011<br>
+                    <strong>Arsitektur Sistem & Pemodelan Berorientasi Objek (SOLID) Aplikasi Perpustakaan Digital SDN Pengampon 3 Cirebon Terintegrasi PustakaAI RAG & WhatsApp Gateway</strong>
+                </p>
+
+                <div class="cover-meta-box">
+                    <table>
+                        <tr>
+                            <td>Nama</td>
+                            <td>: <strong>Faidil Aqiel</strong></td>
+                        </tr>
+                        <tr>
+                            <td>NIM</td>
+                            <td>: <strong>41257189</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Kelas</td>
+                            <td>: Reguler Sore / 1F-2025</td>
+                        </tr>
+                        <tr>
+                            <td>Program Studi</td>
+                            <td>: S1 Teknik Informatika</td>
+                        </tr>
+                        <tr>
+                            <td>Mata Kuliah</td>
+                            <td>: Rekayasa Perangkat Lunak (TIKB2503021)</td>
+                        </tr>
+                        <tr>
+                            <td>Dosen Pengampu</td>
+                            <td>: Yudhistira Arie Wijaya, M.Kom., CDS.</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="cover-footer">
+                <p>Dokumen ini disusun sebagai luaran resmi Tahap 2 Penilaian Outcome-Based Education (OBE) mata kuliah Rekayasa Perangkat Lunak.</p>
+                <p>Kota Cirebon &bull; November 2026</p>
+            </div>
+        </div>
+
+        <!-- ==================== DAFTAR ISI ==================== -->
+        <div id="daftar-isi" class="page-break">
+            <h1>DAFTAR ISI DOKUMEN SDD</h1>
+            <table class="doc-table" style="margin-top: 16px;">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Bagian</th>
+                        <th style="width: 65%;">Topik Pembahasan</th>
+                        <th style="width: 15%; text-align: center;">Standar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>BAB I</strong></td>
+                        <td><strong>Pendahuluan & Arsitektur Sistem</strong> (Prinsip Desain, C4 Layered, Tujuan SDD)</td>
+                        <td style="text-align: center;">IEEE 1016</td>
+                    </tr>
+                    <tr>
+                        <td><strong>BAB II</strong></td>
+                        <td><strong>Pemodelan UML 1: Use Case Diagram & Skenario</strong> (Multi-Peran & AI)</td>
+                        <td style="text-align: center;">UML 2.5</td>
+                    </tr>
+                    <tr>
+                        <td><strong>BAB III</strong></td>
+                        <td><strong>Pemodelan UML 2: Activity Diagram Alur Bisnis & AI</strong></td>
+                        <td style="text-align: center;">UML 2.5</td>
+                    </tr>
+                    <tr>
+                        <td><strong>BAB IV</strong></td>
+                        <td><strong>Pemodelan UML 3: Class Diagram Berorientasi Objek & Prinsip SOLID</strong></td>
+                        <td style="text-align: center;">SOLID / OOP</td>
+                    </tr>
+                    <tr>
+                        <td><strong>BAB V</strong></td>
+                        <td><strong>Pemodelan UML 4: Sequence Diagram Pertukaran Pesan</strong> (FE, BE, DB, AI API)</td>
+                        <td style="text-align: center;">UML 2.5</td>
+                    </tr>
+                    <tr>
+                        <td><strong>BAB VI</strong></td>
+                        <td><strong>Entity Relationship Diagram (ERD) Basis Data Relasional</strong></td>
+                        <td style="text-align: center;">Data Model</td>
+                    </tr>
+                    <tr>
+                        <td><strong>BAB VII</strong></td>
+                        <td><strong>Rancangan UI/UX Figma & Panduan Video Progres 2</strong> (Durasi 5–7 Menit)</td>
+                        <td style="text-align: center;">OBE Rubric</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div style="margin-top: 30px; background: #f0fdf4; padding: 15px; border-radius: 6px; border-left: 4px solid var(--secondary);">
+                <h3 style="margin-top: 0; color: var(--secondary);">Tujuan Perancangan Dokumen SDD</h3>
+                <p style="font-size: 12.5px; margin-bottom: 0;">
+                    Dokumen <strong>Software Design Document (SDD)</strong> ini menjembatani spesifikasi kebutuhan abstrak pada dokumen PRD/SRS ke dalam cetak biru teknis (*technical blueprint*). Memodelkan 4 diagram UML utama yang presisi, konsisten, dan saling terhubung dengan kode nyata: alur sirkulasi fisik dan mandiri, pemindaian QR Code instan, pipeline asisten cerdas PustakaAI RAG, integrasi Fonnte WhatsApp, serta struktur basis data relasional ternormalisasi.
+                </p>
+            </div>
+        </div>
+
+        <!-- ==================== BAB I ==================== -->
+        <div class="page-break">
+            <h1>BAB I: PENDAHULUAN & ARSITEKTUR SISTEM</h1>
+
+            <h2>1.1 Gambaran Umum Perancangan</h2>
+            <p>
+                Perpustakaan Digital SDN Pengampon 3 dirancang menggunakan pola arsitektur **Model-View-Controller (MVC)** yang diperkaya dengan **Service Layer Pattern** untuk memisahkan logika bisnis kompleks dari controller, mematuhi kaidah *Clean Architecture*, serta memfasilitasi integrasi API pihak ketiga (Fonnte WA Gateway dan Model PustakaAI NLP).
+            </p>
+
+            <h2>1.2 Dekomposisi Layer Sistem (C4 Container View)</h2>
+            <div class="diagram-container">
+                <div class="mermaid">
+flowchart TD
+    subgraph Client ["Client Device (UI Presentation)"]
+        A1["Desktop Browser (Laptop Petugas Faidil Aqiel)"]
+        A2["Mobile Browser (HP Siswa & Guru)"]
+        A3["Executive Tablet (Kepala Sekolah H. Noni Risanto)"]
+    end
+
+    subgraph Server ["Application Server (Laravel 12 / PHP 8.2+)"]
+        B1["HTTP Routing & Middleware Guard"]
+        B2["Controllers (Auth, Book, Loan, Scan, Chatbot, Report)"]
+        B3["Service Layer (WhatsAppService, PustakaAIService)"]
+        B4["Eloquent ORM Models (User, Book, Category, Loan, Visit, FineWaiver)"]
+    end
+
+    subgraph DataExternal ["Database & External Cloud Service"]
+        C1[("MySQL Relational Database")]
+        C2["Fonnte WhatsApp Cloud Gateway"]
+        C3["PustakaAI Knowledge Base Context Engine"]
+    end
+
+    A1 --> B1
+    A2 --> B1
+    A3 --> B1
+    B1 --> B2
+    B2 --> B3
+    B2 --> B4
+    B3 --> C2
+    B3 --> C3
+    B4 --> C1
+                </div>
+                <div class="diagram-caption">Gambar 1.1: Dekomposisi Kontainer & Aliran Lapisan Sistem (C4 Container View)</div>
+            </div>
+        </div>
+
+        <!-- ==================== BAB II ==================== -->
+        <div class="page-break">
+            <h1>BAB II: PEMODELAN UML 1 — USE CASE DIAGRAM & SKENARIO</h1>
+
+            <h2>2.1 Use Case Diagram Lengkap Sistem</h2>
+            <p>
+                Diagram Use Case menggambarkan batasan sistem (*system boundary*), aktor yang berinteraksi, serta relasi *include* dan *extend* dalam proses bisnis perpustakaan:
+            </p>
+
+            <div class="diagram-container">
+                <div class="mermaid">
+flowchart LR
+    Petugas(("Petugas Perpustakaan<br/>(Faidil Aqiel)"))
+    Siswa(("Siswa"))
+    Guru(("Guru"))
+    Kepsek(("Kepala Sekolah"))
+
+    subgraph SystemBoundary ["Sistem Perpustakaan Digital SDN Pengampon 3"]
+        UC1["Login Multi-Role"]
+        UC2["Kelola Data Buku & Kategori"]
+        UC3["Kelola Anggota & Cetak Kartu QR"]
+        UC4["Cari & Jelajah Katalog Buku"]
+        UC5["Pengajuan Pinjam Buku Mandiri"]
+        UC6["Proses Sirkulasi (ACC / Tolak)"]
+        UC7["Scan QR Code Peminjaman Instan"]
+        UC8["Pengembalian & Bebas Denda"]
+        UC9["Konsultasi Asisten PustakaAI"]
+        UC10["Kirim Pengingat WhatsApp Otomatis"]
+        UC11["Isi Buku Tamu / Kunjungan"]
+        UC12["Pantau Statistik & Cetak Laporan PDF"]
+    end
+
+    Petugas --> UC1
+    Petugas --> UC2
+    Petugas --> UC3
+    Petugas --> UC6
+    Petugas --> UC7
+    Petugas --> UC8
+    Petugas --> UC10
+
+    Siswa --> UC1
+    Siswa --> UC4
+    Siswa --> UC5
+    Siswa --> UC9
+    Siswa --> UC11
+
+    Guru --> UC1
+    Guru --> UC4
+    Guru --> UC5
+    Guru --> UC9
+    Guru --> UC11
+
+    Kepsek --> UC1
+    Kepsek --> UC12
+                </div>
+                <div class="diagram-caption">Gambar 2.1: Use Case Diagram Sistem Perpustakaan Digital SDN Pengampon 3</div>
+            </div>
+
+            <h2>2.2 Skenario Use Case Rinci (Use Case Specification)</h2>
+
+            <!-- Scenario 1 -->
+            <div class="scenario-box">
+                <div class="scenario-title">
+                    <span>UC-05: Pengajuan Pinjam Buku Mandiri (Siswa)</span>
+                    <span class="badge badge-primary">Siswa / Guru</span>
+                </div>
+                <table class="doc-table">
+                    <tr><th style="width: 25%;">Aktor Utama</th><td>Siswa / Guru</td></tr>
+                    <tr><th>Prasyarat (Preconditions)</th><td>Pengguna telah login ke aplikasi, stok buku &gt; 0, dan tidak sedang meminjam buku yang sama.</td></tr>
+                    <tr><th>Kondisi Akhir (Postconditions)</th><td>Data peminjaman tercatat dalam tabel <code>loans</code> dengan status <code>menunggu</code>, menunggu verifikasi petugas.</td></tr>
+                    <tr><th>Alur Utama (Main Flow)</th><td>
+                        1. Siswa membuka menu Katalog Buku.<br>
+                        2. Siswa mencari buku berdasarkan judul atau kategori.<br>
+                        3. Siswa mengklik tombol <em>"Pinjam Buku Ini"</em>.<br>
+                        4. Sistem memeriksa ketersediaan stok buku dan kuota peminjaman aktif siswa.<br>
+                        5. Sistem membuat record pinjaman baru berstatus <code>menunggu</code>.<br>
+                        6. Sistem menampilkan pesan sukses dan mengarahkan siswa ke halaman riwayat.
+                    </td></tr>
+                    <tr><th>Alur Alternatif</th><td>
+                        4a. Jika stok buku 0: Sistem menampilkan peringatan <em>"Stok buku habis"</em> dan membatalkan aksi.<br>
+                        4b. Jika siswa telah meminjam buku yang sama: Sistem menampilkan pesan <em>"Buku masih dalam peminjaman aktif"</em>.
+                    </td></tr>
+                </table>
+            </div>
+
+            <!-- Scenario 2 -->
+            <div class="scenario-box">
+                <div class="scenario-title">
+                    <span>UC-06: Persetujuan Sirkulasi Peminjaman (Petugas)</span>
+                    <span class="badge badge-primary">Petugas (Faidil Aqiel)</span>
+                </div>
+                <table class="doc-table">
+                    <tr><th style="width: 25%;">Aktor Utama</th><td>Petugas Perpustakaan (Faidil Aqiel)</td></tr>
+                    <tr><th>Prasyarat</th><td>Petugas login dan membuka halaman <code>/petugas/sirkulasi</code>.</td></tr>
+                    <tr><th>Kondisi Akhir</th><td>Status pinjaman berubah menjadi <code>dipinjam</code>, stok buku berkurang 1, tanggal jatuh tempo diset (+7 hari), notifikasi real-time terkirim ke siswa.</td></tr>
+                    <tr><th>Alur Utama</th><td>
+                        1. Petugas melihat daftar pengajuan berstatus <code>menunggu</code>.<br>
+                        2. Siswa mendatangi meja sirkulasi untuk mengambil buku fisik.<br>
+                        3. Petugas memastikan tanggal pinjam dan tanggal jatuh tempo valid.<br>
+                        4. Petugas menekan tombol <em>"Setujui"</em>.<br>
+                        5. Sistem memotong stok buku (<code>stock_available - 1</code>) dan mengupdate status menjadi <code>dipinjam</code>.<br>
+                        6. Siswa menerima popup notifikasi real-time: <em>"Peminjaman Disetujui! ✅"</em>.
+                    </td></tr>
+                </table>
+            </div>
+
+            <!-- Scenario 3 -->
+            <div class="scenario-box">
+                <div class="scenario-title">
+                    <span>UC-09: Konsultasi Literatur Cerdas PustakaAI RAG Engine</span>
+                    <span class="badge badge-success">Siswa / Guru</span>
+                </div>
+                <table class="doc-table">
+                    <tr><th style="width: 25%;">Aktor Utama</th><td>Siswa / Guru</td></tr>
+                    <tr><th>Prasyarat</th><td>Widget PustakaAI terbuka pada halaman aplikasi.</td></tr>
+                    <tr><th>Kondisi Akhir</th><td>Jawaban ramah anak dan akurat terkait buku/aturan sekolah tampil di layar obrolan.</td></tr>
+                    <tr><th>Alur Utama</th><td>
+                        1. Pengguna mengetik pertanyaan di jendela obrolan (misal: <em>"Apakah ada buku cerita rakyat Malin Kundang?"</em>).<br>
+                        2. Sistem memvalidasi input terhadap safety guardrails (bebas kata kasar/dewasa).<br>
+                        3. Backend mengambil dynamic context dari basis data buku aktif dan knowledge base sekolah.<br>
+                        4. Prompt yang telah diperkaya (*augmented*) diproses oleh model NLP.<br>
+                        5. Jawaban ditampilkan secara responsif dan ramah di layar siswa.
+                    </td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- ==================== BAB III ==================== -->
+        <div class="page-break">
+            <h1>BAB III: PEMODELAN UML 2 — ACTIVITY DIAGRAM ALUR BISNIS & AI</h1>
+
+            <h2>3.1 Activity Diagram: Alur Pengajuan & Persetujuan Peminjaman</h2>
+            <div class="diagram-container">
+                <div class="mermaid">
+flowchart TD
+    subgraph SiswaSwimlane ["Swimlane: Siswa"]
+        S1([Buka Katalog Buku]) --> S2[Pilih Judul Buku]
+        S2 --> S3[Klik 'Pinjam Buku Ini']
+        S3 --> S4[Tunggu Konfirmasi Petugas]
+        S7[Terima Popup Notifikasi Disetujui] --> S8([Ambil Buku Fisik di Meja])
+    end
+
+    subgraph SystemSwimlane ["Swimlane: Sistem Web Laravel"]
+        S3 -.-> SY1{Cek Validasi:<br/>Stok > 0 & Kuota Aman?}
+        SY1 -- Tidak --> SY2[Kirim Pesan Gagal]
+        SY2 -.-> S2
+        SY1 -- Ya --> SY3[Simpan Record Status 'Menunggu']
+        SY3 --> SY4[Auto-Refresh Badge Meja Petugas]
+        P2 -.-> SY5[Update Status: 'Dipinjam'<br/>Kurangi Stok Buku -1]
+        SY5 --> SY6[Broadcast Notifikasi ke Siswa]
+        SY6 -.-> S7
+    end
+
+    subgraph PetugasSwimlane ["Swimlane: Petugas Perpustakaan"]
+        SY4 -.-> P1[Buka Menu Sirkulasi]
+        P1 --> P2{Pilihan Petugas}
+        P2 -- Setujui --> P3[Validasi Tanggal & Klik 'Setujui']
+        P2 -- Tolak --> P4[Klik 'Tolak' & Alasan]
+    end
+                </div>
+                <div class="diagram-caption">Gambar 3.1: Activity Diagram Proses Bisnis Peminjaman Mandiri & Approval Petugas</div>
+            </div>
+
+            <h2>3.2 Activity Diagram: Alur Konsultasi Cerdas PustakaAI (AI Pipeline)</h2>
+            <div class="diagram-container">
+                <div class="mermaid">
+flowchart TD
+    A([User Ketik Pertanyaan di Widget Chat]) --> B[Frontend Kirim Payload HTTP POST]
+    B --> C{Guardrails Filter:<br/>Lolos Konten Ramah Anak?}
+    C -- Terdeteksi Kasar/Negatif --> D[Kembalikan Pesan Teguran Edukatif Ramah]
+    D --> EndChat([Tampilkan ke User])
+    
+    C -- Aman --> E[Ambil Context Live:<br/>Data Buku, Stok, Status Pinjam User]
+    E --> F[Inject System Prompt & Persona Ramah Anak]
+    F --> G[Kirim Augmented Prompt ke NLP Model]
+    G --> H[Model Hasilkan Respon Alami & Relevan]
+    H --> I[Format Respon Markdown & Rekomendasi Buku]
+    I --> EndChat
+                </div>
+                <div class="diagram-caption">Gambar 3.2: Activity Diagram Pipeline PustakaAI Context Retrieval (RAG Engine)</div>
+            </div>
+
+            <h2>3.3 Activity Diagram: Pengembalian Buku & Pembebasan Denda (Waiver)</h2>
+            <div class="diagram-container">
+                <div class="mermaid">
+flowchart TD
+    StartRet([Siswa Kembalikan Buku]) --> Scan[Petugas Cari Transaksi / Scan QR]
+    Scan --> CheckDue{Cek Tanggal Kembali > Jatuh Tempo?}
+    CheckDue -- Tepat Waktu --> RetSuccess[Klik 'Kembalikan'<br/>Denda = Rp 0]
+    CheckDue -- Terlambat --> CalcFine[Hitung Denda Otomatis:<br/>Hari Terlambat x Rp 1.000]
+    
+    CalcFine --> Reason{Apakah Ada Surat Izin / Siswa Sakit?}
+    Reason -- Ya (Sah) --> Waiver[Petugas Klik 'Bebaskan Denda'<br/>Catat Alasan di FineWaiver]
+    Reason -- Tidak --> PayFine[Siswa Melunasi Denda di Meja]
+    
+    Waiver --> RetUpdate[Kembalikan Buku & Tambah Stok +1]
+    PayFine --> RetUpdate
+    RetSuccess --> RetUpdate
+    RetUpdate --> DoneRet([Selesai])
+                </div>
+                <div class="diagram-caption">Gambar 3.3: Activity Diagram Pengembalian Buku dan Mekanisme Pembebasan Denda</div>
+            </div>
+        </div>
+
+        <!-- ==================== BAB IV ==================== -->
+        <div class="page-break">
+            <h1>BAB IV: PEMODELAN UML 3 — CLASS DIAGRAM BERORIENTASI OBJEK & SOLID</h1>
+
+            <h2>4.1 Penerapan Prinsip SOLID dalam Desain Perangkat Lunak</h2>
+            <div class="solid-principle">
+                <strong>1. Single Responsibility Principle (SRP):</strong> Setiap Controller dan Service memiliki satu tugas spesifik. <code>LoanController</code> mengurus siklus pinjaman, <code>WhatsAppService</code> menangani pengiriman gateway API Fonnte, dan <code>PustakaAIService</code> menangani retrieval konteks chatbot.<br>
+                <strong>2. Open/Closed Principle (OCP):</strong> Integrasi gateway notifikasi dirancang dengan interface sehingga penambahan provider baru tidak memodifikasi controller.<br>
+                <strong>3. Dependency Inversion Principle (DIP):</strong> Controller bergantung pada abstraksi Service, bukan implementasi langsung tingkat rendah.
+            </div>
+
+            <h2>4.2 Class Diagram Lengkap Sistem</h2>
+            <div class="diagram-container">
+                <div class="mermaid">
+classDiagram
+    direction TB
+
+    class User {
+        +BigInteger id
+        +String nisn
+        +String nip
+        +String name
+        +String gender
+        +String class
+        +String role
+        +String password
+        +String phone
+        +String status
+        +loans() HasMany
+        +visits() HasMany
+    }
+
+    class Category {
+        +BigInteger id
+        +String name
+        +books() HasMany
+    }
+
+    class Book {
+        +BigInteger id
+        +String code
+        +String title
+        +String author
+        +String publisher
+        +Integer year
+        +BigInteger category_id
+        +Integer stock_total
+        +Integer stock_available
+        +String cover
+        +category() BelongsTo
+        +loans() HasMany
+    }
+
+    class Loan {
+        +BigInteger id
+        +BigInteger user_id
+        +BigInteger book_id
+        +Date loan_date
+        +Date due_date
+        +Date return_date
+        +String status
+        +Integer fine_amount
+        +String payment_status
+        +user() BelongsTo
+        +book() BelongsTo
+        +fineWaiver() HasOne
+    }
+
+    class FineWaiver {
+        +BigInteger id
+        +BigInteger loan_id
+        +BigInteger petugas_id
+        +Integer amount_waived
+        +String reason
+        +loan() BelongsTo
+        +petugas() BelongsTo
+    }
+
+    class Kunjungan {
+        +BigInteger id
+        +BigInteger user_id
+        +Date tanggal
+        +Time jam_masuk
+        +String keterangan
+        +user() BelongsTo
+    }
+
+    class LoanController {
+        +index(Request) View
+        +getLatestData() JsonResponse
+        +setujui(Request, id) RedirectResponse
+        +tolak(Request, id) RedirectResponse
+        +kembalikan(Request, id) RedirectResponse
+        +bebaskanDenda(Request, id) RedirectResponse
+        +sendWaReminders() RedirectResponse
+    }
+
+    class WhatsAppService {
+        +sendMessage(phone, text) Boolean
+        +getWaLink(phone, message) String
+        +getReminderH1Text(loan) String
+        +getOverdueWarningText(loan, days, fine) String
+    }
+
+    class ChatbotController {
+        +chat(Request) JsonResponse
+        +getKnowledgeHook() JsonResponse
+    }
+
+    User "1" <-- "*" Loan : borrows
+    Book "1" <-- "*" Loan : includes
+    Category "1" <-- "*" Book : categorizes
+    Loan "1" <-- "0..1" FineWaiver : has
+    User "1" <-- "*" Kunjungan : records
+    LoanController ..> Loan : manages
+    LoanController ..> WhatsAppService : uses
+    ChatbotController ..> Book : queries context
+                </div>
+                <div class="diagram-caption">Gambar 4.1: Class Diagram Model Relasional & Layanan Berorientasi Objek</div>
+            </div>
+        </div>
+
+        <!-- ==================== BAB V ==================== -->
+        <div class="page-break">
+            <h1>BAB V: PEMODELAN UML 4 — SEQUENCE DIAGRAM</h1>
+
+            <h2>5.1 Sequence Diagram: Transaksi Peminjaman Mandiri & Real-Time Approval</h2>
+            <div class="diagram-container">
+                <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Siswa as Siswa (HP)
+    participant CatalogUI as Katalog View (Blade)
+    actor Petugas as Petugas (Laptop)
+    participant SirkulasiUI as Sirkulasi View (Blade)
+    participant Controller as LoanController
+    participant Model as Loan / Book Model
+    participant DB as MySQL Database
+
+    Siswa->>CatalogUI: Klik "Pinjam Buku Ini"
+    CatalogUI->>Controller: POST /siswa/pinjam/{id}
+    Controller->>Model: Cek Kuota & Stok
+    Model->>DB: SELECT * FROM books WHERE id=...
+    DB-->>Model: Stok Tersedia
+    Controller->>Model: Loan::create([status => 'menunggu'])
+    Model->>DB: INSERT INTO loans (...)
+    DB-->>Controller: Transaksi Tersimpan
+    Controller-->>CatalogUI: Redirect dengan Session Success
+    CatalogUI-->>Siswa: Tampil Status "Menunggu Persetujuan"
+
+    loop Polling Setiap 3 Detik
+        SirkulasiUI->>Controller: GET /petugas/api/sirkulasi
+        Controller->>DB: SELECT * FROM loans WHERE status='menunggu'
+        DB-->>Controller: Data Pinjaman Baru
+        Controller-->>SirkulasiUI: JSON List Pinjaman (Badge +1)
+    end
+
+    Petugas->>SirkulasiUI: Klik Tombol "Setujui"
+    SirkulasiUI->>Controller: POST /petugas/setujui/{id}
+    Controller->>Model: update([status => 'dipinjam']), decrement('stock_available')
+    Model->>DB: UPDATE loans, UPDATE books
+    DB-->>Controller: Sukses Update
+    Controller-->>SirkulasiUI: Flash Success
+    
+    Note over Siswa,CatalogUI: Auto-Check Notifikasi (Interval 3 Detik)
+    CatalogUI->>Controller: GET /siswa/cek-notifikasi
+    Controller-->>CatalogUI: JSON {notifikasi: "Peminjaman Disetujui!"}
+    CatalogUI-->>Siswa: Tampilkan SweetAlert Popup "Disetujui! ✅"
+                </div>
+                <div class="diagram-caption">Gambar 5.1: Sequence Diagram Sirkulasi Peminjaman Mandiri hingga Persetujuan Real-Time</div>
+            </div>
+
+            <h2>5.2 Sequence Diagram: Otomatisasi Notifikasi Pengingat WhatsApp (Fonnte API)</h2>
+            <div class="diagram-container">
+                <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Cron as Scheduler / Petugas
+    participant Artisan as Command wa:send-reminders
+    participant WAService as WhatsAppService
+    participant DB as MySQL Database
+    participant Fonnte as Fonnte Cloud API
+    actor SiswaWA as WhatsApp Siswa / Wali Murid
+
+    Cron->>Artisan: Eksekusi Command (Jadwal Pagi Hari)
+    Artisan->>DB: Query Pinjaman Jatuh Tempo H-1 & Terlambat
+    DB-->>Artisan: Data Pinjaman & Nomor HP Anggota
+    
+    loop Setiap Data Peminjam
+        Artisan->>WAService: Format Pesan Pengingat Personal
+        WAService->>Fonnte: HTTP POST /send (target, message, token)
+        Fonnte-->>WAService: Response JSON {status: true}
+        Fonnte->>SiswaWA: Kirim Pesan WA Resmi Sekolah
+    end
+    
+    WAService-->>Artisan: Laporan Rekap Pesan Terkirim
+    Artisan-->>Cron: Status Selesai (Logged in Cache)
+                </div>
+                <div class="diagram-caption">Gambar 5.2: Sequence Diagram Alur Pengiriman Pesan Pengingat Otomatis via WhatsApp Gateway</div>
+            </div>
+        </div>
+
+        <!-- ==================== BAB VI ==================== -->
+        <div class="page-break">
+            <h1>BAB VI: ENTITY RELATIONSHIP DIAGRAM (ERD) BASIS DATA</h1>
+
+            <h2>6.1 Pemodelan Data Konseptual & Fisik (Physical Data Model)</h2>
+            <p>
+                Basis data dirancang dengan normalisasi tingkat ketiga (3NF) guna menjamin integritas referensial dan mencegah anomali data:
+            </p>
+
+            <div class="diagram-container">
+                <div class="mermaid">
+erDiagram
+    USERS ||--o{ LOANS : "meminjam"
+    USERS ||--o{ KUNJUNGANS : "mencatat_kunjungan"
+    CATEGORIES ||--o{ BOOKS : "mengelompokkan"
+    BOOKS ||--o{ LOANS : "dipinjam_dalam"
+    LOANS ||--o| FINE_WAIVERS : "memiliki_bebas_denda"
+    USERS ||--o{ FINE_WAIVERS : "disetujui_oleh_petugas"
+
+    USERS {
+        bigint id PK
+        string nisn UK "Nullable (Siswa)"
+        string nip UK "Nullable (Guru/Petugas)"
+        string name
+        enum gender "L, P"
+        string class "Kelas 1-6"
+        enum role "petugas, siswa, guru, kepsek"
+        string password
+        string phone "No WhatsApp"
+        enum status "aktif, nonaktif"
+        timestamps created_at
+    }
+
+    CATEGORIES {
+        bigint id PK
+        string name "Nama Kategori Buku"
+        timestamps created_at
+    }
+
+    BOOKS {
+        bigint id PK
+        string code UK "Kode Barcode / QR Buku"
+        string title "Judul Buku"
+        string author "Penulis"
+        string publisher "Penerbit"
+        integer year "Tahun Terbit"
+        bigint category_id FK
+        integer stock_total
+        integer stock_available
+        string cover "Path File Gambar"
+        timestamps created_at
+    }
+
+    LOANS {
+        bigint id PK
+        bigint user_id FK
+        bigint book_id FK
+        date loan_date "Tanggal Pinjam"
+        date due_date "Tanggal Jatuh Tempo"
+        date return_date "Tanggal Dikembalikan"
+        enum status "menunggu, dipinjam, dikembalikan, ditolak"
+        integer fine_amount "Nominal Denda (Rp)"
+        enum payment_status "lunas, belum_lunas, dibebaskan"
+        timestamps created_at
+    }
+
+    FINE_WAIVERS {
+        bigint id PK
+        bigint loan_id FK
+        bigint petugas_id FK
+        integer amount_waived "Jumlah Denda Dihapus"
+        text reason "Alasan Pembebasan (Sakit/Izin)"
+        timestamps created_at
+    }
+
+    KUNJUNGANS {
+        bigint id PK
+        bigint user_id FK
+        date tanggal "Tanggal Kunjungan"
+        time jam_masuk "Jam Kunjungan"
+        string keterangan "Tujuan Membaca / Riset"
+        timestamps created_at
+    }
+                </div>
+                <div class="diagram-caption">Gambar 6.1: Entity Relationship Diagram (ERD) Ternormalisasi Basis Data MySQL</div>
+            </div>
+        </div>
+
+        <!-- ==================== BAB VII ==================== -->
+        <div class="page-break">
+            <h1>BAB VII: RANCANGAN UI/UX FIGMA & PANDUAN VIDEO PROGRES 2</h1>
+
+            <h2>7.1 Panduan Desain Antarmuka Pengguna (UI/UX Design System)</h2>
+            <table class="doc-table">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Elemen UI/UX</th>
+                        <th style="width: 75%;">Penerapan dalam Sistem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Tipografi</strong></td>
+                        <td>Font Inter & Segoe UI: Modern, bersih, dengan keterbacaan tinggi untuk anak sekolah dasar maupun staf pengajar.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Palet Warna</strong></td>
+                        <td>
+                            - Primary: Deep Navy Blue (<code>#1e3a8a</code>) melambangkan kredibilitas akademik.<br>
+                            - Accent: Emerald Green (<code>#16a34a</code>) untuk tombol aksi sukses/pinjam/setujui.<br>
+                            - Danger: Crimson Red (<code>#dc2626</code>) untuk tolak pinjaman dan denda terlambat.
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Responsivitas</strong></td>
+                        <td>Tata letak fluid berbasis Tailwind CSS yang menyesuaikan otomatis dari smartphone siswa hingga layar monitor petugas.</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tautan Prototipe Figma</strong></td>
+                        <td><em>Tautan rancangan interaktif UI/UX Figma telah disematkan pada berkas README repositori GitHub untuk ditinjau oleh tim penguji.</em></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>7.2 Struktur Presentasi Video Progres 2 (Durasi 5 – 7 Menit)</h2>
+            <p>
+                Video Progres 2 berfokus pada pembuktian penguasaan arsitektur dan pemodelan UML. Struktur alur narasi presentasi:
+            </p>
+            <ol>
+                <li><strong>Menit 00:00 – 01:00 (Pembukaan & Identitas Diri):</strong>
+                    Salam pembuka, perkenalan diri (Nama: Faidil Aqiel, NIM: 41257189, Kelas: Reguler Sore / 1F-2025), judul proyek, dan webcam aktif di pojok layar.
+                </li>
+                <li><strong>Menit 01:00 – 02:30 (Pembedahan Use Case Diagram & Skenario):</strong>
+                    Menjelaskan 4 peran aktor, fungsionalitas peminjaman mandiri siswa, dan peran sentral petugas dalam sirkulasi serta AI.
+                </li>
+                <li><strong>Menit 02:30 – 04:00 (Activity Diagram & Pipeline AI):</strong>
+                    Membahas alur logika approval peminjaman dan bagaimana query pengguna dihubungkan ke PustakaAI RAG context engine.
+                </li>
+                <li><strong>Menit 04:00 – 05:30 (Class Diagram SOLID & Sequence Diagram):</strong>
+                    Membahas struktur OOP, relasi Eloquent Model, serta pertukaran pesan asinkronus antara Frontend, Backend, dan Database.
+                </li>
+                <li><strong>Menit 05:30 – 07:00 (Walkthrough UI/UX Figma & Penutup):</strong>
+                    Menampilkan prototipe antarmuka sistem di Figma, rangkuman progres Tahap 2, dan persiapan menuju implementasi kode Tahap 3.
+                </li>
+            </ol>
+
+            <div style="margin-top: 35px; border-top: 1px solid var(--border); padding-top: 15px; text-align: right; font-size: 12px; color: #64748b;">
+                <p>Dokumen Disusun & Divalidasi Oleh:</p>
+                <p style="font-weight: 700; color: var(--dark); font-size: 13px; margin-top: 5px;">Faidil Aqiel</p>
+                <p>NIM: <strong>41257189</strong> &bull; Kelas: <strong>Reguler Sore / 1F-2025</strong></p>
+                <p>Program Studi S1 Teknik Informatika - STMIK IKMI Cirebon</p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
+
