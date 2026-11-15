@@ -149,10 +149,44 @@ async function getDaftarGuru() {
     }
 }
 
+async function getBukuByPenulis({ nama_penulis }) {
+    try {
+        const searchPenulis = String(nama_penulis || '').trim();
+        const [rows] = await dbPool.query(`
+            SELECT title as judul, author as penulis, stock_available as stok, publisher as penerbit, year as tahun
+            FROM books 
+            WHERE author LIKE ?
+        `, [`%${searchPenulis}%`]);
+        
+        return {
+            status: 'success',
+            pencarian: searchPenulis,
+            total_ditemukan: rows.length,
+            daftar_buku: rows
+        };
+    } catch (err) {
+        return { error: err.message };
+    }
+}
+
 // 4. Definisi Function Declarations (Tools) untuk Gemini
 const tools = [
     {
         functionDeclarations: [
+            {
+                name: "getBukuByPenulis",
+                description: "Mencari koleksi buku di perpustakaan berdasarkan nama penulis atau pengarang (misal: 'Andrea Hirata', 'Erlangga').",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        nama_penulis: {
+                            type: "STRING",
+                            description: "Nama penulis atau pengarang buku yang dicari"
+                        }
+                    },
+                    required: ["nama_penulis"]
+                }
+            },
             {
                 name: "getDaftarGuru",
                 description: "Mendapatkan daftar lengkap nama seluruh guru dan staf pengajar di SDN Pengampon 3 dari database MySQL.",
@@ -220,26 +254,42 @@ INFORMASI PENGGUNA AKTIF:
 - Nama Pengguna: ${userName || 'Faidil Aqiel'}
 - Peran: ${userRole || 'Petugas Perpustakaan'}
 
-PENGETAHUAN DASAR PROSEDUR & OPERASIONAL PERPUSTAKAAN:
-- Prosedur peminjaman: Anggota harus membawa kartu anggota, mencari buku di rak atau katalog aplikasi, lalu mencatat peminjaman ke petugas perpustakaan. Maksimal peminjaman adalah 3 buku selama 7 hari kalender.
-- Syarat anggota: Siswa atau guru SDN Pengampon 3 yang sudah mendaftar dan aktif di sekolah.
-- Jam operasional: Senin - Jumat, pukul 07.30 - 14.00 WIB. Sabtu, Minggu, dan Hari Libur Nasional tutup.
-- Denda: Rp 1.000,- per hari per buku jika terlambat pada hari buka sekolah. Hari libur tidak dikenakan denda.
+PENGETAHUAN OPERASIONAL & ATURAN INTERAKSI:
+1. FITUR JAM OPERASIONAL:
+   - Perpustakaan buka pada hari Senin-Jumat, pukul 07:00 - 14:00 WIB. Sabtu, Minggu, dan Hari Libur Nasional tutup.
+   - Jika user bertanya atau mengingatkan perihal jam operasional di luar jam tersebut, ingatkan dengan sopan: "Perpustakaan sedang tutup, silakan datang kembali besok pagi ya."
+   - Durasi pinjam maksimal 7 hari kalender. Denda keterlambatan Rp 1.000,-/hari pada hari buka sekolah.
 
-ATURAN PENGGUNAAN TOOL & MENJAWAB:
-1. KAPAN MEMANGGIL FUNGSI DATABASE:
-   - Panggil fungsi database HANYA JIKA user bertanya tentang data spesifik dari sistem, seperti: "Ada buku apa saja?", "Berapa stok buku X?", "Siapa saja anggotanya?", "Ada berapa transaksi?", atau "Siapa siswa yang belum absen hari ini?".
+2. FITUR SARAN & KRITIK (INTERAKSI DUA ARAH):
+   - Jika user mengucapkan kata kunci seperti "Terima kasih", "Makasih min", "Mantap", atau apresiasi lainnya, responslah dengan antusias:
+     "Sama-sama! Semoga bukunya bermanfaat. Jangan lupa berikan ulasan atau saran untuk perpustakaan kami ya!"
 
-2. KAPAN MENJAWAB TEKS BIASA (TANPA DATABASE):
-   - Jika user bertanya tentang prosedur, tata cara, syarat, jadwal, atau panduan (misalnya: "Bagaimana cara meminjam buku?", "Berapa lama masa peminjaman?", "Apa syarat menjadi anggota?", "Kapan jam buka?"), AI WAJIB MENJAWAB DENGAN TEKS BIASA berdasarkan pengetahuan di atas, dan DILARANG KERAS memanggil fungsi database buku atau anggota!
+3. ATURAN PENOLAKAN BUKU FIKTIF (ANTI-HALUSINASI TINGKAT LANJUT):
+   - AI DILARANG mengarang judul buku atau nama penulis.
+   - Jika user mencari buku yang tidak ada di database (contoh: "Buku Harry Potter ada?"), AI WAJIB menjawab:
+     "Maaf, sepertinya buku tersebut belum tersedia di koleksi Perpustakaan SDN Pengampon 3. Silakan cek katalog buku lainnya."
 
-3. ATURAN LAIN:
-   - Jika ditanya data yang tidak ada di database, katakan dengan jujur bahwa data belum tersedia.
+4. MODE SAPAAN AWAL:
+   - Jika user menyapa singkat seperti "halo", "hai", atau membuka chat pertama kali, sambutlah:
+     "Halo! Saya PustakaAI. Mau cari buku cerita, buku pelajaran, atau cek status peminjaman hari ini?"
+
+5. KAPAN MEMANGGIL FUNGSI DATABASE (TOOLS):
+   - Panggil fungsi database HANYA JIKA user menanyakan data spesifik dari sistem:
+     * Penulis buku (misal "Buku apa saja karya Andrea Hirata?") -> Panggil getBukuByPenulis
+     * Daftar anggota atau siapa anggotanya -> Panggil getTotalAnggota
+     * Daftar guru -> Panggil getDaftarGuru
+     * Total buku & transaksi -> Panggil getTotalBuku
+     * Siswa belum absen hari ini -> Panggil getSiswaBelumAbsen
+     * Wali kelas -> Panggil getWaliKelas
+
+6. KAPAN MENJAWAB TEKS BIASA:
+   - Jika user bertanya tentang prosedur atau tata cara (misal: "Bagaimana cara meminjam buku?"), jawab teks biasa:
+     "Prosedur peminjaman: Anggota harus membawa kartu anggota, mencari buku di rak atau katalog aplikasi, lalu mencatat peminjaman ke petugas. Maksimal peminjaman adalah 3 buku selama 7 hari."
+   - Syarat anggota: Siswa atau guru SDN Pengampon 3 yang sudah mendaftar dan aktif di sekolah.
+
+7. ATURAN LAIN:
    - DILARANG KERAS memberikan sapaan default (seperti 'Ada yang bisa saya bantu?') jika user sudah mengajukan pertanyaan spesifik.
    - Jawablah dengan ringkas, jelas, dan langsung pada intinya.
-   - Jika ditanya 'siapa anda', perkenalkan diri sebagai PustakaAI asisten perpustakaan SDN Pengampon 3.
-   - Jika ditanya 'siapa saya', sebutkan nama ${userName || 'Faidil Aqiel'} dan perannya.
-   - Jika ditanya topik di luar sekolah dan perpustakaan, tolak dengan sopan bahwa Anda hanya melayani seputar perpustakaan dan SDN Pengampon 3.
         `;
 
         console.log("Menginisialisasi model gemini-3.1-flash-lite...");
@@ -261,7 +311,9 @@ ATURAN PENGGUNAAN TOOL & MENJAWAB:
             console.log("Gemini memicu Function Call:", call.name, call.args);
             let functionResult = null;
 
-            if (call.name === "getDaftarGuru") {
+            if (call.name === "getBukuByPenulis") {
+                functionResult = await getBukuByPenulis(call.args || {});
+            } else if (call.name === "getDaftarGuru") {
                 functionResult = await getDaftarGuru();
             } else if (call.name === "getTotalAnggota") {
                 functionResult = await getTotalAnggota();
