@@ -73,16 +73,18 @@
                 </div>
             </div>
 
-            <div class="flex items-center gap-3">
-                {{-- REALTIME CLOCK SISWA --}}
-                <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200/90 rounded-full shadow-xs text-xs">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-gray-500 font-medium hidden sm:inline" id="realtimeDateSiswa">--</span>
-                    <span class="text-gray-300 hidden sm:inline">|</span>
-                    <div class="flex items-center gap-1.5 text-gray-800 font-mono font-bold tracking-wider">
-                        <i class="far fa-clock text-emerald-600 text-sm"></i>
-                        <span id="realtimeClockSiswa">--:--:--</span>
-                        <span class="text-[10px] text-emerald-700 font-sans font-bold bg-emerald-100 px-1.5 py-0.5 rounded">WIB</span>
+            <div class="flex items-center gap-2 md:gap-3">
+                {{-- JAM REALTIME (LIVE CLOCK WIB) --}}
+                <div class="flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-green-50 border border-green-200/80 px-2.5 md:px-3.5 py-1 md:py-1.5 rounded-full shadow-xs">
+                    <span class="relative flex h-2 w-2 md:h-2.5 md:w-2.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 md:h-2.5 md:w-2.5 bg-green-500"></span>
+                    </span>
+                    <i class="far fa-clock text-green-600 text-xs md:text-sm"></i>
+                    <div class="flex items-center gap-1 text-[11px] md:text-xs font-semibold text-gray-700">
+                        <span class="realtime-date-display hidden lg:inline text-gray-500 font-normal">--</span>
+                        <span class="hidden lg:inline text-gray-300">•</span>
+                        <span class="realtime-clock-display font-mono text-green-700 font-bold tracking-wider">--:--:-- WIB</span>
                     </div>
                 </div>
 
@@ -162,35 +164,28 @@
                 .catch(error => console.error('Error cek notifikasi:', error));
         }
 
-        // ===== REALTIME CLOCK (TICKING LIVE) =====
-        function updateRealtimeClockSiswa() {
+        document.addEventListener('DOMContentLoaded', () => {
+            cekNotifikasiSiswaGlobal();
+            setInterval(cekNotifikasiSiswaGlobal, 3000);
+        });
+
+        // ===== JAM REALTIME (LIVE CLOCK WIB) =====
+        function updateRealtimeClock() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
-            const timeString = `${hours}:${minutes}:${seconds}`;
+            const timeStr = `${hours}:${minutes}:${seconds} WIB`;
 
             const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
             const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-            const dayName = days[now.getDay()];
-            const dateNum = now.getDate();
-            const monthName = months[now.getMonth()];
-            const year = now.getFullYear();
-            const dateString = `${dayName}, ${dateNum} ${monthName} ${year}`;
+            const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
 
-            const clockElem = document.getElementById('realtimeClockSiswa');
-            const dateElem = document.getElementById('realtimeDateSiswa');
-
-            if (clockElem) clockElem.textContent = timeString;
-            if (dateElem) dateElem.textContent = dateString;
+            document.querySelectorAll('.realtime-clock-display').forEach(el => el.textContent = timeStr);
+            document.querySelectorAll('.realtime-date-display').forEach(el => el.textContent = dateStr);
         }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            updateRealtimeClockSiswa();
-            setInterval(updateRealtimeClockSiswa, 1000);
-            cekNotifikasiSiswaGlobal();
-            setInterval(cekNotifikasiSiswaGlobal, 3000);
-        });
+        updateRealtimeClock();
+        setInterval(updateRealtimeClock, 1000);
     </script>
 
     @include('partials.botpress-script')

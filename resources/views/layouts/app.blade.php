@@ -177,10 +177,10 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    {{-- REALTIME CLOCK MOBILE --}}
-                    <div class="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 border border-gray-200 rounded-full text-xs font-mono font-bold text-gray-700 shadow-xs">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span id="realtimeClockMobile">--:--</span>
+                    {{-- JAM REALTIME MOBILE --}}
+                    <div class="flex items-center gap-1.5 bg-green-50 text-green-700 border border-green-200 px-2.5 py-1 rounded-full text-xs font-mono font-semibold">
+                        <span class="h-2 w-2 rounded-full bg-green-500 animate-pulse"></span>
+                        <span class="realtime-clock-display">--:--:-- WIB</span>
                     </div>
 
                     {{-- NOTIF BELL MOBILE --}}
@@ -203,15 +203,17 @@
 
             {{-- DESKTOP HEADER --}}
             <div class="hidden md:flex items-center gap-3">
-                {{-- REALTIME CLOCK DESKTOP --}}
-                <div class="flex items-center gap-2.5 px-3.5 py-1.5 bg-gray-50 border border-gray-200/90 rounded-full shadow-xs text-xs">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span class="text-gray-500 font-medium hidden lg:inline" id="realtimeDateHeader">--</span>
-                    <span class="text-gray-300 hidden lg:inline">|</span>
-                    <div class="flex items-center gap-1.5 text-gray-800 font-mono font-bold tracking-wider">
-                        <i class="far fa-clock text-emerald-600 text-sm"></i>
-                        <span id="realtimeClockHeader">--:--:--</span>
-                        <span class="text-[10px] text-emerald-700 font-sans font-bold bg-emerald-100 px-1.5 py-0.5 rounded">WIB</span>
+                {{-- JAM REALTIME (LIVE CLOCK) --}}
+                <div class="flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-green-50 border border-green-200/80 px-3.5 py-1.5 rounded-full shadow-xs">
+                    <span class="relative flex h-2.5 w-2.5">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
+                    </span>
+                    <i class="far fa-clock text-green-600 text-sm"></i>
+                    <div class="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
+                        <span class="realtime-date-display hidden lg:inline text-gray-500 font-normal">--</span>
+                        <span class="hidden lg:inline text-gray-300">•</span>
+                        <span class="realtime-clock-display font-mono text-green-700 font-bold tracking-wider">--:--:-- WIB</span>
                     </div>
                 </div>
 
@@ -460,35 +462,25 @@
         setInterval(pollSiswaNotif, 4000);
         @endif
 
-        // ===== REALTIME CLOCK (TICKING LIVE) =====
-        function updateRealtimeClock() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const timeString = `${hours}:${minutes}:${seconds}`;
-
-            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
-            const dayName = days[now.getDay()];
-            const dateNum = now.getDate();
-            const monthName = months[now.getMonth()];
-            const year = now.getFullYear();
-            const dateString = `${dayName}, ${dateNum} ${monthName} ${year}`;
-
-            const clockDesktop = document.getElementById('realtimeClockHeader');
-            const dateDesktop = document.getElementById('realtimeDateHeader');
-            const clockMobile = document.getElementById('realtimeClockMobile');
-
-            if (clockDesktop) clockDesktop.textContent = timeString;
-            if (dateDesktop) dateDesktop.textContent = dateString;
-            if (clockMobile) clockMobile.textContent = `${hours}:${minutes}`;
-        }
-
-        updateRealtimeClock();
-        setInterval(updateRealtimeClock, 1000);
-
     })();
+
+    // ===== JAM REALTIME (LIVE CLOCK WIB) =====
+    function updateRealtimeClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const timeStr = `${hours}:${minutes}:${seconds} WIB`;
+
+        const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        const dateStr = `${days[now.getDay()]}, ${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+
+        document.querySelectorAll('.realtime-clock-display').forEach(el => el.textContent = timeStr);
+        document.querySelectorAll('.realtime-date-display').forEach(el => el.textContent = dateStr);
+    }
+    updateRealtimeClock();
+    setInterval(updateRealtimeClock, 1000);
     </script>
 </body>
 </html>
