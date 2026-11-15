@@ -52,7 +52,21 @@ class ChatbotController extends Controller
         }
 
         // Logika jawaban sesuai pertanyaan seputar perpustakaan:
-        if (str_contains($message, 'anggota') || str_contains($message, 'member') || str_contains($message, 'jumlah anggota')) {
+        if (str_contains($message, 'guru') || str_contains($message, 'siapa saja guru') || str_contains($message, 'daftar guru')) {
+            $gurus = \App\Models\User::where('role', 'guru')->orderBy('class')->orderBy('name')->get();
+            $reply = "Berikut adalah daftar guru di SDN Pengampon 3 berdasarkan data database:\n\n";
+            foreach ($gurus as $g) {
+                $kls = $g->class ? " (Wali Kelas {$g->class})" : "";
+                $reply .= "👨‍🏫 **{$g->name}**{$kls}\n";
+            }
+        } elseif (str_contains($message, 'siapa saja anggotanya') || str_contains($message, 'siapa anggotanya')) {
+            $gurus = \App\Models\User::where('role', 'guru')->take(5)->pluck('name')->implode(', ');
+            $siswas = \App\Models\User::where('role', 'siswa')->take(5)->pluck('name')->implode(', ');
+            $reply = "Anggota perpustakaan terdiri dari guru dan siswa aktif. Beberapa di antaranya:\n\n" .
+                     "👨‍🏫 **Guru:** {$gurus}, dll.\n" .
+                     "🧑‍🎓 **Siswa:** {$siswas}, dll.\n\n" .
+                     "Anda dapat melihat daftar selengkapnya di menu Data Anggota.";
+        } elseif (str_contains($message, 'anggota') || str_contains($message, 'member') || str_contains($message, 'jumlah anggota')) {
             $totalAnggota = \App\Models\User::whereIn('role', ['siswa', 'guru', 'petugas'])->count();
             $totalSiswa = \App\Models\User::where('role', 'siswa')->count();
             $totalGuru = \App\Models\User::where('role', 'guru')->count();

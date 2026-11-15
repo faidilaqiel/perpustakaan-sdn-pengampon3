@@ -118,9 +118,31 @@ async function getTotalAnggota() {
             FROM users 
             WHERE status = 'aktif' OR status IS NULL
         `);
+        const [guruRows] = await dbPool.query(`
+            SELECT name, nip, class FROM users WHERE role = 'guru' ORDER BY class, name
+        `);
+        const [siswaRows] = await dbPool.query(`
+            SELECT name, class, nisn FROM users WHERE role = 'siswa' ORDER BY class, name LIMIT 20
+        `);
         return {
             status: 'success',
-            data_anggota: counts[0]
+            ringkasan_anggota: counts[0],
+            daftar_guru: guruRows,
+            contoh_daftar_siswa: siswaRows
+        };
+    } catch (err) {
+        return { error: err.message };
+    }
+}
+
+async function getDaftarGuru() {
+    try {
+        const [rows] = await dbPool.query(`
+            SELECT name, nip, class, phone FROM users WHERE role = 'guru' ORDER BY class, name
+        `);
+        return {
+            total_guru: rows.length,
+            daftar_guru: rows
         };
     } catch (err) {
         return { error: err.message };
@@ -132,8 +154,16 @@ const tools = [
     {
         functionDeclarations: [
             {
+                name: "getDaftarGuru",
+                description: "Mendapatkan daftar lengkap nama seluruh guru dan staf pengajar di SDN Pengampon 3 dari database MySQL.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {},
+                }
+            },
+            {
                 name: "getTotalAnggota",
-                description: "Mendapatkan total jumlah anggota perpustakaan secara real-time, termasuk rincian jumlah siswa, guru, dan petugas.",
+                description: "Mendapatkan total jumlah anggota perpustakaan dan siapa saja anggotanya secara real-time dari database MySQL.",
                 parameters: {
                     type: "OBJECT",
                     properties: {},
@@ -246,7 +276,9 @@ app.post('/api/chat', async (req, res) => {
             console.log("Gemini memicu Function Call:", call.name, call.args);
             let functionResult = null;
 
-            if (call.name === "getTotalAnggota") {
+            if (call.name === "getDaftarGuru") {
+                functionResult = await getDaftarGuru();
+            } else if (call.name === "getTotalAnggota") {
                 functionResult = await getTotalAnggota();
             } else if (call.name === "getSiswaBelumAbsen") {
                 functionResult = await getSiswaBelumAbsen();
