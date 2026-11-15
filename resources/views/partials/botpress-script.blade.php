@@ -189,53 +189,93 @@ $statusPerpustakaan = "Statistik Terkini: {$totalBukuCount} total buku, {$totalA
 @php
     $botpressUserName = $userName ?? 'Pengguna';
     if ($isPetugas) {
-        $botpressUserName = ($userName ?? 'Petugas') . ' (Petugas Perpustakaan)';
+        $botpressUserName = ($userName ?? 'Faidil Aqiel');
     } elseif ($isKepsek) {
-        $botpressUserName = ($userName ?? 'Kepala Sekolah') . ' (Kepala Sekolah)';
+        $botpressUserName = ($userName ?? 'Kepala Sekolah');
     } elseif ($isGuru) {
-        $botpressUserName = ($userName ?? 'Guru') . ' (Guru)';
+        $botpressUserName = ($userName ?? 'Guru');
     }
 @endphp
 
 <script>
+    // ===== 1. DETEKSI PERUBAHAN USER LOGIN & RESET CACHE PERCAKAPAN LAMA =====
+    (function() {
+        const currentUserId = @json(Auth::id() ?? 'guest');
+        const currentUserName = @json($userName ?? 'Pengunjung');
+        const cacheKey = 'pustakaai_active_user_session';
+        const lastSession = localStorage.getItem(cacheKey);
+        const thisSession = `${currentUserId}_${currentUserName}`;
+
+        if (lastSession !== thisSession) {
+            localStorage.setItem(cacheKey, thisSession);
+            // Bersihkan storage percakapan botpress lama agar bot mengenali akun baru yang login
+            try {
+                Object.keys(localStorage).forEach(k => {
+                    if (k.startsWith('bp:') || k.startsWith('botpress') || k.includes('webchat')) {
+                        localStorage.removeItem(k);
+                    }
+                });
+                console.log("🔄 Sesi login berganti ke:", currentUserName, "- Cache Botpress disegarkan.");
+            } catch(e) {}
+        }
+    })();
+
+    // ===== 2. SINKRONISASI IDENTITAS USER KE BOTPRESS ENGINE =====
     const sendUserToBotpress = () => {
         if (window.botpress && typeof window.botpress.updateUser === 'function') {
+            const userData = {
+                name: @json($botpressUserName),
+                realName: @json($userName ?? 'Faidil Aqiel'),
+                userName: @json($userName ?? 'Faidil Aqiel'),
+                namaLengkap: @json($userName ?? 'Faidil Aqiel'),
+                role: @json($userRole ?? 'Petugas Perpustakaan'),
+                userRole: @json($userRole ?? 'Petugas Perpustakaan'),
+                peranResmi: @json($userRole ?? 'Petugas Perpustakaan'),
+                isPetugas: @json($isPetugas ?? false),
+                isKepsek: @json($isKepsek ?? false),
+                isGuru: @json($isGuru ?? false),
+                isSiswa: @json($isSiswa ?? false),
+                bukanSiswa: @json($isPetugas || $isKepsek || $isGuru),
+                userClass: @json($userClass ?? ''),
+                identitasPengguna: "Pengguna yang sedang aktif login bernama " + @json($userName ?? 'Faidil Aqiel') + " dengan peran resmi " + @json($userRole ?? 'Petugas Perpustakaan') + " SDN Pengampon 3.",
+                siapaSaya: "Anda adalah " + @json($userName ?? 'Faidil Aqiel') + ", bertindak sebagai " + @json($userRole ?? 'Petugas Perpustakaan') + " di Perpustakaan Digital SDN Pengampon 3.",
+                currentUserGreeting: @json($currentUserGreeting ?? ''),
+                totalBuku: @json($totalBukuCount ?? 0),
+                totalAnggota: @json($totalAnggotaCount ?? 0),
+                totalSiswa: @json($totalSiswaCount ?? 0),
+                totalGuru: @json($totalGuruCount ?? 0),
+                totalDipinjam: @json($totalDipinjamCount ?? 0),
+                bukuSedangDipinjam: @json($peminjamanRealtimeText ?? ''),
+                stokBuku: @json($stokBukuList ?? ''),
+                bukuTahunTerbit: @json($bukuTahun2020Summary ?? ''),
+                bukuPalingFavorit: @json($bukuFavoritSummary ?? ''),
+                riwayatPeminjamanTerbaru: @json($riwayatTerbaruSummary ?? ''),
+                scanQrGuide: @json($scanQrSummary ?? ''),
+                tanggunganBukuSiswaGuru: @json($tanggunganBukuSummary ?? ''),
+                fiturAplikasi: @json($fiturAplikasiSummary ?? ''),
+                rincianSiswaPerKelas: @json($rincianSiswaPerKelasSummary ?? ''),
+                daftarGuru: @json($daftarGuruSummary ?? ''),
+                daftarSeluruhAnggota: @json($daftarAnggotaList ?? ''),
+                aturanDendaHariLibur: @json($aturanDendaLibur ?? ''),
+                statusPerpustakaan: @json($statusPerpustakaan ?? ''),
+            };
+
             window.botpress.updateUser({
                 name: @json($botpressUserName),
-                data: {
-                    name: @json($botpressUserName),
-                    realName: @json($userName ?? 'Pengguna'),
-                    role: @json($userRole ?? 'Pengguna'),
-                    userName: @json($userName ?? 'Pengguna'),
-                    userRole: @json($userRole ?? 'Pengguna'),
-                    peranResmi: @json($isPetugas ? 'Petugas / Administrator Perpustakaan' : ($userRole ?? 'Pengguna')),
-                    bukanSiswa: @json($isPetugas || $isKepsek || $isGuru),
-                    userClass: @json($userClass ?? ''),
-                    isPetugas: @json($isPetugas ?? false),
-                    isKepsek: @json($isKepsek ?? false),
-                    isGuru: @json($isGuru ?? false),
-                    isSiswa: @json($isSiswa ?? false),
-                    currentUserGreeting: @json($currentUserGreeting ?? ''),
-                    totalBuku: @json($totalBukuCount ?? 0),
-                    totalAnggota: @json($totalAnggotaCount ?? 0),
-                    totalSiswa: @json($totalSiswaCount ?? 0),
-                    totalGuru: @json($totalGuruCount ?? 0),
-                    totalDipinjam: @json($totalDipinjamCount ?? 0),
-                    bukuSedangDipinjam: @json($peminjamanRealtimeText ?? ''),
-                    stokBuku: @json($stokBukuList ?? ''),
-                    bukuTahunTerbit: @json($bukuTahun2020Summary ?? ''),
-                    bukuPalingFavorit: @json($bukuFavoritSummary ?? ''),
-                    riwayatPeminjamanTerbaru: @json($riwayatTerbaruSummary ?? ''),
-                    scanQrGuide: @json($scanQrSummary ?? ''),
-                    tanggunganBukuSiswaGuru: @json($tanggunganBukuSummary ?? ''),
-                    fiturAplikasi: @json($fiturAplikasiSummary ?? ''),
-                    rincianSiswaPerKelas: @json($rincianSiswaPerKelasSummary ?? ''),
-                    daftarGuru: @json($daftarGuruSummary ?? ''),
-                    daftarSeluruhAnggota: @json($daftarAnggotaList ?? ''),
-                    aturanDendaHariLibur: @json($aturanDendaLibur ?? ''),
-                    statusPerpustakaan: @json($statusPerpustakaan ?? ''),
-                }
+                data: userData
             });
+
+            // Kirim custom event ke botpress agar session context aktif
+            if (typeof window.botpress.sendEvent === 'function') {
+                try {
+                    window.botpress.sendEvent({
+                        type: 'user_authenticated',
+                        channel: 'web',
+                        payload: userData
+                    });
+                } catch(err) {}
+            }
+
             console.log("✅ Data user real-time disinkronkan ke Botpress:", @json($userName ?? 'Pengguna'), "(Role:", @json($userRole ?? 'Pengguna'), ")");
         }
     };
