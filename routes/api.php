@@ -18,12 +18,22 @@ Route::post('/chat', function (Request $request) {
             'userRole' => $request->input('userRole'),
         ]);
 
-        return response()->json($response->json(), $response->status());
+        if ($response->successful()) {
+            return response()->json($response->json(), $response->status());
+        }
     } catch (\Throwable $e) {
-        // Fallback jika node server belum aktif, gunakan controller chatbot
-        $fallback = app(\App\Http\Controllers\ChatbotController::class)->chat($request);
-        return $fallback;
+        \Log::error("Node.js chat proxy error: " . $e->getMessage());
     }
+
+    // Fallback jika node server belum aktif atau error
+    $reqFallback = new Request([
+        'message' => $request->input('pesan') ?? $request->input('message')
+    ]);
+    $resFallback = app(\App\Http\Controllers\ChatbotController::class)->chat($reqFallback);
+    $data = $resFallback->getData(true);
+    return response()->json([
+        'jawaban' => $data['reply'] ?? $data['jawaban'] ?? 'Maaf, terjadi kendala pada layanan AI.'
+    ]);
 });
 
 // Endpoint koleksi buku untuk integrasi Botpress AI Knowledge Base

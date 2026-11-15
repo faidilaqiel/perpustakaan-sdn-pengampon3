@@ -147,9 +147,11 @@ const tools = [
 
 // 5. Endpoint POST /api/chat
 app.post('/api/chat', async (req, res) => {
+    console.log("--> Menerima request di POST /api/chat:", req.body);
     try {
         const { pesan, userName, userRole } = req.body;
         if (!pesan) {
+            console.warn("Pesan kosong diterima di /api/chat");
             return res.status(400).json({ error: "Pesan wajib diisi." });
         }
 
@@ -167,6 +169,7 @@ app.post('/api/chat', async (req, res) => {
             Gunakan bahasa Indonesia yang santun, ramah anak, dan informatif.
         `;
 
+        console.log("Menginisialisasi model gemini-3-flash-preview...");
         const model = genAI.getGenerativeModel({
             model: "gemini-3-flash-preview",
             systemInstruction: systemInstruction,
@@ -174,6 +177,7 @@ app.post('/api/chat', async (req, res) => {
         });
 
         const chat = model.startChat();
+        console.log("Mengirim pesan user ke Gemini:", pesan);
         let result = await chat.sendMessage(pesan);
         let response = await result.response;
 
@@ -181,6 +185,7 @@ app.post('/api/chat', async (req, res) => {
         const functionCalls = response.functionCalls();
         if (functionCalls && functionCalls.length > 0) {
             const call = functionCalls[0];
+            console.log("Gemini memicu Function Call:", call.name, call.args);
             let functionResult = null;
 
             if (call.name === "getSiswaBelumAbsen") {
@@ -190,6 +195,7 @@ app.post('/api/chat', async (req, res) => {
             } else if (call.name === "getWaliKelas") {
                 functionResult = await getWaliKelas(call.args || {});
             }
+            console.log("Hasil query database untuk", call.name, ":", JSON.stringify(functionResult).slice(0, 100) + "...");
 
             // Kembalikan hasil query database ke Gemini untuk dirangkai menjadi jawaban
             result = await chat.sendMessage([
@@ -204,12 +210,14 @@ app.post('/api/chat', async (req, res) => {
         }
 
         const jawaban = response.text();
+        console.log("<-- Jawaban berhasil diperoleh dari Gemini:", jawaban.slice(0, 80) + "...");
         return res.json({ jawaban });
 
     } catch (error) {
-        console.error("Error pada POST /api/chat:", error);
+        console.error("❌ ERROR ASLI pada pemanggilan Gemini di POST /api/chat:", error);
         return res.status(500).json({ 
-            jawaban: "Mohon maaf, terjadi kendala saat memproses jawaban AI. Pastikan database dan koneksi aktif." 
+            jawaban: "Mohon maaf, terjadi kendala saat memproses jawaban AI (" + (error.message || "Unknown error") + ").",
+            error: error.message
         });
     }
 });
