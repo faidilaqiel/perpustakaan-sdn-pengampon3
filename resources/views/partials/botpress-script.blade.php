@@ -234,12 +234,26 @@
         scrollKeBawah();
     }
 
+    function formatMarkdown(teks) {
+        if (!teks) return '';
+        let escaped = escapeHtml(teks);
+        // Ubah format bold markdown **teks** menjadi <strong>teks</strong>
+        escaped = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        // Ubah format bullet point * baris menjadi simbol bullet rapi
+        escaped = escaped.replace(/(?:^|<br>)\*\s+(.*?)(?=<br>|$)/g, '<br>• $1');
+        // Ubah karakter baris baru \n menjadi <br>
+        escaped = escaped.replace(/\n/g, '<br>');
+        // Bersihkan multiple <br> berlebih
+        escaped = escaped.replace(/(<br>\s*){3,}/g, '<br><br>');
+        return escaped;
+    }
+
     function tampilkanBubbleBot(teks) {
         const container = document.getElementById('chat-messages');
         const bubble = document.createElement('div');
         bubble.className = "flex items-start gap-2";
         
-        const formatted = escapeHtml(teks).replace(/\n/g, '<br>');
+        const formatted = formatMarkdown(teks);
         bubble.innerHTML = `
             <div class="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
                 <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" class="w-4 h-4">
