@@ -74,6 +74,18 @@
             </div>
 
             <div class="flex items-center gap-3">
+                {{-- REALTIME CLOCK SISWA --}}
+                <div class="flex items-center gap-2 px-3 py-1.5 bg-gray-50 border border-gray-200/90 rounded-full shadow-xs text-xs">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-gray-500 font-medium hidden sm:inline" id="realtimeDateSiswa">--</span>
+                    <span class="text-gray-300 hidden sm:inline">|</span>
+                    <div class="flex items-center gap-1.5 text-gray-800 font-mono font-bold tracking-wider">
+                        <i class="far fa-clock text-emerald-600 text-sm"></i>
+                        <span id="realtimeClockSiswa">--:--:--</span>
+                        <span class="text-[10px] text-emerald-700 font-sans font-bold bg-emerald-100 px-1.5 py-0.5 rounded">WIB</span>
+                    </div>
+                </div>
+
                 <a href="{{ route('profil.edit') }}" class="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center hover:bg-green-200 transition" title="Profil">
                     <i class="fas fa-user"></i>
                 </a>
@@ -150,7 +162,32 @@
                 .catch(error => console.error('Error cek notifikasi:', error));
         }
 
+        // ===== REALTIME CLOCK (TICKING LIVE) =====
+        function updateRealtimeClockSiswa() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const timeString = `${hours}:${minutes}:${seconds}`;
+
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const dayName = days[now.getDay()];
+            const dateNum = now.getDate();
+            const monthName = months[now.getMonth()];
+            const year = now.getFullYear();
+            const dateString = `${dayName}, ${dateNum} ${monthName} ${year}`;
+
+            const clockElem = document.getElementById('realtimeClockSiswa');
+            const dateElem = document.getElementById('realtimeDateSiswa');
+
+            if (clockElem) clockElem.textContent = timeString;
+            if (dateElem) dateElem.textContent = dateString;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            updateRealtimeClockSiswa();
+            setInterval(updateRealtimeClockSiswa, 1000);
             cekNotifikasiSiswaGlobal();
             setInterval(cekNotifikasiSiswaGlobal, 3000);
         });

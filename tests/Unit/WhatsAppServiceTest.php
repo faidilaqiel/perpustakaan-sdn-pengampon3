@@ -49,3 +49,4 @@ class WhatsAppServiceTest extends TestCase
         $this->assertNull(WhatsAppService::formatPhone(null));
     }
 }
+

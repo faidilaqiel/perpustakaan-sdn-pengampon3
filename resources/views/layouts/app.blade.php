@@ -177,6 +177,12 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
+                    {{-- REALTIME CLOCK MOBILE --}}
+                    <div class="flex items-center gap-1.5 px-2.5 py-1 bg-gray-50 border border-gray-200 rounded-full text-xs font-mono font-bold text-gray-700 shadow-xs">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="realtimeClockMobile">--:--</span>
+                    </div>
+
                     {{-- NOTIF BELL MOBILE --}}
                     <div class="notif-bell" id="notifBellMobile" onclick="toggleNotifDropdown('mobile')">
                         <div class="w-9 h-9 bg-green-50 text-green-600 rounded-full flex items-center justify-center hover:bg-green-100 transition">
@@ -197,6 +203,18 @@
 
             {{-- DESKTOP HEADER --}}
             <div class="hidden md:flex items-center gap-3">
+                {{-- REALTIME CLOCK DESKTOP --}}
+                <div class="flex items-center gap-2.5 px-3.5 py-1.5 bg-gray-50 border border-gray-200/90 rounded-full shadow-xs text-xs">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-gray-500 font-medium hidden lg:inline" id="realtimeDateHeader">--</span>
+                    <span class="text-gray-300 hidden lg:inline">|</span>
+                    <div class="flex items-center gap-1.5 text-gray-800 font-mono font-bold tracking-wider">
+                        <i class="far fa-clock text-emerald-600 text-sm"></i>
+                        <span id="realtimeClockHeader">--:--:--</span>
+                        <span class="text-[10px] text-emerald-700 font-sans font-bold bg-emerald-100 px-1.5 py-0.5 rounded">WIB</span>
+                    </div>
+                </div>
+
                 {{-- NOTIF BELL DESKTOP --}}
                 <div class="notif-bell relative" id="notifBellDesktop" onclick="toggleNotifDropdown('desktop')">
                     <div class="w-10 h-10 bg-green-50 text-green-600 rounded-full flex items-center justify-center hover:bg-green-100 transition cursor-pointer">
@@ -441,6 +459,34 @@
         pollSiswaNotif();
         setInterval(pollSiswaNotif, 4000);
         @endif
+
+        // ===== REALTIME CLOCK (TICKING LIVE) =====
+        function updateRealtimeClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const timeString = `${hours}:${minutes}:${seconds}`;
+
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+            const dayName = days[now.getDay()];
+            const dateNum = now.getDate();
+            const monthName = months[now.getMonth()];
+            const year = now.getFullYear();
+            const dateString = `${dayName}, ${dateNum} ${monthName} ${year}`;
+
+            const clockDesktop = document.getElementById('realtimeClockHeader');
+            const dateDesktop = document.getElementById('realtimeDateHeader');
+            const clockMobile = document.getElementById('realtimeClockMobile');
+
+            if (clockDesktop) clockDesktop.textContent = timeString;
+            if (dateDesktop) dateDesktop.textContent = dateString;
+            if (clockMobile) clockMobile.textContent = `${hours}:${minutes}`;
+        }
+
+        updateRealtimeClock();
+        setInterval(updateRealtimeClock, 1000);
 
     })();
     </script>
