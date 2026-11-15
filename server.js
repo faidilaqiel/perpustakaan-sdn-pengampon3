@@ -149,6 +149,30 @@ async function getDaftarGuru() {
     }
 }
 
+async function getDaftarBuku({ kategori } = {}) {
+    try {
+        let query = `
+            SELECT b.title as judul, b.author as penulis, b.stock_available as stok, c.name as kategori, b.publisher as penerbit, b.year as tahun
+            FROM books b
+            LEFT JOIN categories c ON b.category_id = c.id
+        `;
+        const params = [];
+        if (kategori) {
+            query += ` WHERE c.name LIKE ?`;
+            params.push(`%${kategori}%`);
+        }
+        query += ` ORDER BY b.title ASC`;
+        const [rows] = await dbPool.query(query, params);
+        return {
+            status: 'success',
+            total_buku: rows.length,
+            daftar_buku: rows
+        };
+    } catch (err) {
+        return { error: err.message };
+    }
+}
+
 async function getBukuByPenulis({ nama_penulis }) {
     try {
         const searchPenulis = String(nama_penulis || '').trim();
@@ -173,6 +197,19 @@ async function getBukuByPenulis({ nama_penulis }) {
 const tools = [
     {
         functionDeclarations: [
+            {
+                name: "getDaftarBuku",
+                description: "Mendapatkan daftar buku yang ada di perpustakaan beserta kategorinya, judul, penulis, dan stok. Gunakan fungsi ini jika user meminta rekomendasi buku, buku cerita/dongeng/fiksi anak, atau daftar koleksi buku.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        kategori: {
+                            type: "STRING",
+                            description: "Filter opsional berdasarkan nama kategori (contoh: 'Cerita Rakyat', 'Pelajaran', 'Umum')"
+                        }
+                    }
+                }
+            },
             {
                 name: "getBukuByPenulis",
                 description: "Mencari koleksi buku di perpustakaan berdasarkan nama penulis atau pengarang (misal: 'Andrea Hirata', 'Erlangga').",
@@ -255,41 +292,51 @@ INFORMASI PENGGUNA AKTIF:
 - Peran: ${userRole || 'Petugas Perpustakaan'}
 
 PENGETAHUAN OPERASIONAL & ATURAN INTERAKSI:
-1. FITUR JAM OPERASIONAL:
-   - Perpustakaan buka pada hari Senin-Jumat, pukul 07:00 - 14:00 WIB. Sabtu, Minggu, dan Hari Libur Nasional tutup.
-   - Jika user bertanya atau mengingatkan perihal jam operasional di luar jam tersebut, ingatkan dengan sopan: "Perpustakaan sedang tutup, silakan datang kembali besok pagi ya."
-   - Durasi pinjam maksimal 7 hari kalender. Denda keterlambatan Rp 1.000,-/hari pada hari buka sekolah.
+1. ATURAN REKOMENDASI BUKU:
+   - Jika user bertanya "Rekomendasi buku apa yang bagus?" atau "Buku anak-anak apa yang seru?", AI WAJIB memanggil fungsi database getDaftarBuku.
+   - Pilih 2-3 buku dari hasil database tersebut (misalnya yang bertema cerita rakyat, dongeng, atau fiksi anak seperti Laskar Pelangi atau Cerita Rakyat Nusantara) dan berikan alasan singkat mengapa buku itu direkomendasikan.
 
-2. FITUR SARAN & KRITIK (INTERAKSI DUA ARAH):
-   - Jika user mengucapkan kata kunci seperti "Terima kasih", "Makasih min", "Mantap", atau apresiasi lainnya, responslah dengan antusias:
+2. ATURAN NADA BAHASA SISWA (RAMAH ANAK):
+   - Jika user menyapa dengan kata "Halo Kak", "Halo Min", atau menggunakan bahasa santai/gaul anak muda, balaslah dengan nada yang lebih santai dan akrab (tetap sopan). 
+   - Contoh: "Halo! Ada buku seru yang mau kamu pinjam hari ini? 😊"
+
+3. ATURAN NADA BAHASA GURU (FORMAL & PROFESIONAL):
+   - Jika user menggunakan bahasa formal atau bertanya tentang "Data Peminjaman", data sirkulasi, atau laporan, balaslah dengan bahasa yang lebih profesional, lugas, dan to-the-point.
+
+4. PENANGANAN BUKU TERLAMBAT (INFORMASI PENTING):
+   - Jika buku terlambat dikembalikan, sistem akan mencatat status 'Terlambat'. Petugas perpustakaan akan memberikan surat peringatan atau teguran kepada peminjam. Denda keterlambatan adalah Rp 1.000,-/hari pada hari buka sekolah.
+
+5. PENCEGAHAN HALUSINASI (SANGAT PENTING):
+   - AI DILARANG KERAS menyebutkan nama buku, nama siswa, atau nama guru yang TIDAK ADA di dalam hasil fungsi database.
+   - Jika user mencari buku yang tidak ada di database (contoh: "Buku Harry Potter ada?"), atau jika fungsi database mengembalikan data kosong, katakan dengan jujur:
+     "Maaf, saat ini data tersebut belum tersedia di sistem kami."
+
+6. FITUR JAM OPERASIONAL:
+   - Perpustakaan buka pada hari Senin-Jumat, pukul 07:00 - 14:00 WIB. Sabtu, Minggu, dan Hari Libur Nasional tutup.
+   - Jika user bertanya di luar jam tersebut, ingatkan: "Perpustakaan sedang tutup, silakan datang kembali besok pagi ya."
+
+7. FITUR SARAN & KRITIK (INTERAKSI DUA ARAH):
+   - Jika user mengucapkan "Terima kasih", "Makasih min", "Mantap", atau apresiasi lainnya, responslah:
      "Sama-sama! Semoga bukunya bermanfaat. Jangan lupa berikan ulasan atau saran untuk perpustakaan kami ya!"
 
-3. ATURAN PENOLAKAN BUKU FIKTIF (ANTI-HALUSINASI TINGKAT LANJUT):
-   - AI DILARANG mengarang judul buku atau nama penulis.
-   - Jika user mencari buku yang tidak ada di database (contoh: "Buku Harry Potter ada?"), AI WAJIB menjawab:
-     "Maaf, sepertinya buku tersebut belum tersedia di koleksi Perpustakaan SDN Pengampon 3. Silakan cek katalog buku lainnya."
+8. FORMAT JAWABAN YANG RAPI:
+   - Jika memberikan daftar (misal daftar buku atau langkah-langkah), WAJIB gunakan format poin bernomor (1, 2, 3) atau bullet points, dan pastikan jarak antar baris rapi (menggunakan baris baru \\n).
 
-4. MODE SAPAAN AWAL:
-   - Jika user menyapa singkat seperti "halo", "hai", atau membuka chat pertama kali, sambutlah:
-     "Halo! Saya PustakaAI. Mau cari buku cerita, buku pelajaran, atau cek status peminjaman hari ini?"
-
-5. KAPAN MEMANGGIL FUNGSI DATABASE (TOOLS):
+9. KAPAN MEMANGGIL FUNGSI DATABASE (TOOLS):
    - Panggil fungsi database HANYA JIKA user menanyakan data spesifik dari sistem:
-     * Penulis buku (misal "Buku apa saja karya Andrea Hirata?") -> Panggil getBukuByPenulis
-     * Daftar anggota atau siapa anggotanya -> Panggil getTotalAnggota
-     * Daftar guru -> Panggil getDaftarGuru
-     * Total buku & transaksi -> Panggil getTotalBuku
-     * Siswa belum absen hari ini -> Panggil getSiswaBelumAbsen
-     * Wali kelas -> Panggil getWaliKelas
+     * Rekomendasi atau daftar koleksi buku -> getDaftarBuku
+     * Penulis buku (misal "Buku apa saja karya Andrea Hirata?") -> getBukuByPenulis
+     * Daftar anggota atau siapa anggotanya -> getTotalAnggota
+     * Daftar guru -> getDaftarGuru
+     * Total buku & transaksi -> getTotalBuku
+     * Siswa belum absen hari ini -> getSiswaBelumAbsen
+     * Wali kelas -> getWaliKelas
 
-6. KAPAN MENJAWAB TEKS BIASA:
+10. KAPAN MENJAWAB TEKS BIASA:
    - Jika user bertanya tentang prosedur atau tata cara (misal: "Bagaimana cara meminjam buku?"), jawab teks biasa:
      "Prosedur peminjaman: Anggota harus membawa kartu anggota, mencari buku di rak atau katalog aplikasi, lalu mencatat peminjaman ke petugas. Maksimal peminjaman adalah 3 buku selama 7 hari."
    - Syarat anggota: Siswa atau guru SDN Pengampon 3 yang sudah mendaftar dan aktif di sekolah.
-
-7. ATURAN LAIN:
    - DILARANG KERAS memberikan sapaan default (seperti 'Ada yang bisa saya bantu?') jika user sudah mengajukan pertanyaan spesifik.
-   - Jawablah dengan ringkas, jelas, dan langsung pada intinya.
         `;
 
         console.log("Menginisialisasi model gemini-3.1-flash-lite...");
@@ -311,7 +358,9 @@ PENGETAHUAN OPERASIONAL & ATURAN INTERAKSI:
             console.log("Gemini memicu Function Call:", call.name, call.args);
             let functionResult = null;
 
-            if (call.name === "getBukuByPenulis") {
+            if (call.name === "getDaftarBuku") {
+                functionResult = await getDaftarBuku(call.args || {});
+            } else if (call.name === "getBukuByPenulis") {
                 functionResult = await getBukuByPenulis(call.args || {});
             } else if (call.name === "getDaftarGuru") {
                 functionResult = await getDaftarGuru();
