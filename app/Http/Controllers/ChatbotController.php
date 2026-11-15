@@ -52,7 +52,17 @@ class ChatbotController extends Controller
         }
 
         // Logika jawaban sesuai pertanyaan seputar perpustakaan:
-        if (str_contains($message, 'guru') || str_contains($message, 'siapa saja guru') || str_contains($message, 'daftar guru')) {
+        if (str_contains($message, 'cara meminjam') || str_contains($message, 'prosedur') || str_contains($message, 'cara pinjam') || str_contains($message, 'bagaimana cara')) {
+            $reply = "Prosedur peminjaman buku:\n" .
+                     "1. Anggota harus membawa kartu anggota.\n" .
+                     "2. Cari buku di katalog aplikasi atau di rak perpustakaan.\n" .
+                     "3. Klik 'Pinjam Buku Ini' di aplikasi, lalu bawa buku fisik ke petugas untuk dicatat/scan verifikasi.\n" .
+                     "4. Maksimal peminjaman adalah 3 buku selama 7 hari kalender.";
+        } elseif (str_contains($message, 'syarat') && (str_contains($message, 'anggota') || str_contains($message, 'pinjam'))) {
+            $reply = "Syarat anggota: Siswa atau guru SDN Pengampon 3 yang sudah terdaftar aktif di sistem sekolah.";
+        } elseif (str_contains($message, 'berapa lama') || str_contains($message, 'durasi')) {
+            $reply = "Masa peminjaman buku adalah maksimal 7 hari kalender per buku.";
+        } elseif (str_contains($message, 'guru') || str_contains($message, 'siapa saja guru') || str_contains($message, 'daftar guru')) {
             $gurus = \App\Models\User::where('role', 'guru')->orderBy('class')->orderBy('name')->get();
             $reply = "Berikut adalah daftar guru di SDN Pengampon 3 berdasarkan data database:\n\n";
             foreach ($gurus as $g) {
