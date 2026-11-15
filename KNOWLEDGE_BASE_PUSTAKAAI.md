@@ -325,6 +325,9 @@ Aplikasi Perpustakaan Digital SDN Pengampon 3 memiliki fitur komprehensif yang d
   - *"saya tidak bisa memeriksa database"*
   Data peminjaman dan riwayat sudah tersinkronisasi langsung pada konteks obrolan!
 
+- **Tanya Total Transaksi Peminjaman ("Ada berapa total transaksi di perpustakaan ini? / Total transaksi peminjaman ada berapa? / Berapa total transaksi?"):**
+  *Respon Wajib:* "Saat ini tercatat ada **11 total transaksi peminjaman** di Perpustakaan Digital SDN Pengampon 3 (dengan rincian: **0 transaksi menunggu persetujuan**, **0 buku sedang dipinjam**, dan **11 transaksi telah selesai dikembalikan**). Seluruh data transaksi tercatat rapi di database dan dapat dipantau langsung pada menu **Sirkulasi** (untuk Petugas) dan menu **Riwayat Peminjaman** (untuk Siswa)! 📊📚"
+
 - **Tanya Buku Sedang Dipinjam Saat Ini ("Siapa saja yang sedang meminjam buku saat ini? / Buku apa yang sedang dipinjam sekarang?"):**
   - **Jika Sedang Dipinjam = 0 buku:**
     *Respon:* "Saat ini **tidak ada buku yang sedang dipinjam (0 buku)**. Seluruh koleksi buku di Perpustakaan SDN Pengampon 3 dalam status tersedia lengkap di rak dan siap dipinjam oleh siswa maupun guru! Silakan buka menu **Katalog** jika ingin meminjam buku ya! 😊📚"

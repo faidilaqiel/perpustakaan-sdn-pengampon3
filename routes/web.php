@@ -133,8 +133,11 @@ Route::get('/informasi-perpustakaan', function () {
     $totalAnggota  = $members->count();
     $totalSiswa    = $members->where('role', 'siswa')->count();
     $totalGuru     = $members->where('role', 'guru')->count();
+    $totalTransaksi = \App\Models\Loan::count();
+    $totalMenunggu  = \App\Models\Loan::where('status', 'menunggu')->count();
     $activeLoans   = \App\Models\Loan::with(['book', 'user'])->where('status', 'dipinjam')->get();
     $totalDipinjam = $activeLoans->count();
+    $totalKembali   = \App\Models\Loan::where('status', 'dikembalikan')->count();
 
     $html  = "<!DOCTYPE html><html lang='id'><head><meta charset='UTF-8'>";
     $html .= "<title>Informasi Perpustakaan SDN Pengampon 3</title></head><body>";
@@ -154,8 +157,14 @@ Route::get('/informasi-perpustakaan', function () {
     $html .= "<h2>Statistik Terkini Perpustakaan</h2><ul>";
     $html .= "<li><strong>Total Buku:</strong> {$totalBuku} judul buku.</li>";
     $html .= "<li><strong>Total Anggota:</strong> {$totalAnggota} orang ({$totalSiswa} siswa dan {$totalGuru} guru).</li>";
+    $html .= "<li><strong>Total Transaksi Peminjaman:</strong> {$totalTransaksi} transaksi ({$totalMenunggu} menunggu persetujuan, {$totalDipinjam} sedang dipinjam, {$totalKembali} selesai dikembalikan).</li>";
     $html .= "<li><strong>Buku Sedang Dipinjam:</strong> {$totalDipinjam} buku.</li>";
     $html .= "</ul>";
+
+    // ── Total Transaksi Real-Time ───────────────────────────────────────────
+    $html .= "<h2>Total Transaksi Peminjaman di Perpustakaan</h2>";
+    $html .= "<p>Pertanyaan: Ada berapa total transaksi di perpustakaan ini? Total transaksi peminjaman ada berapa? Berapa total transaksi?</p>";
+    $html .= "<p>Jawaban resmi: Saat ini tercatat ada total <strong>{$totalTransaksi} transaksi peminjaman</strong> di sistem Perpustakaan Digital SDN Pengampon 3 (Rincian status: <strong>{$totalMenunggu} transaksi menunggu persetujuan</strong>, <strong>{$totalDipinjam} buku sedang dipinjam</strong>, dan <strong>{$totalKembali} transaksi telah selesai dikembalikan</strong>). Seluruh transaksi dapat dipantau oleh Petugas di menu Sirkulasi dan oleh Siswa di menu Riwayat Peminjaman.</p>";
 
     // ── Status Buku Dipinjam ─────────────────────────────────────────────────
     $html .= "<h2>Status Buku yang Sedang Dipinjam</h2>";

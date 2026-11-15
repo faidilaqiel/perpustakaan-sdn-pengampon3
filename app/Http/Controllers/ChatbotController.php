@@ -19,7 +19,8 @@ class ChatbotController extends Controller
         $kataKunciPerpus = [
             'buku', 'pinjam', 'kembali', 'denda', 'stok', 'katalog', 
             'perpustakaan', 'kepala sekolah', 'kepsek', 'jam', 'buka', 
-            'anggota', 'siswa', 'guru', 'kartu', 'riwayat', 'cara', 'aturan'
+            'anggota', 'siswa', 'guru', 'kartu', 'riwayat', 'cara', 'aturan',
+            'transaksi', 'total transaksi', 'sirkulasi', 'faidil'
         ];
 
         // Cek apakah pesan mengandung salah satu kata kunci di atas
@@ -34,8 +35,16 @@ class ChatbotController extends Controller
         // Jika pertanyaannya seputar perpustakaan, baru proses jawabannya
         if ($isTentangPerpus) {
             
+            // 0. Logika jika user tanya total transaksi
+            if (str_contains($message, 'transaksi')) {
+                $totalTrans = \App\Models\Loan::count();
+                $menunggu = \App\Models\Loan::where('status', 'menunggu')->count();
+                $dipinjam = \App\Models\Loan::where('status', 'dipinjam')->count();
+                $kembali = \App\Models\Loan::where('status', 'dikembalikan')->count();
+                $reply = "Saat ini tercatat ada total {$totalTrans} transaksi peminjaman di Perpustakaan SDN Pengampon 3 (Rincian: {$menunggu} menunggu persetujuan, {$dipinjam} sedang dipinjam, dan {$kembali} selesai dikembalikan).";
+            }
             // 1. Logika jika user tanya daftar buku
-            if (str_contains($message, 'buku') || str_contains($message, 'koleksi') || str_contains($message, 'stok')) {
+            elseif (str_contains($message, 'buku') || str_contains($message, 'koleksi') || str_contains($message, 'stok')) {
                 $books = Book::all();
                 $reply = "Berikut adalah daftar buku yang tersedia di perpustakaan:\n\n";
                 foreach ($books as $b) {

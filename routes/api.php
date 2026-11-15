@@ -294,8 +294,13 @@ Route::get('/library-info', function () {
             'total_anggota' => $totalAnggota,
             'total_siswa' => $totalSiswa,
             'total_guru' => $totalGuru,
+            'total_transaksi' => Loan::count(),
+            'transaksi_menunggu' => Loan::where('status', 'menunggu')->count(),
+            'transaksi_dipinjam' => $totalDipinjam,
+            'transaksi_dikembalikan' => Loan::where('status', 'dikembalikan')->count(),
             'buku_sedang_dipinjam' => $totalDipinjam,
         ],
+        'total_transaksi_jawaban' => 'Saat ini tercatat ada total ' . Loan::count() . ' transaksi peminjaman di Perpustakaan SDN Pengampon 3 (' . Loan::where('status', 'menunggu')->count() . ' menunggu persetujuan, ' . $totalDipinjam . ' sedang dipinjam, dan ' . Loan::where('status', 'dikembalikan')->count() . ' selesai dikembalikan).',
         'buku_yang_sedang_dipinjam_saat_ini' => $peminjamanRealtime,
         'buku_terfavorit_dan_paling_sering_dipinjam' => (function() {
             $popularLoans = Loan::select('book_id', DB::raw('count(*) as total_dipinjam'))

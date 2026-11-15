@@ -84,12 +84,17 @@ try {
         . ". Buku terbit sebelum tahun 2020 ({$bukuLama->count()} judul): "
         . $bukuLama->map(fn($b) => "{$b->title} ({$b->year}, stok {$b->stock_available})")->values()->implode(', ');
 
-    // ── 4. Status Sirkulasi & Buku Sedang Dipinjam ──────────────────
-    $activeLoansList    = Loan::with(['book', 'user'])->where('status', 'dipinjam')->orderBy('due_date', 'asc')->get();
-    $totalDipinjamCount = $activeLoansList->count();
+    // ── 4. Status Sirkulasi & Total Transaksi (Real-Time) ─────────────
+    $totalTransaksiCount    = Loan::count();
+    $totalMenungguCount     = Loan::where('status', 'menunggu')->count();
+    $activeLoansList        = Loan::with(['book', 'user'])->where('status', 'dipinjam')->orderBy('due_date', 'asc')->get();
+    $totalDipinjamCount     = $activeLoansList->count();
+    $totalKembaliCount      = Loan::where('status', 'dikembalikan')->count();
+
+    $transaksiSummaryText = "Total Transaksi Peminjaman di perpustakaan saat ini ada {$totalTransaksiCount} transaksi (Rincian: {$totalMenungguCount} transaksi menunggu persetujuan, {$totalDipinjamCount} buku sedang dipinjam, dan {$totalKembaliCount} transaksi selesai dikembalikan).";
 
     if ($totalDipinjamCount === 0) {
-        $peminjamanRealtimeText = "Saat ini tidak ada buku yang sedang dipinjam (0 buku). Semua koleksi buku di perpustakaan dalam status tersedia dan siap dipinjam.";
+        $peminjamanRealtimeText = "Saat ini tidak ada buku yang sedang dipinjam (0 buku). Semua koleksi buku di perpustakaan dalam status tersedia dan siap dipinjam. {$transaksiSummaryText}";
     } else {
         $rincianList = $activeLoansList->map(function ($l, $idx) {
             $nomor    = $idx + 1;
@@ -100,7 +105,7 @@ try {
             $tglTempo  = Carbon::parse($l->due_date)->translatedFormat('d M Y');
             return "{$nomor}. Buku '{$judul}' sedang dipinjam oleh {$peminjam}{$kelas}, dipinjam sejak {$tglPinjam}, batas jatuh tempo pengembalian {$tglTempo}.";
         })->implode("\n");
-        $peminjamanRealtimeText = "Saat ini terdapat {$totalDipinjamCount} buku yang sedang dipinjam di Perpustakaan SDN Pengampon 3:\n" . $rincianList;
+        $peminjamanRealtimeText = "{$transaksiSummaryText}\nSaat ini terdapat {$totalDipinjamCount} buku yang sedang dipinjam di Perpustakaan SDN Pengampon 3:\n" . $rincianList;
     }
 
     // ── 5. Buku Paling Favorit & Riwayat Transaksi ──────────────────
@@ -178,6 +183,7 @@ $scanQrSummary = "Fitur Scan QR di perpustakaan digunakan oleh Petugas untuk mem
 $fiturAplikasiSummary = "Fitur Perpustakaan Digital: Dashboard Petugas, Sirkulasi (ACC/Tolak/Kembalikan buku), Kelola Buku, Kelola Kategori, Kelola Anggota, Scan QR Meja Sirkulasi, Katalog & Pinjam Mandiri Siswa, Riwayat Peminjaman Siswa, Buku Tamu/Kunjungan, Laporan & Cetak PDF Kepala Sekolah, Profil Pengguna.";
 
 $statusPerpustakaan = "Statistik Terkini: {$totalBukuCount} total buku, {$totalAnggotaCount} anggota aktif ({$totalSiswaCount} siswa & {$totalGuruCount} guru). "
+    . "{$transaksiSummaryText} "
     . "{$currentUserGreeting} "
     . "{$rincianSiswaPerKelasSummary} {$daftarGuruSummary} "
     . "Daftar seluruh anggota: {$daftarAnggotaList}. "
@@ -245,6 +251,11 @@ $statusPerpustakaan = "Statistik Terkini: {$totalBukuCount} total buku, {$totalA
                 totalSiswa: @json($totalSiswaCount ?? 0),
                 totalGuru: @json($totalGuruCount ?? 0),
                 totalDipinjam: @json($totalDipinjamCount ?? 0),
+                totalTransaksi: @json($totalTransaksiCount ?? 0),
+                totalMenunggu: @json($totalMenungguCount ?? 0),
+                totalDikembalikan: @json($totalKembaliCount ?? 0),
+                transaksiSummary: @json($transaksiSummaryText ?? ''),
+                jawabanTotalTransaksi: @json("Saat ini terdapat total " . ($totalTransaksiCount ?? 0) . " transaksi peminjaman di Perpustakaan SDN Pengampon 3 (" . ($totalMenungguCount ?? 0) . " menunggu persetujuan, " . ($totalDipinjamCount ?? 0) . " sedang dipinjam, dan " . ($totalKembaliCount ?? 0) . " sudah dikembalikan)."),
                 bukuSedangDipinjam: @json($peminjamanRealtimeText ?? ''),
                 stokBuku: @json($stokBukuList ?? ''),
                 bukuTahunTerbit: @json($bukuTahun2020Summary ?? ''),
