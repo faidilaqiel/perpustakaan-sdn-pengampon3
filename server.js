@@ -8,12 +8,12 @@ dotenv.config();
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
 
 // 1. Inisialisasi Google Gemini API
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 if (!GEMINI_API_KEY) {
-    console.error("PERINGATAN: GEMINI_API_KEY tidak ditemukan di environment (.env).");
+    console.error("❌ PERINGATAN: GEMINI_API_KEY tidak ditemukan di environment (.env).");
 }
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || "");
 
@@ -29,85 +29,84 @@ const dbPool = mysql.createPool({
     queueLimit: 0
 });
 
-// 3. Fungsi-Fungsi Query Database (Tools)
-async function getSiswaBelumAbsen() {
-    try {
-        const today = new Date().toISOString().slice(0, 10);
-        const [rows] = await dbPool.query(`
-            SELECT u.id, u.name, u.class, u.nisn 
-            FROM users u 
-            WHERE u.role = 'siswa' 
-              AND u.status = 'aktif'
-              AND u.id NOT IN (
-                  SELECT user_id FROM kunjungans WHERE tanggal = ?
-              )
-            ORDER BY u.class, u.name
-        `, [today]);
-        
-        return {
-            tanggal: today,
-            jumlah_siswa_belum_absen: rows.length,
-            daftar_siswa: rows
-        };
-    } catch (err) {
-        return { error: err.message };
-    }
-}
+// ==========================================
+// BAGIAN 1: IMPLEMENTASI FUNGSI DATABASE (TOOLS)
+// ==========================================
 
-async function getTotalBuku() {
+// 1. cariSiswa: Mencari siswa berdasarkan nama spesifik
+async function cariSiswa({ nama }) {
+    console.log(`[DB] Menjalankan cariSiswa dengan parameter nama: "${nama}"`);
     try {
-        const [books] = await dbPool.query(`
-            SELECT 
-                COUNT(*) as total_judul,
-                IFNULL(SUM(stock_total), 0) as total_eksemplar,
-                IFNULL(SUM(stock_available), 0) as total_tersedia
-            FROM books
-        `);
-        const [loans] = await dbPool.query(`
-            SELECT 
-                COUNT(*) as total_transaksi,
-                SUM(CASE WHEN status = 'dipinjam' THEN 1 ELSE 0 END) as sedang_dipinjam,
-                SUM(CASE WHEN status = 'menunggu' THEN 1 ELSE 0 END) as menunggu_persetujuan,
-                SUM(CASE WHEN status = 'dikembalikan' THEN 1 ELSE 0 END) as sudah_kembali
-            FROM loans
-        `);
-        return {
-            statistik_buku: books[0],
-            statistik_transaksi_sirkulasi: loans[0]
-        };
-    } catch (err) {
-        return { error: err.message };
-    }
-}
-
-async function getWaliKelas({ kelas }) {
-    try {
-        const searchKelas = String(kelas || '').trim();
+        const keyword = String(nama || '').trim();
         const [rows] = await dbPool.query(`
-            SELECT name, nip, phone, role, class 
+            SELECT id, name as nama, class as kelas, nisn, gender, status 
             FROM users 
-            WHERE role = 'guru' AND class LIKE ?
-            LIMIT 1
-        `, [`%${searchKelas}%`]);
-        
-        if (rows.length === 0) {
-            const [allGuru] = await dbPool.query(`SELECT name, class, nip FROM users WHERE role = 'guru'`);
-            return {
-                status: 'tidak_ditemukan',
-                pesan: `Wali kelas ${searchKelas} tidak ditemukan secara spesifik.`,
-                daftar_seluruh_guru: allGuru
-            };
-        }
+            WHERE role = 'siswa' AND name LIKE ?
+        `, [`%${keyword}%`]);
+        console.log(`[DB] cariSiswa menemukan ${rows.length} data.`);
         return {
-            status: 'ditemukan',
-            wali_kelas: rows[0]
+            status: rows.length > 0 ? 'success' : 'not_found',
+            kata_kunci: keyword,
+            total_ditemukan: rows.length,
+            hasil: rows
         };
     } catch (err) {
+        console.error(`[DB ERROR] cariSiswa gagal:`, err.message);
         return { error: err.message };
     }
 }
 
+// 2. cariGuru: Mencari guru berdasarkan nama spesifik
+async function cariGuru({ nama }) {
+    console.log(`[DB] Menjalankan cariGuru dengan parameter nama: "${nama}"`);
+    try {
+        const keyword = String(nama || '').trim();
+        const [rows] = await dbPool.query(`
+            SELECT id, name as nama, class as kelas_wali, nip, phone as telepon 
+            FROM users 
+            WHERE role = 'guru' AND name LIKE ?
+        `, [`%${keyword}%`]);
+        console.log(`[DB] cariGuru menemukan ${rows.length} data.`);
+        return {
+            status: rows.length > 0 ? 'success' : 'not_found',
+            kata_kunci: keyword,
+            total_ditemukan: rows.length,
+            hasil: rows
+        };
+    } catch (err) {
+        console.error(`[DB ERROR] cariGuru gagal:`, err.message);
+        return { error: err.message };
+    }
+}
+
+// 3. cariBuku: Mencari buku berdasarkan judul spesifik
+async function cariBuku({ judul }) {
+    console.log(`[DB] Menjalankan cariBuku dengan parameter judul: "${judul}"`);
+    try {
+        const keyword = String(judul || '').trim();
+        const [rows] = await dbPool.query(`
+            SELECT b.id, b.title as judul, b.stock_available as stok, b.stock_total as total_stok, 
+                   b.author as penulis, b.publisher as penerbit, b.year as tahun, c.name as kategori
+            FROM books b
+            LEFT JOIN categories c ON b.category_id = c.id
+            WHERE b.title LIKE ?
+        `, [`%${keyword}%`]);
+        console.log(`[DB] cariBuku menemukan ${rows.length} data.`);
+        return {
+            status: rows.length > 0 ? 'success' : 'not_found',
+            kata_kunci: keyword,
+            total_ditemukan: rows.length,
+            hasil: rows
+        };
+    } catch (err) {
+        console.error(`[DB ERROR] cariBuku gagal:`, err.message);
+        return { error: err.message };
+    }
+}
+
+// 4. getTotalAnggota: Menghitung total seluruh anggota
 async function getTotalAnggota() {
+    console.log(`[DB] Menjalankan getTotalAnggota`);
     try {
         const [counts] = await dbPool.query(`
             SELECT 
@@ -118,38 +117,48 @@ async function getTotalAnggota() {
             FROM users 
             WHERE status = 'aktif' OR status IS NULL
         `);
-        const [guruRows] = await dbPool.query(`
-            SELECT name, nip, class FROM users WHERE role = 'guru' ORDER BY class, name
-        `);
-        const [siswaRows] = await dbPool.query(`
-            SELECT name, class, nisn FROM users WHERE role = 'siswa' ORDER BY class, name LIMIT 20
-        `);
+        console.log(`[DB] getTotalAnggota berhasil:`, counts[0]);
         return {
             status: 'success',
-            ringkasan_anggota: counts[0],
-            daftar_guru: guruRows,
-            contoh_daftar_siswa: siswaRows
+            statistik: counts[0]
         };
     } catch (err) {
+        console.error(`[DB ERROR] getTotalAnggota gagal:`, err.message);
         return { error: err.message };
     }
 }
 
-async function getDaftarGuru() {
+// 5. getStatusPeminjaman: Mengecek status peminjaman buku oleh siswa
+async function getStatusPeminjaman({ nama_siswa }) {
+    console.log(`[DB] Menjalankan getStatusPeminjaman untuk siswa: "${nama_siswa}"`);
     try {
+        const keyword = String(nama_siswa || '').trim();
         const [rows] = await dbPool.query(`
-            SELECT name, nip, class, phone FROM users WHERE role = 'guru' ORDER BY class, name
-        `);
+            SELECT l.id as id_pinjam, u.name as nama_siswa, u.class as kelas, 
+                   b.title as judul_buku, b.code as kode_buku,
+                   l.loan_date as tanggal_pinjam, l.due_date as jatuh_tempo, l.status
+            FROM loans l
+            JOIN users u ON l.user_id = u.id
+            JOIN books b ON l.book_id = b.id
+            WHERE u.name LIKE ?
+            ORDER BY l.id DESC
+        `, [`%${keyword}%`]);
+        console.log(`[DB] getStatusPeminjaman menemukan ${rows.length} riwayat/transaksi.`);
         return {
-            total_guru: rows.length,
-            daftar_guru: rows
+            status: rows.length > 0 ? 'success' : 'not_found',
+            nama_siswa: keyword,
+            total_pinjaman: rows.length,
+            daftar_pinjaman: rows
         };
     } catch (err) {
+        console.error(`[DB ERROR] getStatusPeminjaman gagal:`, err.message);
         return { error: err.message };
     }
 }
 
+// Helper tool tambahan yang sudah ada sebelumnya
 async function getDaftarBuku({ kategori } = {}) {
+    console.log(`[DB] Menjalankan getDaftarBuku, kategori: "${kategori || 'Semua'}"`);
     try {
         let query = `
             SELECT b.title as judul, b.author as penulis, b.stock_available as stok, c.name as kategori, b.publisher as penerbit, b.year as tahun
@@ -163,17 +172,14 @@ async function getDaftarBuku({ kategori } = {}) {
         }
         query += ` ORDER BY b.title ASC`;
         const [rows] = await dbPool.query(query, params);
-        return {
-            status: 'success',
-            total_buku: rows.length,
-            daftar_buku: rows
-        };
+        return { status: 'success', total_buku: rows.length, daftar_buku: rows };
     } catch (err) {
         return { error: err.message };
     }
 }
 
 async function getBukuByPenulis({ nama_penulis }) {
+    console.log(`[DB] Menjalankan getBukuByPenulis: "${nama_penulis}"`);
     try {
         const searchPenulis = String(nama_penulis || '').trim();
         const [rows] = await dbPool.query(`
@@ -181,91 +187,187 @@ async function getBukuByPenulis({ nama_penulis }) {
             FROM books 
             WHERE author LIKE ?
         `, [`%${searchPenulis}%`]);
-        
-        return {
-            status: 'success',
-            pencarian: searchPenulis,
-            total_ditemukan: rows.length,
-            daftar_buku: rows
-        };
+        return { status: 'success', total_ditemukan: rows.length, daftar_buku: rows };
     } catch (err) {
         return { error: err.message };
     }
 }
 
-// 4. Definisi Function Declarations (Tools) untuk Gemini
+async function getDaftarGuru() {
+    console.log(`[DB] Menjalankan getDaftarGuru`);
+    try {
+        const [rows] = await dbPool.query(`
+            SELECT name as nama, nip, class as kelas, phone as telepon FROM users WHERE role = 'guru' ORDER BY class, name
+        `);
+        return { total_guru: rows.length, daftar_guru: rows };
+    } catch (err) {
+        return { error: err.message };
+    }
+}
+
+async function getSiswaBelumAbsen() {
+    console.log(`[DB] Menjalankan getSiswaBelumAbsen`);
+    try {
+        const today = new Date().toISOString().slice(0, 10);
+        const [rows] = await dbPool.query(`
+            SELECT u.id, u.name, u.class, u.nisn 
+            FROM users u 
+            WHERE u.role = 'siswa' 
+              AND (u.status = 'aktif' OR u.status IS NULL)
+              AND u.id NOT IN (
+                  SELECT user_id FROM kunjungans WHERE tanggal = ?
+              )
+            ORDER BY u.class, u.name
+        `, [today]);
+        return { tanggal: today, jumlah_belum_absen: rows.length, daftar_siswa: rows };
+    } catch (err) {
+        return { error: err.message };
+    }
+}
+
+async function getTotalBuku() {
+    console.log(`[DB] Menjalankan getTotalBuku`);
+    try {
+        const [books] = await dbPool.query(`
+            SELECT COUNT(*) as total_judul, IFNULL(SUM(stock_total), 0) as total_eksemplar, IFNULL(SUM(stock_available), 0) as total_tersedia FROM books
+        `);
+        const [loans] = await dbPool.query(`
+            SELECT COUNT(*) as total_transaksi,
+                   SUM(CASE WHEN status = 'dipinjam' THEN 1 ELSE 0 END) as sedang_dipinjam,
+                   SUM(CASE WHEN status = 'menunggu' THEN 1 ELSE 0 END) as menunggu_persetujuan,
+                   SUM(CASE WHEN status = 'dikembalikan' THEN 1 ELSE 0 END) as sudah_kembali
+            FROM loans
+        `);
+        return { statistik_buku: books[0], statistik_sirkulasi: loans[0] };
+    } catch (err) {
+        return { error: err.message };
+    }
+}
+
+async function getWaliKelas({ kelas }) {
+    console.log(`[DB] Menjalankan getWaliKelas untuk kelas: "${kelas}"`);
+    try {
+        const searchKelas = String(kelas || '').trim();
+        const [rows] = await dbPool.query(`
+            SELECT name, nip, phone, role, class FROM users WHERE role = 'guru' AND class LIKE ? LIMIT 1
+        `, [`%${searchKelas}%`]);
+        return rows.length > 0 ? { status: 'ditemukan', wali_kelas: rows[0] } : { status: 'tidak_ditemukan' };
+    } catch (err) {
+        return { error: err.message };
+    }
+}
+
+// Definisi Tools untuk Gemini API
 const tools = [
     {
         functionDeclarations: [
             {
-                name: "getDaftarBuku",
-                description: "Mendapatkan daftar buku yang ada di perpustakaan beserta kategorinya, judul, penulis, dan stok. Gunakan fungsi ini jika user meminta rekomendasi buku, buku cerita/dongeng/fiksi anak, atau daftar koleksi buku.",
+                name: "cariSiswa",
+                description: "Mencari data siswa tertentu berdasarkan nama (contoh: 'Nacinta', 'Adrian', 'Dewi') untuk mengecek apakah siswa tersebut terdaftar di perpustakaan/sekolah beserta kelasnya.",
                 parameters: {
                     type: "OBJECT",
                     properties: {
-                        kategori: {
+                        nama: {
                             type: "STRING",
-                            description: "Filter opsional berdasarkan nama kategori (contoh: 'Cerita Rakyat', 'Pelajaran', 'Umum')"
+                            description: "Nama atau potongan nama siswa yang dicari"
                         }
+                    },
+                    required: ["nama"]
+                }
+            },
+            {
+                name: "cariGuru",
+                description: "Mencari data guru tertentu berdasarkan nama untuk mengecek apakah guru tersebut terdaftar dan mengajar/wali kelas apa.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        nama: {
+                            type: "STRING",
+                            description: "Nama atau potongan nama guru yang dicari"
+                        }
+                    },
+                    required: ["nama"]
+                }
+            },
+            {
+                name: "cariBuku",
+                description: "Mencari buku tertentu berdasarkan judul (contoh: 'Laskar Pelangi', 'Matematika', 'Harry Potter') untuk mengetahui ketersediaan dan stoknya.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        judul: {
+                            type: "STRING",
+                            description: "Judul atau potongan judul buku yang dicari"
+                        }
+                    },
+                    required: ["judul"]
+                }
+            },
+            {
+                name: "getTotalAnggota",
+                description: "Mendapatkan jumlah total seluruh anggota perpustakaan yang terdaftar secara real-time.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {}
+                }
+            },
+            {
+                name: "getStatusPeminjaman",
+                description: "Mengecek status peminjaman buku oleh siswa tertentu berdasarkan nama siswa (apakah sedang meminjam buku, judul buku yang dipinjam, dan batas pengembaliannya).",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        nama_siswa: {
+                            type: "STRING",
+                            description: "Nama siswa yang ingin diperiksa status peminjamannya"
+                        }
+                    },
+                    required: ["nama_siswa"]
+                }
+            },
+            {
+                name: "getDaftarBuku",
+                description: "Mendapatkan seluruh daftar buku atau rekomendasi buku bacaan/fiksi/pelajaran di perpustakaan.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {
+                        kategori: { type: "STRING", description: "Filter kategori opsional" }
                     }
                 }
             },
             {
                 name: "getBukuByPenulis",
-                description: "Mencari koleksi buku di perpustakaan berdasarkan nama penulis atau pengarang (misal: 'Andrea Hirata', 'Erlangga').",
+                description: "Mencari koleksi buku berdasarkan nama penulis/pengarang (contoh: 'Andrea Hirata').",
                 parameters: {
                     type: "OBJECT",
                     properties: {
-                        nama_penulis: {
-                            type: "STRING",
-                            description: "Nama penulis atau pengarang buku yang dicari"
-                        }
+                        nama_penulis: { type: "STRING", description: "Nama penulis buku" }
                     },
                     required: ["nama_penulis"]
                 }
             },
             {
                 name: "getDaftarGuru",
-                description: "Mendapatkan daftar lengkap nama seluruh guru dan staf pengajar di SDN Pengampon 3 dari database MySQL.",
-                parameters: {
-                    type: "OBJECT",
-                    properties: {},
-                }
-            },
-            {
-                name: "getTotalAnggota",
-                description: "Mendapatkan total jumlah anggota perpustakaan dan siapa saja anggotanya secara real-time dari database MySQL.",
-                parameters: {
-                    type: "OBJECT",
-                    properties: {},
-                }
+                description: "Mendapatkan daftar lengkap seluruh guru dan wali kelas.",
+                parameters: { type: "OBJECT", properties: {} }
             },
             {
                 name: "getSiswaBelumAbsen",
-                description: "Mendapatkan daftar siswa yang belum hadir / belum absen / belum berkunjung ke perpustakaan hari ini.",
-                parameters: {
-                    type: "OBJECT",
-                    properties: {},
-                }
+                description: "Mendapatkan daftar siswa yang belum melakukan absen/kunjungan hari ini.",
+                parameters: { type: "OBJECT", properties: {} }
             },
             {
                 name: "getTotalBuku",
-                description: "Mendapatkan statistik lengkap buku (total judul, eksemplar, stok tersedia) dan total transaksi sirkulasi (menunggu, dipinjam, dikembalikan) di perpustakaan secara real-time.",
-                parameters: {
-                    type: "OBJECT",
-                    properties: {},
-                }
+                description: "Mendapatkan statistik total koleksi buku dan transaksi sirkulasi perpustakaan.",
+                parameters: { type: "OBJECT", properties: {} }
             },
             {
                 name: "getWaliKelas",
-                description: "Mencari data guru atau wali kelas berdasarkan nama kelas (misal: '2A', 'Kelas 1', '6').",
+                description: "Mencari wali kelas berdasarkan kelas (misal: '2A', 'Kelas 1').",
                 parameters: {
                     type: "OBJECT",
                     properties: {
-                        kelas: {
-                            type: "STRING",
-                            description: "Identitas atau tingkatan kelas, misalnya '2A', '1', '6'"
-                        }
+                        kelas: { type: "STRING", description: "Tingkatan kelas" }
                     },
                     required: ["kelas"]
                 }
@@ -274,72 +376,50 @@ const tools = [
     }
 ];
 
-// 5. Endpoint POST /api/chat
+// ==========================================
+// BAGIAN 2 & 3: ENDPOINT CHAT & SYSTEM PROMPT
+// ==========================================
+
 app.post('/api/chat', async (req, res) => {
-    console.log("--> Menerima request di POST /api/chat:", req.body ? { ...req.body, imageBase64: req.body.imageBase64 ? '[IMAGE_BASE64_ATTACHED]' : undefined } : {});
+    console.log("\n=======================================================");
+    console.log("--> [REQUEST MASUK] di POST /api/chat:", req.body ? { ...req.body, imageBase64: req.body.imageBase64 ? '[IMAGE_ATTACHED]' : undefined } : {});
+    
     try {
         const { pesan, userName, userRole, imageBase64, imageMime } = req.body;
         if (!pesan && !imageBase64) {
-            console.warn("Pesan dan gambar kosong diterima di /api/chat");
+            console.warn("⚠️ Pesan dan gambar kosong diterima.");
             return res.status(400).json({ error: "Pesan atau gambar wajib diisi." });
         }
 
-        const systemInstruction = `
-Kamu adalah PustakaAI, asisten virtual Perpustakaan SDN Pengampon 3.
-Tugasmu adalah membantu siswa, guru, dan petugas perpustakaan.
+        // MASTER SYSTEM PROMPT (OTAK AI)
+        const systemInstruction = `Kamu adalah PustakaAI, asisten virtual cerdas untuk Perpustakaan SDN Pengampon 3. Tugas utamamu adalah membantu siswa, guru, dan petugas dalam mencari informasi. 
 
-INFORMASI PENGGUNA AKTIF:
+INFORMASI PENGGUNA AKTIF SAAT INI:
 - Nama Pengguna: ${userName || 'Faidil Aqiel'}
 - Peran: ${userRole || 'Petugas Perpustakaan'}
 
-PENGETAHUAN DASAR (KNOWLEDGE BASE) - JAWAB DENGAN TEKS BIASA TANPA MEMANGGIL DATABASE:
-Gunakan panduan berikut untuk menjawab pertanyaan user seputar prosedur, panduan, keanggotaan, atau peraturan:
+ATURAN MUTLAK (JANGAN DILANGGAR):
+1. DILARANG KERAS memberikan sapaan default (seperti 'Ada yang bisa saya bantu?') jika user sudah mengajukan pertanyaan spesifik. LANGSUNG JAWAB PERTANYAANNYA.
+2. Jika user bertanya tentang nama orang (siswa/guru) atau judul buku spesifik, KAMU WAJIB memanggil fungsi pencarian (cariSiswa, cariGuru, atau cariBuku). JANGAN mengarang jawaban.
+3. Jika fungsi pencarian mengembalikan data kosong, katakan dengan jujur: 'Maaf, data tersebut tidak ditemukan di sistem perpustakaan.'
+4. Jika user bertanya tentang PROSEDUR (cara pinjam, aturan), JAWAB LANGSUNG dengan teks di bawah ini (jangan panggil fungsi database).
 
-A. PROSEDUR PEMINJAMAN:
-- Bawa kartu anggota dan buku ke meja petugas.
-- Petugas akan memindai kartu dan buku.
-- Maksimal pinjam 3 buku.
-- Batas waktu peminjaman adalah 7 hari.
-
-B. KEANGGOTAAN:
-- Seluruh siswa dan guru SDN Pengampon 3 boleh menjadi anggota.
-- Jika kartu hilang, segera lapor ke petugas untuk diblokir dan dicetak ulang.
-
-C. PERATURAN PERPUSTAKAAN:
-- Dilarang membawa makanan atau minuman.
-- Wajib menjaga ketenangan.
-- Denda akan dikenakan jika buku rusak atau hilang.
-- Denda keterlambatan pengembalian buku adalah Rp 1.000,-/hari pada hari buka sekolah.
+PENGETAHUAN DASAR (PROSEDUR):
+- Cara Pinjam: Bawa kartu anggota & buku ke meja petugas. Maksimal 3 buku, batas waktu 7 hari.
+- Peraturan: Dilarang membawa makanan/minuman. Wajib menjaga ketenangan.
+- Jika kartu hilang, segera lapor petugas untuk diblokir dan dicetak ulang.
 - Jam Operasional: Buka Senin - Jumat pukul 07:00 - 14:00 WIB. Sabtu, Minggu, dan Hari Libur Nasional tutup.
+- Denda: Denda keterlambatan Rp 1.000,-/hari pada hari buka sekolah.
 
-D. TENTANG APLIKASI:
-- Aplikasi ini digunakan oleh Petugas Piket untuk mencatat sirkulasi (peminjaman/pengembalian) dan data buku secara real-time.
+GAYA BAHASA:
+- Gunakan bahasa Indonesia yang ramah, sopan, dan tidak kaku.
+- Jika user menggunakan sapaan santai (seperti 'Halo kak'), balaslah dengan ramah. Jika formal, balaslah dengan formal.
 
-ATURAN MUTLAK PENGGUNAAN DATABASE (TOOLS) VS TEKS BIASA:
-1. ATURAN KAPAN MENJAWAB TEKS BIASA (DILARANG MEMANGGIL DATABASE):
-   - JIKA user menanyakan PROSEDUR, PANDUAN, ATURAN, CARA PINJAM, SYARAT ANGGOTA, atau TENTANG APLIKASI (contoh: "Bagaimana cara meminjam buku?", "Berapa lama batas peminjaman?", "Apa syarat anggota?", "Bolehkah bawa makanan?"), AI WAJIB menjawab menggunakan teks panduan A, B, C, D di atas.
-   - DILARANG KERAS memanggil fungsi database buku (seperti getDaftarBuku atau getTotalBuku) untuk pertanyaan prosedur/aturan!
+FORMAT JAWABAN:
+- Jika memberikan daftar (misal: daftar nama atau buku), WAJIB gunakan format poin (1, 2, 3) atau bullet points. Jangan menumpuk teks dalam satu paragraf panjang.
+`;
 
-2. ATURAN KAPAN MEMANGGIL DATABASE (TOOLS):
-   - HANYA panggil fungsi database JIKA user menanyakan DATA SPESIFIK:
-     * "Ada buku apa saja?" / "Rekomendasi buku anak" -> getDaftarBuku
-     * "Buku karya Andrea Hirata ada?" / "Buku karya [Penulis]?" -> getBukuByPenulis
-     * "Berapa jumlah anggota?" / "Siapa saja anggotanya?" -> getTotalAnggota
-     * "Siapa saja guru di sekolah?" -> getDaftarGuru
-     * "Berapa total buku & transaksi?" -> getTotalBuku
-     * "Siapa siswa yang belum absen hari ini?" -> getSiswaBelumAbsen
-     * "Siapa wali kelas 2A?" -> getWaliKelas
-
-3. ATURAN SAPAAN & INTERAKSI:
-   - DILARANG KERAS memberikan sapaan default (seperti 'Ada yang bisa saya bantu?') jika user sudah mengajukan pertanyaan spesifik. Langsung jawab pertanyaannya dengan ramah dan to-the-point.
-   - Jika user hanya menyapa singkat ("Halo", "Hai"), balas: "Halo! Saya PustakaAI. Mau cari buku cerita, buku pelajaran, atau cek status peminjaman hari ini?"
-   - Jika user mengucapkan "Terima kasih" atau "Mantap", balas antusias: "Sama-sama! Semoga bukunya bermanfaat. Jangan lupa berikan ulasan atau saran untuk perpustakaan kami ya!"
-   - Jika user siswa ("Halo Kak/Min"), gunakan nada santai dan ramah anak. Jika guru/staf, gunakan nada profesional.
-   - DILARANG HALUSINASI: Jangan mengarang judul buku atau nama orang yang tidak ada di hasil database. Jika tidak ditemukan, katakan data belum tersedia.
-   - Gunakan penomoran rapi (1, 2, 3) atau bullet points dengan baris baru (\\n) agar tampilan rapi.
-        `;
-
-        console.log("Menginisialisasi model gemini-3.1-flash-lite...");
+        console.log("⚙️ Menginisialisasi Gemini Generative Model (gemini-3.1-flash-lite)...");
         const model = genAI.getGenerativeModel({
             model: "gemini-3.1-flash-lite",
             systemInstruction: systemInstruction,
@@ -347,11 +427,10 @@ ATURAN MUTLAK PENGGUNAAN DATABASE (TOOLS) VS TEKS BIASA:
         });
 
         const chat = model.startChat();
-        console.log("Mengirim pesan user ke Gemini:", pesan || '[Lampiran Gambar]');
+        console.log(`🤖 Mengirim pesan ke Gemini: "${pesan || '[Gambar Lampiran]'}"`);
 
         let messagePayload;
         if (imageBase64) {
-            // Bersihkan data URL prefix jika ada (misal data:image/jpeg;base64,...)
             const rawBase64 = imageBase64.includes(',') ? imageBase64.split(',')[1] : imageBase64;
             const mimeType = imageMime || 'image/jpeg';
             messagePayload = [
@@ -361,7 +440,7 @@ ATURAN MUTLAK PENGGUNAAN DATABASE (TOOLS) VS TEKS BIASA:
                         mimeType: mimeType
                     }
                 },
-                pesan || "Tolong amati dan jelaskan gambar/buku ini sehubungan dengan informasi perpustakaan SDN Pengampon 3."
+                pesan || "Tolong amati gambar ini dan berikan informasi seputar buku/perpustakaan."
             ];
         } else {
             messagePayload = pesan;
@@ -370,31 +449,53 @@ ATURAN MUTLAK PENGGUNAAN DATABASE (TOOLS) VS TEKS BIASA:
         let result = await chat.sendMessage(messagePayload);
         let response = await result.response;
 
-        // Tangani Function Calls jika model meminta data database
-        const functionCalls = response.functionCalls();
-        if (functionCalls && functionCalls.length > 0) {
+        // Loop penanganan Function Calls (bisa menangani beberapa tool call beruntun)
+        let functionCalls = response.functionCalls();
+        while (functionCalls && functionCalls.length > 0) {
             const call = functionCalls[0];
-            console.log("Gemini memicu Function Call:", call.name, call.args);
+            console.log(`🎯 [TOOL CALL DIPICU]: ${call.name}`, JSON.stringify(call.args));
             let functionResult = null;
 
-            if (call.name === "getDaftarBuku") {
-                functionResult = await getDaftarBuku(call.args || {});
-            } else if (call.name === "getBukuByPenulis") {
-                functionResult = await getBukuByPenulis(call.args || {});
-            } else if (call.name === "getDaftarGuru") {
-                functionResult = await getDaftarGuru();
-            } else if (call.name === "getTotalAnggota") {
-                functionResult = await getTotalAnggota();
-            } else if (call.name === "getSiswaBelumAbsen") {
-                functionResult = await getSiswaBelumAbsen();
-            } else if (call.name === "getTotalBuku") {
-                functionResult = await getTotalBuku();
-            } else if (call.name === "getWaliKelas") {
-                functionResult = await getWaliKelas(call.args || {});
+            switch (call.name) {
+                case "cariSiswa":
+                    functionResult = await cariSiswa(call.args || {});
+                    break;
+                case "cariGuru":
+                    functionResult = await cariGuru(call.args || {});
+                    break;
+                case "cariBuku":
+                    functionResult = await cariBuku(call.args || {});
+                    break;
+                case "getTotalAnggota":
+                    functionResult = await getTotalAnggota();
+                    break;
+                case "getStatusPeminjaman":
+                    functionResult = await getStatusPeminjaman(call.args || {});
+                    break;
+                case "getDaftarBuku":
+                    functionResult = await getDaftarBuku(call.args || {});
+                    break;
+                case "getBukuByPenulis":
+                    functionResult = await getBukuByPenulis(call.args || {});
+                    break;
+                case "getDaftarGuru":
+                    functionResult = await getDaftarGuru();
+                    break;
+                case "getSiswaBelumAbsen":
+                    functionResult = await getSiswaBelumAbsen();
+                    break;
+                case "getTotalBuku":
+                    functionResult = await getTotalBuku();
+                    break;
+                case "getWaliKelas":
+                    functionResult = await getWaliKelas(call.args || {});
+                    break;
+                default:
+                    console.warn(`Tool "${call.name}" tidak dikenali.`);
+                    functionResult = { error: "Fungsi tidak ditemukan" };
             }
-            console.log("Hasil query database untuk", call.name, ":", JSON.stringify(functionResult).slice(0, 100) + "...");
 
-            // Kembalikan hasil query database ke Gemini untuk dirangkai menjadi jawaban
+            console.log(`📤 Mengirim balasan database untuk [${call.name}] kembali ke Gemini...`);
             result = await chat.sendMessage([
                 {
                     functionResponse: {
@@ -404,14 +505,15 @@ ATURAN MUTLAK PENGGUNAAN DATABASE (TOOLS) VS TEKS BIASA:
                 }
             ]);
             response = await result.response;
+            functionCalls = response.functionCalls();
         }
 
         const jawaban = response.text();
-        console.log("<-- Jawaban berhasil diperoleh dari Gemini:", jawaban.slice(0, 80) + "...");
+        console.log(`✅ [JAWABAN SUKSES DIKIRIM]:\n${jawaban}\n=======================================================\n`);
         return res.json({ jawaban });
 
     } catch (error) {
-        console.error("❌ ERROR ASLI pada pemanggilan Gemini di POST /api/chat:", error);
+        console.error("❌ ERROR ASLI pada pemrosesan Gemini di POST /api/chat:", error);
         return res.status(500).json({ 
             jawaban: "Mohon maaf, terjadi kendala saat memproses jawaban AI (" + (error.message || "Unknown error") + ").",
             error: error.message
