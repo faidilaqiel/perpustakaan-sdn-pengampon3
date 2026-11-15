@@ -2,10 +2,29 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Http;
 use App\Models\Book;
 use App\Models\User;
 use App\Models\Loan;
 use Carbon\Carbon;
+
+// Proxy endpoint ke Node.js server.js (PustakaAI Gemini)
+Route::post('/chat', function (Request $request) {
+    try {
+        $chatPort = env('CHAT_PORT', 3000);
+        $response = Http::timeout(15)->post("http://127.0.0.1:{$chatPort}/api/chat", [
+            'pesan' => $request->input('pesan') ?? $request->input('message'),
+            'userName' => $request->input('userName'),
+            'userRole' => $request->input('userRole'),
+        ]);
+
+        return response()->json($response->json(), $response->status());
+    } catch (\Throwable $e) {
+        // Fallback jika node server belum aktif, gunakan controller chatbot
+        $fallback = app(\App\Http\Controllers\ChatbotController::class)->chat($request);
+        return $fallback;
+    }
+});
 
 // Endpoint koleksi buku untuk integrasi Botpress AI Knowledge Base
 Route::get('/books', function () {
