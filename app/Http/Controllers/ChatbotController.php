@@ -52,7 +52,12 @@ class ChatbotController extends Controller
         }
 
         // Logika jawaban sesuai pertanyaan seputar perpustakaan:
-        if (str_contains($message, 'transaksi')) {
+        if (str_contains($message, 'anggota') || str_contains($message, 'member') || str_contains($message, 'jumlah anggota')) {
+            $totalAnggota = \App\Models\User::whereIn('role', ['siswa', 'guru', 'petugas'])->count();
+            $totalSiswa = \App\Models\User::where('role', 'siswa')->count();
+            $totalGuru = \App\Models\User::where('role', 'guru')->count();
+            $reply = "Berdasarkan data perpustakaan saat ini, terdapat total **{$totalAnggota} anggota terdaftar** yang terdiri dari **{$totalSiswa} siswa** dan **{$totalGuru} guru/staf**.";
+        } elseif (str_contains($message, 'transaksi')) {
             $totalTrans = \App\Models\Loan::count();
             $menunggu = \App\Models\Loan::where('status', 'menunggu')->count();
             $dipinjam = \App\Models\Loan::where('status', 'dipinjam')->count();

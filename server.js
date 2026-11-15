@@ -107,10 +107,38 @@ async function getWaliKelas({ kelas }) {
     }
 }
 
+async function getTotalAnggota() {
+    try {
+        const [counts] = await dbPool.query(`
+            SELECT 
+                COUNT(*) as total_anggota,
+                SUM(CASE WHEN role = 'siswa' THEN 1 ELSE 0 END) as total_siswa,
+                SUM(CASE WHEN role = 'guru' THEN 1 ELSE 0 END) as total_guru,
+                SUM(CASE WHEN role = 'petugas' THEN 1 ELSE 0 END) as total_petugas
+            FROM users 
+            WHERE status = 'aktif' OR status IS NULL
+        `);
+        return {
+            status: 'success',
+            data_anggota: counts[0]
+        };
+    } catch (err) {
+        return { error: err.message };
+    }
+}
+
 // 4. Definisi Function Declarations (Tools) untuk Gemini
 const tools = [
     {
         functionDeclarations: [
+            {
+                name: "getTotalAnggota",
+                description: "Mendapatkan total jumlah anggota perpustakaan secara real-time, termasuk rincian jumlah siswa, guru, dan petugas.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {},
+                }
+            },
             {
                 name: "getSiswaBelumAbsen",
                 description: "Mendapatkan daftar siswa yang belum hadir / belum absen / belum berkunjung ke perpustakaan hari ini.",
@@ -179,6 +207,7 @@ app.post('/api/chat', async (req, res) => {
                - Jika ditanya "siapa anda" atau "siapa kamu": Perkenalkan diri Anda sebagai PustakaAI, asisten cerdas resmi Perpustakaan Digital SDN Pengampon 3 Cirebon.
                - Jika ditanya "siapa saya": Jelaskan dengan ramah bahwa pengguna adalah ${userName || 'Faidil Aqiel'} dengan peran sebagai ${userRole || 'Petugas Perpustakaan'}.
                - Selalu panggil fungsi/tools yang sesuai jika ditanya data real-time:
+                 * Jumlah anggota / total anggota perpustakaan -> getTotalAnggota
                  * Siswa belum absen -> getSiswaBelumAbsen
                  * Total transaksi / total buku / stok -> getTotalBuku
                  * Wali kelas / guru -> getWaliKelas
@@ -206,7 +235,9 @@ app.post('/api/chat', async (req, res) => {
             console.log("Gemini memicu Function Call:", call.name, call.args);
             let functionResult = null;
 
-            if (call.name === "getSiswaBelumAbsen") {
+            if (call.name === "getTotalAnggota") {
+                functionResult = await getTotalAnggota();
+            } else if (call.name === "getSiswaBelumAbsen") {
                 functionResult = await getSiswaBelumAbsen();
             } else if (call.name === "getTotalBuku") {
                 functionResult = await getTotalBuku();
