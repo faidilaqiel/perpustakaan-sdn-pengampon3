@@ -15,8 +15,8 @@
 @endphp
 
 <!-- Floating Toggle Button di Pojok Kanan Bawah -->
-<div id="pustakaai-toggle" onclick="togglePustakaAIChat()" class="fixed bottom-6 right-6 z-50 cursor-pointer transition transform hover:scale-110 shadow-2xl rounded-full bg-blue-600 flex items-center justify-center w-14 h-14 border-2 border-white">
-    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" alt="PustakaAI" class="w-8 h-8 object-contain">
+<div id="pustakaai-toggle" onclick="togglePustakaAIChat()" class="fixed bottom-6 right-6 z-50 cursor-pointer transition transform hover:scale-110 shadow-2xl rounded-full bg-blue-600 flex items-center justify-center w-14 h-14 border-2 border-white overflow-hidden p-0.5">
+    <img src="{{ asset('images/pustakaai-avatar.png') }}" alt="PustakaAI" class="w-full h-full object-cover rounded-full">
 </div>
 
 <!-- Modal Jendela Chatbot (Tampilan Sama Persis Seperti Sebelumnya) -->
@@ -28,8 +28,8 @@
             <button onclick="kembaliKeMenuAwal()" class="text-gray-400 hover:text-gray-600 p-1" title="Kembali ke Menu Awal">
                 <i class="fas fa-chevron-left text-sm"></i>
             </button>
-            <div class="w-9 h-9 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center p-1">
-                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" class="w-7 h-7">
+            <div class="w-9 h-9 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center overflow-hidden">
+                <img src="{{ asset('images/pustakaai-avatar.png') }}" class="w-full h-full object-cover">
             </div>
             <div>
                 <h4 class="font-bold text-sm text-gray-800 leading-tight">PustakaAI</h4>
@@ -103,8 +103,8 @@
 
         <!-- Loading Indicator ("PustakaAI sedang mengetik...") -->
         <div id="chat-loading" class="hidden flex items-center gap-2 text-gray-400 text-xs italic">
-            <div class="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center">
-                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" class="w-4 h-4">
+            <div class="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center overflow-hidden border border-blue-200">
+                <img src="{{ asset('images/pustakaai-avatar.png') }}" class="w-full h-full object-cover">
             </div>
             <div class="bg-gray-100 px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-xs">
                 <span class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce"></span>
@@ -255,8 +255,8 @@
         
         const formatted = formatMarkdown(teks);
         bubble.innerHTML = `
-            <div class="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center shrink-0 mt-0.5">
-                <img src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png" class="w-4 h-4">
+            <div class="w-6 h-6 rounded-full bg-blue-50 flex items-center justify-center shrink-0 mt-0.5 overflow-hidden border border-blue-200">
+                <img src="{{ asset('images/pustakaai-avatar.png') }}" class="w-full h-full object-cover">
             </div>
             <div class="bg-white border border-gray-100 text-gray-800 text-xs px-3.5 py-2.5 rounded-2xl rounded-tl-xs max-w-[85%] shadow-xs leading-relaxed break-words">
                 ${formatted}
