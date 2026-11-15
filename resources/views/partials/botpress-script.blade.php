@@ -25,15 +25,12 @@
     <!-- Header Chatbot -->
     <div class="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between bg-white">
         <div class="flex items-center gap-3">
-            <button onclick="kembaliKeMenuAwal()" class="text-gray-400 hover:text-gray-600 p-1" title="Kembali ke Menu Awal">
-                <i class="fas fa-chevron-left text-sm"></i>
-            </button>
-            <div class="w-9 h-9 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center overflow-hidden">
+            <div class="w-10 h-10 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center overflow-hidden shrink-0">
                 <img src="{{ asset('images/pustakaai-avatar.png') }}" class="w-full h-full object-cover">
             </div>
             <div>
                 <h4 class="font-bold text-sm text-gray-800 leading-tight">PustakaAI</h4>
-                <p class="text-[11px] text-gray-400 truncate max-w-[170px]">Pintu gerbang ilmu di SDN Pengampo...</p>
+                <p class="text-[11px] text-gray-400 truncate max-w-[200px]">Pintu gerbang ilmu di SDN Pengampon 3</p>
             </div>
         </div>
         <div class="flex items-center gap-2 text-gray-400">
