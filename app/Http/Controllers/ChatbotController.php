@@ -94,6 +94,28 @@ class ChatbotController extends Controller
                 $reply .= "📖 {$b->title} (Karya: {$b->author}, Tersedia: {$b->stock_available} buku)\n";
             }
             $reply .= "\nSilakan ajukan peminjaman melalui menu Katalog ya!";
+        } elseif (str_contains($message, 'laskar pelangi') || str_contains($message, 'laskar sipitung') || str_contains($message, 'matematika') || str_contains($message, 'sains') || str_contains($message, 'cerita rakyat') || str_contains($message, 'judul buku')) {
+            // Pencarian buku spesifik berdasarkan kata kunci judul
+            $cariJudul = '';
+            if (str_contains($message, 'laskar pelangi')) $cariJudul = 'Laskar Pelangi';
+            elseif (str_contains($message, 'laskar sipitung')) $cariJudul = 'Laskar Sipitung';
+            elseif (str_contains($message, 'matematika')) $cariJudul = 'Matematika';
+            elseif (str_contains($message, 'sains')) $cariJudul = 'Sains';
+            elseif (str_contains($message, 'cerita rakyat')) $cariJudul = 'Cerita Rakyat';
+
+            $bukuFound = null;
+            if ($cariJudul) {
+                $bukuFound = Book::where('title', 'LIKE', "%{$cariJudul}%")->first();
+            }
+
+            if ($bukuFound) {
+                $statusTersedia = $bukuFound->stock_available > 0 
+                    ? "Tersedia dan siap dipinjam sebanyak {$bukuFound->stock_available} eksemplar (dari total stok {$bukuFound->stock_total})."
+                    : "Saat ini stok sedang habis / sedang dipinjam.";
+                $reply = "Ya, buku \"{$bukuFound->title}\" karya {$bukuFound->author} terdaftar di perpustakaan. Status stok: {$statusTersedia}";
+            } else {
+                $reply = "Maaf, buku tersebut tidak ditemukan di koleksi Perpustakaan SDN Pengampon 3.";
+            }
         } elseif (str_contains($message, 'buku') || str_contains($message, 'koleksi') || str_contains($message, 'stok')) {
             $books = Book::all();
             $total = $books->count();

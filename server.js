@@ -156,6 +156,41 @@ async function getStatusPeminjaman({ nama_siswa }) {
     }
 }
 
+// 5b. getBukuDipinjam: Menghitung total dan daftar buku yang sedang aktif dipinjam
+async function getBukuDipinjam() {
+    console.log(`[DB] Menjalankan getBukuDipinjam`);
+    try {
+        // Query total buku yang sedang berstatus dipinjam
+        const [countRows] = await dbPool.query(`
+            SELECT COUNT(*) as total_dipinjam 
+            FROM loans 
+            WHERE status = 'dipinjam'
+        `);
+        const total = countRows[0] ? countRows[0].total_dipinjam : 0;
+
+        // Ambil juga rincian peminjam dan buku yang sedang dipinjam
+        const [detailRows] = await dbPool.query(`
+            SELECT l.id as id_pinjam, u.name as peminjam, u.role, u.class as kelas,
+                   b.title as judul_buku, l.loan_date as tanggal_pinjam, l.due_date as jatuh_tempo
+            FROM loans l
+            JOIN users u ON l.user_id = u.id
+            JOIN books b ON l.book_id = b.id
+            WHERE l.status = 'dipinjam'
+            ORDER BY l.id DESC
+        `);
+
+        console.log(`[DB] getBukuDipinjam berhasil: total ${total} buku sedang dipinjam.`);
+        return {
+            status: 'success',
+            total_buku_dipinjam: total,
+            daftar_buku_dipinjam: detailRows
+        };
+    } catch (err) {
+        console.error(`[DB ERROR] getBukuDipinjam gagal:`, err.message);
+        return { error: err.message };
+    }
+}
+
 // Helper tool tambahan yang sudah ada sebelumnya
 async function getDaftarBuku({ kategori } = {}) {
     console.log(`[DB] Menjalankan getDaftarBuku, kategori: "${kategori || 'Semua'}"`);
@@ -326,6 +361,14 @@ const tools = [
                 }
             },
             {
+                name: "getBukuDipinjam",
+                description: "Gunakan fungsi ini HANYA jika user bertanya berapa banyak buku yang sedang dipinjam, atau siapa saja yang meminjam buku hari ini.",
+                parameters: {
+                    type: "OBJECT",
+                    properties: {}
+                }
+            },
+            {
                 name: "getDaftarBuku",
                 description: "Mendapatkan seluruh daftar buku atau rekomendasi buku bacaan/fiksi/pelajaran di perpustakaan.",
                 parameters: {
@@ -401,8 +444,9 @@ INFORMASI PENGGUNA AKTIF SAAT INI:
 ATURAN MUTLAK (JANGAN DILANGGAR):
 1. DILARANG KERAS memberikan sapaan default (seperti 'Ada yang bisa saya bantu?') jika user sudah mengajukan pertanyaan spesifik. LANGSUNG JAWAB PERTANYAANNYA.
 2. Jika user bertanya tentang nama orang (siswa/guru) atau judul buku spesifik, KAMU WAJIB memanggil fungsi pencarian (cariSiswa, cariGuru, atau cariBuku). JANGAN mengarang jawaban.
-3. Jika fungsi pencarian mengembalikan data kosong, katakan dengan jujur: 'Maaf, data tersebut tidak ditemukan di sistem perpustakaan.'
-4. Jika user bertanya tentang PROSEDUR (cara pinjam, aturan), JAWAB LANGSUNG dengan teks di bawah ini (jangan panggil fungsi database).
+3. Jika user bertanya tentang JUMLAH atau TOTAL buku yang dipinjam, atau siapa saja yang sedang meminjam buku, kamu WAJIB memanggil fungsi getBukuDipinjam. DILARANG memanggil fungsi getDaftarBuku untuk pertanyaan seperti ini.
+4. Jika fungsi pencarian mengembalikan data kosong, katakan dengan jujur: 'Maaf, data tersebut tidak ditemukan di sistem perpustakaan.'
+5. Jika user bertanya tentang PROSEDUR (cara pinjam, aturan), JAWAB LANGSUNG dengan teks di bawah ini (jangan panggil fungsi database).
 
 PENGETAHUAN DASAR (PROSEDUR):
 - Cara Pinjam: Bawa kartu anggota & buku ke meja petugas. Maksimal 3 buku, batas waktu 7 hari.
@@ -416,7 +460,7 @@ GAYA BAHASA:
 - Jika user menggunakan sapaan santai (seperti 'Halo kak'), balaslah dengan ramah. Jika formal, balaslah dengan formal.
 
 FORMAT JAWABAN:
-- Jika memberikan daftar (misal: daftar nama atau buku), WAJIB gunakan format poin (1, 2, 3) atau bullet points. Jangan menumpuk teks dalam satu paragraf panjang.
+- Jika AI memanggil getDaftarBuku atau menampilkan daftar buku/nama, gunakan format poin (1, 2, 3 atau bullet points). Jangan menumpuk teks dalam satu paragraf panjang. Jangan mengulang jawaban yang sama jika user bertanya hal berbeda.
 `;
 
         console.log("⚙️ Menginisialisasi Gemini Generative Model (gemini-3.1-flash-lite)...");
@@ -446,7 +490,19 @@ FORMAT JAWABAN:
             messagePayload = pesan;
         }
 
-        let result = await chat.sendMessage(messagePayload);
+        let result;
+        let retries = 3;
+        while (retries > 0) {
+            try {
+                result = await chat.sendMessage(messagePayload);
+                break;
+            } catch (apiErr) {
+                retries--;
+                console.warn(`⚠️ Gemini API error (sisa retry: ${retries}):`, apiErr.message);
+                if (retries === 0) throw apiErr;
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+        }
         let response = await result.response;
 
         // Loop penanganan Function Calls (bisa menangani beberapa tool call beruntun)
@@ -472,6 +528,9 @@ FORMAT JAWABAN:
                 case "getStatusPeminjaman":
                     functionResult = await getStatusPeminjaman(call.args || {});
                     break;
+                case "getBukuDipinjam":
+                    functionResult = await getBukuDipinjam();
+                    break;
                 case "getDaftarBuku":
                     functionResult = await getDaftarBuku(call.args || {});
                     break;
@@ -496,14 +555,25 @@ FORMAT JAWABAN:
             }
 
             console.log(`📤 Mengirim balasan database untuk [${call.name}] kembali ke Gemini...`);
-            result = await chat.sendMessage([
-                {
-                    functionResponse: {
-                        name: call.name,
-                        response: { output: functionResult }
-                    }
+            let callRetries = 3;
+            while (callRetries > 0) {
+                try {
+                    result = await chat.sendMessage([
+                        {
+                            functionResponse: {
+                                name: call.name,
+                                response: { output: functionResult }
+                            }
+                        }
+                    ]);
+                    break;
+                } catch (callErr) {
+                    callRetries--;
+                    console.warn(`⚠️ Gagal mengirim functionResponse (sisa retry: ${callRetries}):`, callErr.message);
+                    if (callRetries === 0) throw callErr;
+                    await new Promise(resolve => setTimeout(resolve, 2000));
                 }
-            ]);
+            }
             response = await result.response;
             functionCalls = response.functionCalls();
         }
