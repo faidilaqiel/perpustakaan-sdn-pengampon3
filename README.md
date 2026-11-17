@@ -1,6 +1,6 @@
 # Perpustakaan Digital SDN Pengampon 3 Cirebon (PustakaAI)
-### Proyek Akhir Mata Kuliah Rekayasa Perangkat Lunak (TIKB2503021) — Semester 3
-**Program Studi S1 Teknik Informatika — STMIK IKMI Cirebon**
+### Project Mata Kuliah Rekayasa Perangkat Lunak
+**Program Studi S1 Teknik Informatika 
 
 [![Laravel CI/CD Pipeline](https://github.com/faidilaqiel/perpustakaan-sdn-pengampon3/actions/workflows/ci.yml/badge.svg)](https://github.com/faidilaqiel/perpustakaan-sdn-pengampon3/actions)
 ![Laravel](https://img.shields.io/badge/Laravel-12.0-FF2D20?style=flat&logo=laravel&logoColor=white)
@@ -10,15 +10,11 @@
 
 ---
 
-## 👤 Identitas Mahasiswa & Pengembang
+## 👤 Identitas Mahasiswa 
 * **Nama Lengkap** : **Faidil Aqiel**
 * **NIM** : **41257189**
 * **Kelas** : **Reguler Sore / 1F-2025**
-* **Program Studi** : S1 Teknik Informatika
-* **Dosen Pengampu** : Yudhistira Arie Wijaya, M.Kom., CDS.
-* **Tema Topik Kelompok** : E-Learning & Smart Education AI / Pelayanan Publik Sekolah
-* **Sifat Pengerjaan** : Mandiri / Perorangan (100% Individual Ownership & Full-App Build)
-* **Instansi Mitra** : SDN Pengampon 3 Kota Cirebon (Kepala Sekolah: H. Noni Risanto, M.Pd.I.)
+* **Program Studi** : Teknik Informatika
 
 ---
 
