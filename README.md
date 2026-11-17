@@ -34,24 +34,6 @@ Aplikasi **Perpustakaan Digital SDN Pengampon 3** adalah sistem informasi manaje
 
 ---
 
-## 🎥 Tautan Video Presentasi Progres & Live Demo (Wajib OBE)
-Sesuai ketentuan rubrik penilaian, video direkam dengan **webcam aktif di sudut layar** untuk verifikasi autentisitas pengerjaan mandiri:
-
-* 📹 **Video Progres 1: PRD, Inisiasi & Konsep Aplikasi (3–5 Menit)**  
-  Tautan: [Tonton Video Progres 1 di YouTube / Google Drive](https://youtu.be/placeholder-progres1) *(Silakan isi tautan video Anda)*
-* 📹 **Video Progres 2: Pemodelan UML, SDD & UI/UX Figma (5–7 Menit)**  
-  Tautan: [Tonton Video Progres 2 di YouTube / Google Drive](https://youtu.be/placeholder-progres2) *(Silakan isi tautan video Anda)*
-* 📹 **Video Final: Live Demo Aplikasi Utuh & Verifikasi CI/CD (8–12 Menit)**  
-  Tautan: [Tonton Video Final Live Demo di YouTube / Google Drive](https://youtu.be/placeholder-final) *(Silakan isi tautan video Anda)*
-
----
-
-## 📑 Berkas Dokumen Resmi (Format PDF & Cetak)
-* 📄 **Dokumen PRD / SRS Mandiri (IEEE 830 / ISO 29148)**: [cetakprd.html](cetakprd.html) *(Buka di browser lalu Ctrl+P untuk simpan ke PDF)*
-* 📄 **Dokumen SDD & Pemodelan UML (IEEE 1016)**: [cetaksdd.html](cetaksdd.html) *(Buka di browser lalu Ctrl+P untuk simpan ke PDF)*
-
----
-
 ## ⚙️ Petunjuk Instalasi & Menjalankan Aplikasi (Setup Instructions)
 
 ### 1. Kebutuhan Sistem (Prerequisites)
