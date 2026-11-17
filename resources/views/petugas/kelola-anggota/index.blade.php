@@ -9,9 +9,14 @@
             <h2 class="text-xl font-bold text-gray-800">Kelola Anggota</h2>
             <p class="text-sm text-gray-500 mt-1">Kelola data siswa & guru perpustakaan.</p>
         </div>
-        <a href="{{ route('petugas.anggota.create') }}" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-md transition">
-            <i class="fas fa-plus"></i> Tambah Anggota
-        </a>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('petugas.cetakKartu') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-xs transition">
+                <i class="fas fa-id-card"></i> Dashboard Cetak Kartu
+            </a>
+            <a href="{{ route('petugas.anggota.create') }}" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-lg font-semibold text-sm flex items-center gap-2 shadow-md transition">
+                <i class="fas fa-plus"></i> Tambah Anggota
+            </a>
+        </div>
     </div>
 
     {{-- Notifikasi Sukses/Error --}}
