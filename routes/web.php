@@ -99,17 +99,14 @@ Route::get('/petugas/kelola-anggota/{id}/edit', [UserController::class, 'edit'])
 Route::put('/petugas/kelola-anggota/{id}', [UserController::class, 'update'])->name('petugas.anggota.update');
 Route::delete('/petugas/kelola-anggota/{id}', [UserController::class, 'destroy'])->name('petugas.anggota.destroy');
 
-// Dashboard Cetak Kartu Anggota
+// Dashboard Cetak Kartu Anggota (Khusus Siswa)
 Route::get('/petugas/cetak-kartu', function (\Illuminate\Http\Request $request) {
     $keyword = $request->input('q');
-    $filterRole = $request->input('role');
     $filterClass = $request->input('class');
 
-    $query = \App\Models\User::whereIn('role', ['siswa', 'guru']);
+    // HANYA SISWA
+    $query = \App\Models\User::where('role', 'siswa');
 
-    if ($filterRole && in_array($filterRole, ['siswa', 'guru'])) {
-        $query->where('role', $filterRole);
-    }
     if ($filterClass) {
         $query->where('class', $filterClass);
     }
@@ -117,7 +114,6 @@ Route::get('/petugas/cetak-kartu', function (\Illuminate\Http\Request $request) 
         $query->where(function ($q) use ($keyword) {
             $q->where('name', 'LIKE', '%' . $keyword . '%')
               ->orWhere('nisn', 'LIKE', '%' . $keyword . '%')
-              ->orWhere('nip', 'LIKE', '%' . $keyword . '%')
               ->orWhere('class', 'LIKE', '%' . $keyword . '%');
         });
     }
@@ -131,23 +127,23 @@ Route::get('/petugas/cetak-kartu', function (\Illuminate\Http\Request $request) 
         ->pluck('class')
         ->sort();
 
-    return view('petugas.cetak-kartu.index', compact('users', 'keyword', 'filterRole', 'filterClass', 'listKelas'));
+    return view('petugas.cetak-kartu.index', compact('users', 'keyword', 'filterClass', 'listKelas'));
 })->name('petugas.cetakKartu');
 
 Route::get('/petugas/cetak-kartu/{id}', function ($id) {
-    $user = \App\Models\User::findOrFail($id);
-    $qrContent = $user->nisn ?? $user->nip ?? $user->id;
+    $user = \App\Models\User::where('role', 'siswa')->findOrFail($id);
+    $qrContent = $user->nisn ?? $user->id;
 
-    // Generate QR Base64 untuk kartu
+    // Generate QR Code SVG / Base64
     $renderer = new \BaconQrCode\Renderer\ImageRenderer(
-        new \BaconQrCode\Renderer\RendererStyle\RendererStyle(140),
+        new \BaconQrCode\Renderer\RendererStyle\RendererStyle(280, 1),
         new \BaconQrCode\Renderer\Image\SvgImageBackEnd()
     );
     $writer = new \BaconQrCode\Writer($renderer);
-    $svgRaw = $writer->writeString($qrContent);
+    $svgRaw = $writer->writeString((string)$qrContent);
     $qrCodeBase64 = 'data:image/svg+xml;base64,' . base64_encode($svgRaw);
 
-    return view('petugas.kartu-anggota', compact('user', 'qrCodeBase64'));
+    return view('petugas.cetak-kartu.single', compact('user', 'qrCodeBase64', 'qrContent'));
 })->name('petugas.kartuAnggotaSingle');
 
 Route::get('/petugas/cetak-kartu-massal', function (\Illuminate\Http\Request $request) {
