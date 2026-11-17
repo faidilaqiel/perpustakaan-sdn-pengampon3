@@ -1,6 +1,5 @@
-# Perpustakaan Digital SDN Pengampon 3 Cirebon (PustakaAI)
+# Perpustakaan Digital (PustakaAI)
 ### Project Mata Kuliah Rekayasa Perangkat Lunak
-**Program Studi S1 Teknik Informatika 
 
 [![Laravel CI/CD Pipeline](https://github.com/faidilaqiel/perpustakaan-sdn-pengampon3/actions/workflows/ci.yml/badge.svg)](https://github.com/faidilaqiel/perpustakaan-sdn-pengampon3/actions)
 ![Laravel](https://img.shields.io/badge/Laravel-12.0-FF2D20?style=flat&logo=laravel&logoColor=white)
