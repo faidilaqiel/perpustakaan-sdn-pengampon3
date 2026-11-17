@@ -15,6 +15,7 @@
 * **NIM** : **41257189**
 * **Kelas** : **Reguler Sore / 1F-2025**
 * **Program Studi** : Teknik Informatika
+* Link Video:
 
 ---
 
