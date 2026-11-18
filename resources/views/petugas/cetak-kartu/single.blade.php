@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kartu Anggota Siswa - {{ $user->name }}</title>
+    <title>Kartu Anggota Perpustakaan - {{ $user->name }}</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
@@ -11,13 +11,13 @@
     <!-- html2canvas untuk unduh PNG resolusi tinggi -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&display=swap');
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: #f1f5f9;
         }
 
-        /* Ukuran Asli Kartu: 602px x 1024px (Potret Cantik Sesuai Template) */
+        /* Ukuran Kartu: 602px x 1024px sesuai proporsi template */
         #kartu-capture {
             width: 602px;
             height: 1024px;
@@ -31,40 +31,47 @@
             box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.25);
         }
 
-        /* Kotak Putih Utama (QR Code + Detail Kelas) */
+        /* Kotak Putih Utama (QR Code Penuh Bersih) */
         .box-konten-utama {
             position: absolute;
-            top: 350px;
+            top: 345px;
             left: 140px;
             width: 322px;
-            height: 280px;
+            height: 290px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            border-radius: 24px;
         }
 
         .box-konten-utama img {
-            width: 175px;
-            height: 175px;
+            width: 275px;
+            height: 275px;
             object-fit: contain;
+            display: block;
         }
 
-        /* Kolom Putih Bawah: Nama Anggota */
+        /* Kotak Putih Bawah: Nama Anggota (Persis Seperti Contoh Gambar) */
         .box-nama-anggota {
             position: absolute;
-            top: 665px;
-            left: 28px;
-            width: 546px;
-            height: 80px;
+            top: 662px;
+            left: 36px;
+            width: 530px;
+            height: 85px;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 0 24px;
+            padding: 0 16px;
+        }
+
+        .box-nama-anggota h3 {
+            font-size: 32px;
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: 0.5px;
+            line-height: 1.15;
+            text-transform: uppercase;
         }
 
         @media print {
@@ -97,40 +104,40 @@
     <div id="kartu-wrapper" class="relative">
         <div id="kartu-capture">
             
-            <!-- Area Tengah: QR Code & NISN Siswa -->
+            <!-- Area Kotak Tengah: QR Code Saja (Besar & Jelas seperti contoh) -->
             <div class="box-konten-utama">
-                <div class="bg-white p-2 rounded-2xl shadow-xs border border-blue-100">
-                    <img src="{{ $qrCodeBase64 }}" alt="QR Code NISN">
-                </div>
-                <div class="mt-2 text-center">
-                    <span class="text-xs font-extrabold text-blue-900 tracking-wider">
-                        NISN: {{ $user->nisn ?? '-' }}
-                    </span>
-                    <span class="text-[11px] font-bold text-blue-600 block mt-0.5">
-                        KELAS: {{ strtoupper($user->class ?? '-') }}
-                    </span>
-                </div>
+                <img src="{{ $qrCodeBase64 }}" alt="QR Code Anggota">
             </div>
 
-            <!-- Area Bawah: Nama Anggota Siswa -->
+            <!-- Area Kotak Bawah: NAMA ANGGOTA (Sesuai Contoh Gambar: AISYAH PUTRI TIAN) -->
             <div class="box-nama-anggota">
-                <h3 class="text-xl font-black text-blue-950 uppercase tracking-wide truncate max-w-full leading-tight">
-                    {{ $user->name }}
+                <h3 id="nama-siswa-display">
+                    {{ strtoupper($user->name) }}
                 </h3>
-                <span class="text-xs font-bold text-blue-600 tracking-wider mt-0.5">
-                    ANGGOTA RESMI PERPUSTAKAAN
-                </span>
             </div>
 
         </div>
     </div>
 
     <p class="no-print text-xs text-gray-400 mt-4 text-center">
-        💡 <em>Kartu dibuat beresolusi tinggi 602 × 1024 px. Cocok untuk dibagikan ke siswa atau dicetak dalam ukuran saku.</em>
+        💡 <em>Desain disesuaikan bersih: Menampilkan QR Code penuh dan Nama Anggota tanpa pencantuman NISN maupun Kelas.</em>
     </p>
 
     <!-- Script Download PNG Menggunakan html2canvas -->
     <script>
+        // Sesuaikan ukuran font otomatis jika nama siswa sangat panjang agar tidak terpotong
+        window.addEventListener('DOMContentLoaded', () => {
+            const nameEl = document.getElementById('nama-siswa-display');
+            if (nameEl) {
+                const len = nameEl.innerText.length;
+                if (len > 25) {
+                    nameEl.style.fontSize = '24px';
+                } else if (len > 18) {
+                    nameEl.style.fontSize = '28px';
+                }
+            }
+        });
+
         function downloadSebagaiPNG() {
             const btn = document.getElementById('btn-download-png');
             const originalText = btn.innerHTML;
@@ -139,25 +146,22 @@
 
             const element = document.getElementById('kartu-capture');
 
-            // Pengaturan resolusi tinggi scale: 2 atau 3
             html2canvas(element, {
-                scale: 2,
+                scale: 2, // Resolusi tinggi HD jernih
                 useCORS: true,
                 allowTaint: true,
                 backgroundColor: null
             }).then(canvas => {
                 const link = document.createElement('a');
-                // Format nama file: Kartu_Siswa_Nama_NISN.png
-                const cleanName = "{{ str_replace(' ', '_', $user->name) }}";
-                const cleanNisn = "{{ $user->nisn ?? 'Siswa' }}";
-                link.download = `Kartu_PustakaAI_${cleanName}_${cleanNisn}.png`;
+                const cleanName = "{{ str_replace([' ', '/', '\\'], '_', strtoupper($user->name)) }}";
+                link.download = `Kartu_Anggota_${cleanName}.png`;
                 link.href = canvas.toDataURL('image/png', 1.0);
                 link.click();
 
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }).catch(err => {
-                alert('Terjadi kesalahan saat memproses gambar: ' + err.message);
+                alert('Terjadi kesalahan saat mengunduh PNG: ' + err.message);
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             });
