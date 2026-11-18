@@ -129,7 +129,7 @@
         </div>
 
         <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-            @if(Auth::user()->role === 'petugas')
+            @if(Auth::check() && Auth::user()->role === 'petugas')
                 <a href="{{ route('petugas.dashboard') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('petugas.dashboard') ? 'bg-green-600 font-semibold' : 'hover:bg-green-700 transition' }}"><i class="fas fa-home w-5 text-center"></i> Dashboard</a>
                 <a href="{{ route('petugas.kelolaBuku') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('petugas.kelolaBuku') ? 'bg-green-600 font-semibold' : 'hover:bg-green-700 transition' }}"><i class="fas fa-book w-5 text-center"></i> Daftar Buku</a>
                 <a href="{{ route('petugas.kategori.index') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('petugas.kategori.*') ? 'bg-green-600 font-semibold' : 'hover:bg-green-700 transition' }}"><i class="fas fa-folder w-5 text-center"></i> Kategori Buku</a>
@@ -137,21 +137,21 @@
                 <a href="{{ route('petugas.kelolaAnggota') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('petugas.kelolaAnggota*') ? 'bg-green-600 font-semibold' : 'hover:bg-green-700 transition' }}"><i class="fas fa-users w-5 text-center"></i> Data Anggota</a>
                 <a href="{{ route('petugas.cetakKartu') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('petugas.cetakKartu*') ? 'bg-green-600 font-semibold' : 'hover:bg-green-700 transition' }}"><i class="fas fa-id-card w-5 text-center"></i> Cetak Kartu</a>
                 <a href="{{ route('petugas.scan') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('petugas.scan') ? 'bg-green-600 font-semibold' : 'hover:bg-green-700 transition' }}"><i class="fas fa-qrcode w-5 text-center"></i> Scan QR</a>
-            @elseif(Auth::user()->role === 'kepsek')
+            @elseif(Auth::check() && Auth::user()->role === 'kepsek')
                 <a href="{{ route('kepsek.laporan') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('kepsek.laporan') ? 'bg-green-600 font-semibold' : 'hover:bg-green-700 transition' }}"><i class="fas fa-chart-pie w-5 text-center"></i> Laporan</a>
             @endif
             <a href="{{ route('profil.edit') }}" class="flex items-center gap-3 px-4 py-3 rounded-lg {{ request()->routeIs('profil.*') ? 'bg-green-600 font-semibold' : 'hover:bg-green-700 transition' }}"><i class="fas fa-user w-5 text-center"></i> Profil Saya</a>
         </nav>
 
         <div class="p-4 bg-green-900 border-t border-green-700 flex items-center gap-3">
-            @if(Auth::user()->photo && file_exists(public_path('photos/' . Auth::user()->photo)))
+            @if(Auth::check() && Auth::user()->photo && file_exists(public_path('photos/' . Auth::user()->photo)))
                 <img src="{{ asset('photos/' . Auth::user()->photo) }}" class="w-10 h-10 rounded-full object-cover border-2 border-green-500">
             @else
                 <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-lg font-bold">{{ substr(Auth::user()->name ?? 'A', 0, 1) }}</div>
             @endif
             <div class="flex-1">
-                <p class="text-sm font-bold truncate">{{ Auth::user()->name }}</p>
-                <p class="text-xs text-green-300 capitalize">{{ Auth::user()->role }}</p>
+                <p class="text-sm font-bold truncate">{{ Auth::user()->name ?? 'User' }}</p>
+                <p class="text-xs text-green-300 capitalize">{{ Auth::user()->role ?? 'Tamu' }}</p>
             </div>
         </div>
     </aside>
@@ -245,12 +245,12 @@
         </main>
 
         <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around items-center h-16 z-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-            @if(Auth::user()->role === 'petugas')
+            @if(Auth::check() && Auth::user()->role === 'petugas')
                 <a href="{{ route('petugas.dashboard') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('petugas.dashboard') ? 'text-green-600' : 'text-gray-400 hover:text-green-500' }}"><i class="fas fa-home text-lg mb-1"></i><span class="text-[10px] font-medium">Beranda</span></a>
                 <a href="{{ route('petugas.kelolaBuku') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('petugas.kelolaBuku') ? 'text-green-600' : 'text-gray-400 hover:text-green-500' }}"><i class="fas fa-book text-lg mb-1"></i><span class="text-[10px] font-medium">Buku</span></a>
                 <a href="{{ route('petugas.sirkulasi') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('petugas.sirkulasi') ? 'text-green-600' : 'text-gray-400 hover:text-green-500' }}"><i class="fas fa-exchange-alt text-lg mb-1"></i><span class="text-[10px] font-medium">Sirkulasi</span></a>
                 <a href="{{ route('petugas.kelolaAnggota') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('petugas.kelolaAnggota') ? 'text-green-600' : 'text-gray-400 hover:text-green-500' }}"><i class="fas fa-users text-lg mb-1"></i><span class="text-[10px] font-medium">Anggota</span></a>
-            @elseif(Auth::user()->role === 'kepsek')
+            @elseif(Auth::check() && Auth::user()->role === 'kepsek')
                 <a href="{{ route('kepsek.laporan') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('kepsek.laporan') ? 'text-green-600' : 'text-gray-400 hover:text-green-500' }}"><i class="fas fa-chart-pie text-lg mb-1"></i><span class="text-[10px] font-medium">Laporan</span></a>
             @endif
             <a href="{{ route('profil.edit') }}" class="flex flex-col items-center justify-center w-full h-full {{ request()->routeIs('profil.*') ? 'text-green-600' : 'text-gray-400 hover:text-green-500' }}"><i class="fas fa-user text-lg mb-1"></i><span class="text-[10px] font-medium">Akun</span></a>

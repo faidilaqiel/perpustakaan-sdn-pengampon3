@@ -101,6 +101,10 @@ Route::delete('/petugas/kelola-anggota/{id}', [UserController::class, 'destroy']
 
 // Dashboard Cetak Kartu Anggota (Khusus Siswa)
 Route::get('/petugas/cetak-kartu', function (\Illuminate\Http\Request $request) {
+    if (!\Illuminate\Support\Facades\Auth::check() || \Illuminate\Support\Facades\Auth::user()->role !== 'petugas') {
+        return redirect()->route('login')->with('error', 'Silakan login sebagai Petugas Perpustakaan.');
+    }
+
     $keyword = $request->input('q');
     $filterClass = $request->input('class');
 
@@ -131,6 +135,10 @@ Route::get('/petugas/cetak-kartu', function (\Illuminate\Http\Request $request) 
 })->name('petugas.cetakKartu');
 
 Route::get('/petugas/cetak-kartu/{id}', function ($id) {
+    if (!\Illuminate\Support\Facades\Auth::check() || \Illuminate\Support\Facades\Auth::user()->role !== 'petugas') {
+        return redirect()->route('login')->with('error', 'Silakan login sebagai Petugas Perpustakaan.');
+    }
+
     $user = \App\Models\User::where('role', 'siswa')->findOrFail($id);
     $qrContent = $user->nisn ?? $user->id;
 
