@@ -31,27 +31,32 @@
             box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.25);
         }
 
-        /* Kotak Putih Utama (QR Code Penuh Bersih) */
+        /* Kotak Putih Utama (QR Code Penuh Bersih & Presisi Pas di Dalam Kotak) */
         .box-konten-utama {
             position: absolute;
-            top: 345px;
-            left: 140px;
-            width: 322px;
-            height: 290px;
+            top: 348px;
+            left: 147px;
+            width: 308px;
+            height: 284px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
+            overflow: hidden;
+            border-radius: 20px;
         }
 
         .box-konten-utama img {
-            width: 275px;
-            height: 275px;
+            max-width: 260px;
+            max-height: 260px;
+            width: auto;
+            height: auto;
             object-fit: contain;
             display: block;
+            margin: auto;
         }
 
-        /* Kotak Putih Bawah: Nama Anggota (Persis Seperti Contoh Gambar) */
+        /* Kotak Putih Bawah: Nama Anggota (Center, Ukuran 12pt / Proporsional & Auto Wrap / Singkat jika panjang) */
         .box-nama-anggota {
             position: absolute;
             top: 662px;
@@ -63,15 +68,19 @@
             justify-content: center;
             text-align: center;
             padding: 0 16px;
+            overflow: hidden;
         }
 
         .box-nama-anggota h3 {
-            font-size: 32px;
+            font-size: 12pt;
             font-weight: 900;
             color: #0f172a;
             letter-spacing: 0.5px;
-            line-height: 1.15;
+            line-height: 1.25;
             text-transform: uppercase;
+            text-align: center;
+            word-break: break-word;
+            max-width: 100%;
         }
 
         @media print {
@@ -109,10 +118,26 @@
                 <img src="{{ $qrCodeBase64 }}" alt="QR Code Anggota">
             </div>
 
-            <!-- Area Kotak Bawah: NAMA ANGGOTA (Sesuai Contoh Gambar: AISYAH PUTRI TIAN) -->
+            <!-- Area Kotak Bawah: NAMA ANGGOTA -->
+            @php
+                // Logika pemendekan nama jika sangat panjang (> 26 karakter)
+                $rawName = trim($user->name);
+                $displayName = $rawName;
+                if (strlen($rawName) > 26) {
+                    $words = explode(' ', $rawName);
+                    if (count($words) > 2) {
+                        // Pertahankan 2 kata pertama, kata berikutnya disingkat inisialnya
+                        $shortened = array_slice($words, 0, 2);
+                        for ($i = 2; $i < count($words); $i++) {
+                            $shortened[] = strtoupper(substr($words[$i], 0, 1)) . '.';
+                        }
+                        $displayName = implode(' ', $shortened);
+                    }
+                }
+            @endphp
             <div class="box-nama-anggota">
                 <h3 id="nama-siswa-display">
-                    {{ strtoupper($user->name) }}
+                    {!! nl2br(e(strtoupper($displayName))) !!}
                 </h3>
             </div>
 
@@ -125,19 +150,6 @@
 
     <!-- Script Download PNG Menggunakan html2canvas -->
     <script>
-        // Sesuaikan ukuran font otomatis jika nama siswa sangat panjang agar tidak terpotong
-        window.addEventListener('DOMContentLoaded', () => {
-            const nameEl = document.getElementById('nama-siswa-display');
-            if (nameEl) {
-                const len = nameEl.innerText.length;
-                if (len > 25) {
-                    nameEl.style.fontSize = '24px';
-                } else if (len > 18) {
-                    nameEl.style.fontSize = '28px';
-                }
-            }
-        });
-
         function downloadSebagaiPNG() {
             const btn = document.getElementById('btn-download-png');
             const originalText = btn.innerHTML;
